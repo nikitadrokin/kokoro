@@ -55,9 +55,12 @@ export default function Header() {
   const isSpeechActive = pathname === '/' || pathname.startsWith('/speech');
 
   return (
-    <header className='sticky top-0 z-50 border-b bg-background/90 px-4 backdrop-blur supports-backdrop-filter:bg-background/70'>
+    <header
+      data-tauri-drag-region
+      className='sticky top-0 z-50 border-b bg-background/90 pl-[88px] pr-4 backdrop-blur supports-backdrop-filter:bg-background/70'
+    >
       <NavigationMenu className='min-w-full flex-1 justify-start' align='start'>
-        <NavigationMenuList className='w-full justify-start gap-1 overflow-x-auto py-2'>
+        <NavigationMenuList className='w-full justify-start gap-1 overflow-x-auto py-[20px]'>
           <Link
             to='/'
             className='inline-flex shrink-0 items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight no-underline transition-colors hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30'

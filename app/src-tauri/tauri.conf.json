@@ -13,9 +13,17 @@
   "app": {
     "windows": [
       {
-        "title": "Kokoro",
+        "title": "Kokoros",
         "width": 800,
         "height": 600,
+        "minWidth": 560,
+        "minHeight": 400,
+        "titleBarStyle": "Overlay",
+        "trafficLightPosition": {
+          "x": 22,
+          "y": 30
+        },
+        "hiddenTitle": true,
         "resizable": true,
         "fullscreen": false
       }
