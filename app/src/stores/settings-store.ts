@@ -16,7 +16,7 @@ export const isPlaybackMode = (value: string): value is PlaybackMode =>
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
-      playbackMode: 'save-stream',
+      playbackMode: 'save-silent',
       setPlaybackMode: (playbackMode) => set({ playbackMode }),
     }),
     {
