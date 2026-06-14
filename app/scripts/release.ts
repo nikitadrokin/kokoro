@@ -48,14 +48,14 @@ const macosBundleDir = join(
 const latestUpdaterJsonPath = join(macosBundleDir, 'latest.json');
 const defaultUpdaterSigningKeyPath = join(
   homedir(),
-  '.tauri/kokoros-updater.key',
+  '.tauri/kokoro-updater.key',
 );
 
 // Homebrew support is intentionally disabled for now. To enable it later:
 // 1. Point this at the cask file in your tap.
 // 2. Uncomment updateHomebrewCaskIfConfigured(...) in main().
 // 3. Update updateCaskFile(...) with the release URL for this repo/tap.
-// const caskFilePath = join(projectRoot, '../homebrew-tap/Casks/kokoros.rb');
+// const caskFilePath = join(projectRoot, '../homebrew-tap/Casks/kokoro.rb');
 
 function parseArgs(argv: string[]): ReleaseCliArgs {
   return { dryRun: argv.includes('--dry-run') };
@@ -158,7 +158,7 @@ async function findMacUpdaterArchive(): Promise<string | undefined> {
   return matches.sort()[0];
 }
 
-// GitHub normalizes asset names by replacing spaces with dots. Kokoros does not
+// GitHub normalizes asset names by replacing spaces with dots. Kokoro does not
 // currently have spaces, but this keeps the Homebrew scaffolding future-proof.
 function githubReleaseAssetBasename(localBasename: string): string {
   return localBasename.replace(/ /g, '.');
@@ -202,7 +202,7 @@ async function writeLatestUpdaterJson(
     platforms: {
       [platformKey]: {
         signature,
-        url: `https://github.com/nikitadrokin/kokoros/releases/download/v${version}/${updaterAssetName}`,
+        url: `https://github.com/nikitadrokin/kokoro/releases/download/v${version}/${updaterAssetName}`,
       },
     },
   };
@@ -278,7 +278,7 @@ async function withUpdaterArtifactsEnabled(
 //   content = content.replace(/^(\s*sha256\s+")[^"]*(")/m, `$1${sha256}$2`);
 //   content = content.replace(
 //     /^(\s*url\s+")[^"]+(")/m,
-//     `$1https://github.com/nikitadrokin/kokoros/releases/download/v#{version}/${urlFilename}$2`,
+//     `$1https://github.com/nikitadrokin/kokoro/releases/download/v#{version}/${urlFilename}$2`,
 //   );
 //   await Bun.write(caskFilePath, content);
 // }
@@ -498,7 +498,7 @@ async function main(): Promise<void> {
     updaterArchivePath,
   );
 
-  // Homebrew is not wired up for Kokoros yet.
+  // Homebrew is not wired up for Kokoro yet.
   // await updateHomebrewCaskIfConfigured(versionToBuild, sha256, dmgPath);
 
   try {
