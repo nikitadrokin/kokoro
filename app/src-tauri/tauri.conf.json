@@ -1,9 +1,9 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Kokoros",
-  "mainBinaryName": "kokoros",
+  "productName": "Kokoro",
+  "mainBinaryName": "kokoro",
   "version": "0.0.17",
-  "identifier": "me.nkdr.kokoros",
+  "identifier": "me.nkdr.kokoro",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:3000",
@@ -13,7 +13,7 @@
   "app": {
     "windows": [
       {
-        "title": "Kokoros",
+        "title": "Kokoro",
         "width": 800,
         "height": 600,
         "minWidth": 560,
@@ -61,7 +61,7 @@
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDVBM0U5OURBOERDMUM5MTAKUldRUXljR04ycGsrV21tb3pwamNDdVZrZVErbWdiRUNvUEI5b2JqMWR3OGpnOFdiUWNkU29uY3EK",
       "endpoints": [
-        "https://github.com/nikitadrokin/kokoros/releases/latest/download/latest.json"
+        "https://github.com/nikitadrokin/kokoro/releases/latest/download/latest.json"
       ]
     }
   }

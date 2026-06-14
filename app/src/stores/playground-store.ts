@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 export const DEFAULT_PLAYGROUND_TEXT =
-  'Hello from Kokoros. Generate speech here, then play it immediately in the app.';
+  'Hello from Kokoro. Generate speech here, then play it immediately in the app.';
 
 type PlaygroundState = {
   draftText: string;
@@ -16,7 +16,7 @@ export const usePlaygroundStore = create<PlaygroundState>()(
       setDraftText: (draftText) => set({ draftText }),
     }),
     {
-      name: 'kokoros-playground',
+      name: 'kokoro-playground',
       storage: createJSONStorage(() => localStorage),
     },
   ),

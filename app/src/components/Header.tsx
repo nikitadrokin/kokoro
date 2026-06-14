@@ -22,7 +22,7 @@ const speechItems = [
   {
     to: '/',
     label: 'Generate speech',
-    description: 'Generate and audition Kokoros audio',
+    description: 'Generate and audition Kokoro audio',
     icon: AudioLinesIcon,
   },
   {
@@ -64,12 +64,12 @@ export default function Header() {
           <Link
             to='/'
             className='inline-flex shrink-0 items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight no-underline transition-colors hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30'
-            aria-label='Go to Kokoros speech playground'
+            aria-label='Go to Kokoro speech playground'
           >
             <span className='grid size-7 place-items-center rounded-full border bg-card text-primary shadow-sm'>
               <AudioLinesIcon className='size-4' aria-hidden='true' />
             </span>
-            <span className='hidden sm:inline'>Kokoros</span>
+            <span className='hidden sm:inline'>Kokoro</span>
           </Link>
 
           <NavigationMenuItem>

@@ -14,7 +14,7 @@ export const Route = createFileRoute('/speech/optimize')({
 });
 
 const SAMPLE_MARKDOWN = `# Launch notes
-Kokoros can read pasted markdown
+Kokoro can read pasted markdown
 
 - Convert $40 into spoken currency
 - Add pauses when lines end without punctuation

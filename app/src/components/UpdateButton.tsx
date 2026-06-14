@@ -49,7 +49,7 @@ export default function UpdateButton() {
       if (response.status === 'upToDate') {
         setAvailableVersion(null);
         setState('upToDate');
-        toast.success('Kokoros is up to date.', { id: toastId });
+        toast.success('Kokoro is up to date.', { id: toastId });
         return;
       }
 
@@ -57,8 +57,8 @@ export default function UpdateButton() {
       setState('ready');
       toast.success(
         response.version
-          ? `Kokoros v${response.version} is downloaded and ready to install.`
-          : 'A Kokoros update is downloaded and ready to install.',
+          ? `Kokoro v${response.version} is downloaded and ready to install.`
+          : 'A Kokoro update is downloaded and ready to install.',
         { id: toastId },
       );
     } catch (error) {
@@ -83,7 +83,7 @@ export default function UpdateButton() {
       if (response.status === 'upToDate') {
         setAvailableVersion(null);
         setState('upToDate');
-        toast.success('Kokoros is already up to date.', { id: toastId });
+        toast.success('Kokoro is already up to date.', { id: toastId });
         return;
       }
 

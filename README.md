@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="app/src-tauri/icons/icon.png" alt="Kokoros app icon" width="96" height="96">
+<img src="app/src-tauri/icons/icon.png" alt="Kokoro app icon" width="96" height="96">
 
-# Kokoros
+# Kokoro
 
 Local Kokoro text-to-speech in a desktop playground, backed by a fast Rust sidecar.
 
@@ -13,7 +13,7 @@ Local Kokoro text-to-speech in a desktop playground, backed by a fast Rust sidec
 
 </div>
 
-Kokoros wraps the Kokoro ONNX text-to-speech model in two ways:
+Kokoro wraps the Kokoro ONNX text-to-speech model in two ways:
 
 - A Tauri desktop app for writing text, choosing a voice, generating speech, and previewing the output immediately.
 - A Rust CLI and library workspace for batch generation, streaming, word-level timestamp sidecars, and an OpenAI-compatible local speech endpoint.
@@ -82,7 +82,7 @@ You can run the same engine directly from the Rust workspace. From the repositor
 cargo run --manifest-path cli/Cargo.toml --release -p koko -- \
   --model checkpoints/kokoro-v1.0.onnx \
   --data data/voices-v1.0.bin \
-  text "Hello from Kokoros." \
+  text "Hello from Kokoro." \
   --output hello.wav
 ```
 
@@ -113,7 +113,7 @@ curl -X POST http://localhost:3000/v1/audio/speech \
   -H "Content-Type: application/json" \
   -d '{
     "model": "tts-1",
-    "input": "Hello from the Kokoros speech endpoint.",
+    "input": "Hello from the Kokoro speech endpoint.",
     "voice": "af_sky"
   }' \
   --output speech.wav
@@ -141,7 +141,7 @@ bun run release:tauri
 If macOS blocks the app from opening, you may need to run this command:
 
 ```bash
-xattr -cr /Applications/Kokoros.app
+xattr -cr /Applications/Kokoro.app
 ```
 
 The Tauri bundle includes:
@@ -187,4 +187,4 @@ cargo check --manifest-path cli/Cargo.toml
 
 ## Acknowledgements
 
-Kokoros builds on the Kokoro TTS model ecosystem and the Rust Kokoro CLI/library work in `cli/`.
+Kokoro builds on the Kokoro TTS model ecosystem and the Rust Kokoro CLI/library work in `cli/`.

@@ -1,4 +1,4 @@
-# Kokoros Roadmap
+# Kokoro Roadmap
 
 This roadmap focuses on changes that fit the current desktop app: a local speech playground with saved WAV files, a Tauri sidecar, and a React UI.
 

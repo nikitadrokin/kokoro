@@ -6,8 +6,8 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 REPO_ROOT=$(cd "$ROOT/.." && pwd)
 cd "$ROOT"
 
-APP_NAME="Kokoros"
-BUNDLE_ID="me.nkdr.kokoros"
+APP_NAME="Kokoro"
+BUNDLE_ID="me.nkdr.kokoro"
 MACOS_MIN_VERSION="14.0"
 SIGNING_MODE=${SIGNING_MODE:-}
 APP_IDENTITY=${APP_IDENTITY:-}

@@ -252,7 +252,7 @@ function PlaygroundPage() {
                   className="min-h-72 resize-y"
                   value={text}
                   onChange={(event) => setText(event.target.value)}
-                  placeholder="Enter text for Kokoros to synthesize."
+                  placeholder="Enter text for Kokoro to synthesize."
                 />
               </div>
 

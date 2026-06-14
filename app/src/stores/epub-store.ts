@@ -56,7 +56,7 @@ export const useEpubStore = create<EpubState>()(
       clearLastOpenedBook: () => set({ lastOpenedBook: null }),
     }),
     {
-      name: 'kokoros-epub',
+      name: 'kokoro-epub',
       storage: createJSONStorage(() => localStorage),
     },
   ),

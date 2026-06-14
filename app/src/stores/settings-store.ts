@@ -20,7 +20,7 @@ export const useSettingsStore = create<SettingsState>()(
       setPlaybackMode: (playbackMode) => set({ playbackMode }),
     }),
     {
-      name: 'kokoros-settings',
+      name: 'kokoro-settings',
       storage: createJSONStorage(() => localStorage),
     },
   ),
