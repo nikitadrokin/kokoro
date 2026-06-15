@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { optimizeMarkdownForSpeech } from './tts-text';
+import {
+  optimizeMarkdownForSpeech,
+  optimizePlainTextForSpeech,
+} from './tts-text';
 
 describe('optimizeMarkdownForSpeech', () => {
   it('adds audible punctuation to markdown headings, lines, and lists', () => {
@@ -39,5 +42,28 @@ second item;`);
 
     expect(result).toBe(`Name, Price.
 Basic, 9 dollars.`);
+  });
+});
+
+describe('optimizePlainTextForSpeech', () => {
+  it('expands common abbreviations to spoken form', () => {
+    expect(optimizePlainTextForSpeech('Bring snacks, drinks, etc.')).toBe(
+      'Bring snacks, drinks, et cetera.',
+    );
+    expect(
+      optimizePlainTextForSpeech('Use a fruit, e.g. an apple, i.e. produce.'),
+    ).toBe('Use a fruit, for example an apple, that is produce.');
+    expect(optimizePlainTextForSpeech('See Dr. Smith vs. the others.')).toBe(
+      'See Doctor Smith versus the others.',
+    );
+    expect(optimizePlainTextForSpeech('Read No. 5 on p. 12.')).toBe(
+      'Read number 5 on page 12.',
+    );
+  });
+
+  it('reads numeric ranges with "to"', () => {
+    expect(optimizePlainTextForSpeech('The years 1990–1995 were busy')).toBe(
+      'The years 1990 to 1995 were busy.',
+    );
   });
 });

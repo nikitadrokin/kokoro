@@ -12,10 +12,7 @@ const SPEECH_BLOCK_SELECTOR = [
   'blockquote',
   'dd',
   'dt',
-  'caption',
   'figcaption',
-  'td',
-  'th',
 ].join(',');
 
 const SKIP_SELECTOR = [
@@ -25,6 +22,8 @@ const SKIP_SELECTOR = [
   'canvas',
   'audio',
   'video',
+  'pre',
+  'code',
   'nav',
   'aside',
   '[hidden]',
@@ -102,6 +101,23 @@ function extractSpeechTextFromRoot(
       }
     }
 
+    // Skip everything inside a table (cells, nested tables, captions). The
+    // grid itself is replaced by a short caption announcement, if present.
+    if (element.parentElement?.closest('table')) {
+      continue;
+    }
+
+    if (element.matches('table')) {
+      if (!shouldSkipElement(element)) {
+        const tableLine = tableSpeechLine(element);
+        if (tableLine) {
+          lines.push(tableLine);
+          lastAddedBlock = element;
+        }
+      }
+      continue;
+    }
+
     if (!element.matches(SPEECH_BLOCK_SELECTOR) || shouldSkipElement(element)) {
       continue;
     }
@@ -128,6 +144,22 @@ export function extractSelectedSpeechText(
   const selection = doc?.getSelection();
   const text = selection?.toString().trim() ?? '';
   return optimizePlainTextForSpeech(text);
+}
+
+/**
+ * Tables read poorly cell-by-cell, so the grid is omitted from narration. If
+ * the table has a caption/title we announce it so the listener knows a table
+ * was skipped; otherwise the table is dropped entirely.
+ */
+function tableSpeechLine(table: Element): string {
+  const caption = table
+    .querySelector('caption')
+    ?.textContent?.replace(/\s+/g, ' ')
+    .trim();
+  if (!caption) {
+    return '';
+  }
+  return /^table\b/i.test(caption) ? caption : `Table: ${caption}`;
 }
 
 function shouldSkipElement(element: Element): boolean {

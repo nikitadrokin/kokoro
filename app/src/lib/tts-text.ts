@@ -149,12 +149,46 @@ function cleanMarkdownLine(
   };
 }
 
+/**
+ * Abbreviations that TTS engines mishandle or spell out letter-by-letter.
+ * Each entry expands a written form to its spoken form. Ordered so that
+ * multi-token forms (e.g. "e.g.") are tried before single-token ones.
+ */
+const ABBREVIATION_EXPANSIONS: ReadonlyArray<readonly [RegExp, string]> = [
+  [/\be\.\s?g\.(?=\s|$|[,;:])/gi, 'for example'],
+  [/\bi\.\s?e\.(?=\s|$|[,;:])/gi, 'that is'],
+  [/\betc\.(?=\s|$|[,;:])/gi, 'et cetera'],
+  [/\bet al\.(?=\s|$|[,;:])/gi, 'and others'],
+  [/\bvs\.?(?=\s|$|[,;:])/gi, 'versus'],
+  [/\bcf\.(?=\s|$|[,;:])/gi, 'compare'],
+  [/\bca\.(?=\s*\d)/gi, 'circa '],
+  [/\bNo\.(?=\s*\d)/g, 'number '],
+  [/\bpp\.(?=\s*\d)/gi, 'pages '],
+  [/\bp\.(?=\s*\d)/gi, 'page '],
+  [/\bFig\.(?=\s|$|\s*\d)/gi, 'Figure '],
+  [/\bDr\.(?=\s)/g, 'Doctor'],
+  [/\bMr\.(?=\s)/g, 'Mister'],
+  [/\bMrs\.(?=\s)/g, 'Missus'],
+  [/\bMs\.(?=\s)/g, 'Miss'],
+  [/\bProf\.(?=\s)/g, 'Professor'],
+];
+
+function expandAbbreviations(text: string): string {
+  let result = text;
+  for (const [pattern, replacement] of ABBREVIATION_EXPANSIONS) {
+    result = result.replace(pattern, replacement);
+  }
+  return result;
+}
+
 function normalizeSpeechText(text: string): string {
-  return text
-    .replace(/`([^`]+)`/g, '$1')
-    .replace(/[*_~]+/g, '')
-    .replace(/\^\[([^\]]+)\]/g, '$1')
-    .replace(/\[\^?[\w-]+\]/g, '')
+  return expandAbbreviations(
+    text
+      .replace(/`([^`]+)`/g, '$1')
+      .replace(/[*_~]+/g, '')
+      .replace(/\^\[([^\]]+)\]/g, '$1')
+      .replace(/\[\^?[\w-]+\]/g, ''),
+  )
     .replace(/https?:\/\/[^\s)]+/gi, formatUrlForSpeech)
     .replace(
       /(^|[^\w])\$((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?|\.\d{1,2})(?=\b|[^\d])/g,
@@ -163,12 +197,15 @@ function normalizeSpeechText(text: string): string {
       },
     )
     .replace(/(\d+(?:\.\d+)?)%/g, '$1 percent')
+    // Numeric ranges: "10–20", "10-20", "1990 to 1995" stays readable as "to".
+    .replace(/(\d)\s*[–—-]\s*(?=\d)/g, '$1 to ')
     .replace(/&amp;/gi, ' and ')
     .replace(/&nbsp;/gi, ' ')
     .replace(/&mdash;|&ndash;/gi, ', ')
     .replace(/&/g, ' and ')
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
+    .replace(/\.{3,}/g, '. ')
     .replace(/[–—]/g, ', ')
     .replace(/\s+/g, ' ')
     .trim();
