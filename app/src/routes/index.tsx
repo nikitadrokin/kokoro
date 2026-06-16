@@ -31,6 +31,7 @@ import {
   estimateAudioDurationSec,
   formatDuration,
 } from '@/lib/speech-audio';
+import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
 import { VOICE_OPTIONS } from '@/lib/voice-options';
 import { usePlaygroundStore } from '@/stores/playground-store';
 import { isPlaybackMode, useSettingsStore } from '@/stores/settings-store';
@@ -135,9 +136,12 @@ function PlaygroundPage() {
   }, [loadSavedAudio]);
 
   const handleGenerate = async () => {
-    setEstimatedDurationSec(estimateAudioDurationSec(text));
+    // Optimize the script for speech behind the scenes, but leave the
+    // textarea showing the user's original text untouched.
+    const optimizedText = optimizeMarkdownForSpeech(text) || text;
+    setEstimatedDurationSec(estimateAudioDurationSec(optimizedText));
     const response = await generateStream({
-      text,
+      text: optimizedText,
       style,
       saveToDisk: playbackMode !== 'stream',
       streamAudio: playbackMode !== 'save-silent',
