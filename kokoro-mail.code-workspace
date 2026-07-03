@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../Tools/Zero"
+		}
+	],
+	"settings": {
+		"notebook.defaultFormatter": "biomejs.biome",
+		"notebook.formatOnSave.enabled": true
+	}
+}
