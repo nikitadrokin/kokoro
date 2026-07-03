@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TroubleshootRouteImport } from './routes/troubleshoot'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as EpubRouteImport } from './routes/epub'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,6 +18,11 @@ import { Route as MockupsStudioRouteImport } from './routes/mockups/studio'
 import { Route as MockupsConsoleRouteImport } from './routes/mockups/console'
 import { Route as MockupsAuroraRouteImport } from './routes/mockups/aurora'
 
+const TroubleshootRoute = TroubleshootRouteImport.update({
+  id: '/troubleshoot',
+  path: '/troubleshoot',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LibraryRoute = LibraryRouteImport.update({
   id: '/library',
   path: '/library',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
+  '/troubleshoot': typeof TroubleshootRoute
   '/mockups/aurora': typeof MockupsAuroraRoute
   '/mockups/console': typeof MockupsConsoleRoute
   '/mockups/studio': typeof MockupsStudioRoute
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
+  '/troubleshoot': typeof TroubleshootRoute
   '/mockups/aurora': typeof MockupsAuroraRoute
   '/mockups/console': typeof MockupsConsoleRoute
   '/mockups/studio': typeof MockupsStudioRoute
@@ -76,6 +84,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
+  '/troubleshoot': typeof TroubleshootRoute
   '/mockups/aurora': typeof MockupsAuroraRoute
   '/mockups/console': typeof MockupsConsoleRoute
   '/mockups/studio': typeof MockupsStudioRoute
@@ -87,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/epub'
     | '/library'
+    | '/troubleshoot'
     | '/mockups/aurora'
     | '/mockups/console'
     | '/mockups/studio'
@@ -96,6 +106,7 @@ export interface FileRouteTypes {
     | '/'
     | '/epub'
     | '/library'
+    | '/troubleshoot'
     | '/mockups/aurora'
     | '/mockups/console'
     | '/mockups/studio'
@@ -105,6 +116,7 @@ export interface FileRouteTypes {
     | '/'
     | '/epub'
     | '/library'
+    | '/troubleshoot'
     | '/mockups/aurora'
     | '/mockups/console'
     | '/mockups/studio'
@@ -115,6 +127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   EpubRoute: typeof EpubRoute
   LibraryRoute: typeof LibraryRoute
+  TroubleshootRoute: typeof TroubleshootRoute
   MockupsAuroraRoute: typeof MockupsAuroraRoute
   MockupsConsoleRoute: typeof MockupsConsoleRoute
   MockupsStudioRoute: typeof MockupsStudioRoute
@@ -123,6 +136,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/troubleshoot': {
+      id: '/troubleshoot'
+      path: '/troubleshoot'
+      fullPath: '/troubleshoot'
+      preLoaderRoute: typeof TroubleshootRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/library': {
       id: '/library'
       path: '/library'
@@ -179,6 +199,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   EpubRoute: EpubRoute,
   LibraryRoute: LibraryRoute,
+  TroubleshootRoute: TroubleshootRoute,
   MockupsAuroraRoute: MockupsAuroraRoute,
   MockupsConsoleRoute: MockupsConsoleRoute,
   MockupsStudioRoute: MockupsStudioRoute,

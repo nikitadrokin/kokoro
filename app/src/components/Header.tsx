@@ -4,6 +4,7 @@ import {
   BookOpenIcon,
   HeadphonesIcon,
   LayoutGridIcon,
+  ShieldAlertIcon,
   SparklesIcon,
   SquarePenIcon,
   WandSparkles,
@@ -16,6 +17,8 @@ import {
 } from '@/stores/synthesis-lock-store';
 import ThemeToggle from './ThemeToggle';
 import UpdateButton from './UpdateButton';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -24,7 +27,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from './ui/navigation-menu';
-import { Badge } from './ui/badge';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 const speechItems = [
   {
@@ -76,6 +79,8 @@ const mockupItems = [
     icon: WavesIcon,
   },
 ] as const;
+
+const troubleshootLabel = 'Fix "not verified" / codesign errors';
 
 export default function Header() {
   const pathname = useRouterState({
@@ -224,6 +229,22 @@ export default function Header() {
                 dev
               </Badge>
             )}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <Button
+                    variant='outline'
+                    size='icon-sm'
+                    className='shrink-0 rounded-full'
+                    aria-label={troubleshootLabel}
+                    render={<Link to='/troubleshoot' />}
+                  />
+                }
+              >
+                <ShieldAlertIcon className='size-4' aria-hidden='true' />
+              </TooltipTrigger>
+              <TooltipContent align='end'>{troubleshootLabel}</TooltipContent>
+            </Tooltip>
             <UpdateButton />
             <ThemeToggle />
           </div>
