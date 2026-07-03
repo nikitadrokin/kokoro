@@ -10,6 +10,7 @@ import {
   revokeBlobUrl,
   SPEECH_STREAM_CHUNK_EVENT,
 } from '@/lib/speech-audio';
+import { useSynthesisLockStore } from '@/stores/synthesis-lock-store';
 
 /** Computes the playback duration (in seconds) of a raw float32 audio chunk. */
 function chunkDurationSec(
@@ -189,6 +190,7 @@ export function useSpeechStreamGeneration({
 
       setError('');
       setIsGenerating(true);
+      useSynthesisLockStore.getState().beginSynthesis();
       setGeneratedDurationSec(0);
       activeStreamIdRef.current = streamId;
       audioRef.current?.pause();
@@ -298,6 +300,7 @@ export function useSpeechStreamGeneration({
         streamCleanupRef.current?.();
         streamCleanupRef.current = null;
         setIsGenerating(false);
+        useSynthesisLockStore.getState().endSynthesis();
       }
     },
     [

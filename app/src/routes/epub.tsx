@@ -1691,7 +1691,7 @@ function EpubReaderPage() {
                   variant='ghost'
                   size='icon-sm'
                   onClick={() => prevChapter && void onPickChapter(prevChapter)}
-                  disabled={!prevChapter || isBusy}
+                  disabled={!prevChapter || isBusy || isNarrationBusy}
                   aria-label='Previous chapter'
                   title='Previous chapter'
                 >
@@ -1702,7 +1702,7 @@ function EpubReaderPage() {
                   variant='ghost'
                   size='icon-sm'
                   onClick={() => nextChapter && void onPickChapter(nextChapter)}
-                  disabled={!nextChapter || isBusy}
+                  disabled={!nextChapter || isBusy || isNarrationBusy}
                   aria-label='Next chapter'
                   title='Next chapter'
                 >

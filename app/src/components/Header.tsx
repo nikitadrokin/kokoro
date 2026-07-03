@@ -10,6 +10,10 @@ import {
   WavesIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  selectIsSynthesisLocked,
+  useSynthesisLockStore,
+} from '@/stores/synthesis-lock-store';
 import ThemeToggle from './ThemeToggle';
 import UpdateButton from './UpdateButton';
 import {
@@ -77,13 +81,18 @@ export default function Header() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
+  const isNavigationLocked = useSynthesisLockStore(selectIsSynthesisLocked);
   const isSpeechActive = pathname === '/' || pathname.startsWith('/speech');
   const isMockupsActive = pathname.startsWith('/mockups');
 
   return (
     <header
       data-tauri-drag-region
-      className='sticky top-0 z-50 border-b bg-background/90 pl-[88px] pr-4 backdrop-blur supports-backdrop-filter:bg-background/70'
+      aria-hidden={isNavigationLocked}
+      className={cn(
+        'sticky top-0 z-50 border-b bg-background/90 pl-[88px] pr-4 backdrop-blur supports-backdrop-filter:bg-background/70',
+        isNavigationLocked && 'pointer-events-none opacity-60',
+      )}
     >
       <NavigationMenu className='min-w-full flex-1 justify-start' align='start'>
         <NavigationMenuList className='w-full justify-start gap-1 overflow-x-auto py-2'>
