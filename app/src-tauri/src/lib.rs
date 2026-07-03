@@ -932,6 +932,7 @@ async fn install_prepared_app_update(
         .map_err(|error| format!("Failed to install update: {error}"))?;
 
     clear_installed_app_quarantine(quarantine_target.as_deref())?;
+    repair_installed_app_signature_if_needed(quarantine_target.as_deref())?;
     app.request_restart();
 
     Ok(AppUpdateResponse {
@@ -975,8 +976,77 @@ fn clear_installed_app_quarantine(app_bundle: Option<&Path>) -> Result<(), Strin
     }
 }
 
+#[cfg(target_os = "macos")]
+fn repair_installed_app_signature_if_needed(app_bundle: Option<&Path>) -> Result<(), String> {
+    let app_bundle = app_bundle.ok_or_else(|| "Missing app bundle path".to_string())?;
+    if verify_app_signature(app_bundle) {
+        return Ok(());
+    }
+
+    let macos_dir = app_bundle.join("Contents").join("MacOS");
+    let entries = fs::read_dir(&macos_dir)
+        .map_err(|error| format!("Failed to read `{}`: {error}", macos_dir.display()))?;
+
+    for entry in entries {
+        let path = entry.map_err(|error| error.to_string())?.path();
+        if path.is_file() {
+            ad_hoc_codesign(&path)?;
+        }
+    }
+
+    ad_hoc_codesign(app_bundle)?;
+
+    if verify_app_signature(app_bundle) {
+        Ok(())
+    } else {
+        Err(format!(
+            "Installed app signature still failed verification after ad-hoc signing `{}`",
+            app_bundle.display()
+        ))
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn verify_app_signature(app_bundle: &Path) -> bool {
+    std::process::Command::new("/usr/bin/codesign")
+        .args(["--verify", "--deep", "--strict"])
+        .arg(app_bundle)
+        .status()
+        .map(|status| status.success())
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "macos")]
+fn ad_hoc_codesign(path: &Path) -> Result<(), String> {
+    let output = std::process::Command::new("/usr/bin/codesign")
+        .args(["--force", "--sign", "-", "--timestamp=none"])
+        .arg(path)
+        .output()
+        .map_err(|error| format!("Failed to run codesign: {error}"))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        Err(format!(
+            "Failed to ad-hoc sign `{}`: {}",
+            path.display(),
+            if stderr.is_empty() {
+                "codesign exited without an error message".to_string()
+            } else {
+                stderr
+            }
+        ))
+    }
+}
+
 #[cfg(not(target_os = "macos"))]
 fn clear_installed_app_quarantine(_app_bundle: Option<&Path>) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn repair_installed_app_signature_if_needed(_app_bundle: Option<&Path>) -> Result<(), String> {
     Ok(())
 }
 

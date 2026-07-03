@@ -44,4 +44,10 @@ const target = join(binariesDir, `koko-${host}${exe}`);
 copyFileSync(source, target);
 chmodSync(target, 0o755);
 
+if (process.platform === 'darwin') {
+  execFileSync('codesign', ['--force', '--sign', '-', '--timestamp=none', target], {
+    stdio: 'inherit',
+  });
+}
+
 console.log(`Sidecar copied to ${target}`);
