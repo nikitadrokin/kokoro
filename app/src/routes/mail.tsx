@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 import {
   Activity,
+  type RefObject,
   useCallback,
   useEffect,
   useRef,
   useState,
-  type RefObject,
 } from 'react';
 import { MailConnectSetup } from '@/components/MailConnectSetup';
 import { Badge } from '@/components/ui/badge';
@@ -86,6 +86,9 @@ const MAILBOX_PAGE_SIZE = 15;
 
 /** Scroll distance from the bottom that triggers loading the next page. */
 const MAILBOX_SCROLL_LOAD_THRESHOLD_PX = 120;
+
+/** Page width where the side-by-side layout kicks in; keep in sync with the @5xl (64rem) container variants below. */
+const MAIL_WIDE_LAYOUT_MIN_PX = 1024;
 
 /** Valid mailbox category values for the category select. */
 const MAIL_MAILBOX_VALUES: ReadonlyArray<MailMailbox> = MAILBOX_OPTIONS.map(
@@ -222,26 +225,26 @@ function MailAudioPlayer({ audioRef, audioUrl }: MailAudioPlayerProps) {
   const seekMax = durationSec > 0 ? durationSec : 0;
 
   return (
-    <div className='flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5 ring-1 ring-foreground/5'>
+    <div className="flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5 ring-1 ring-foreground/5">
       {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
       <audio
         ref={audioRef}
         src={audioUrl}
-        preload='metadata'
-        className='hidden'
+        preload="metadata"
+        className="hidden"
       />
       <Button
-        type='button'
-        size='icon-sm'
-        variant='default'
+        type="button"
+        size="icon-sm"
+        variant="default"
         onClick={handleTogglePlayback}
         aria-label={isPlaying ? 'Pause' : 'Play'}
-        className='shrink-0'
+        className="shrink-0"
       >
         {isPlaying ? (
-          <Pause className='size-4' />
+          <Pause className="size-4" />
         ) : (
-          <Play className='size-4 fill-current' />
+          <Play className="size-4 fill-current" />
         )}
       </Button>
       <Slider
@@ -257,10 +260,10 @@ function MailAudioPlayer({ audioRef, audioUrl }: MailAudioPlayerProps) {
           isSeekingRef.current = false;
         }}
         disabled={seekMax <= 0}
-        aria-label='Seek'
-        className='min-w-0 flex-1'
+        aria-label="Seek"
+        className="min-w-0 flex-1"
       />
-      <span className='shrink-0 text-muted-foreground text-xs tabular-nums'>
+      <span className="shrink-0 text-muted-foreground text-xs tabular-nums">
         {formatDuration(durationSec || currentTimeSec)}
       </span>
       <Select
@@ -273,13 +276,13 @@ function MailAudioPlayer({ audioRef, audioUrl }: MailAudioPlayerProps) {
         }}
       >
         <SelectTrigger
-          size='sm'
-          className='h-8 w-19 shrink-0'
-          aria-label='Playback speed'
+          size="sm"
+          className="h-8 w-19 shrink-0"
+          aria-label="Playback speed"
         >
           <SelectValue />
         </SelectTrigger>
-        <SelectContent align='end'>
+        <SelectContent align="end">
           {PLAYBACK_SPEED_OPTIONS.map((speed) => (
             <SelectItem key={speed} value={String(speed)}>
               {formatSpeedLabel(speed)}
@@ -319,6 +322,7 @@ function MailListenPage() {
   const [narrowPane, setNarrowPane] = useState<NarrowMailPane>('list');
   const [isNarrowLayout, setIsNarrowLayout] = useState(false);
   const [isRevealingAudio, setIsRevealingAudio] = useState(false);
+  const pageRef = useRef<HTMLElement | null>(null);
   const threadListRef = useRef<HTMLDivElement | null>(null);
   const nextPageTokenRef = useRef<string | null>(null);
   const isLoadingMoreThreadsRef = useRef(false);
@@ -407,17 +411,24 @@ function MailListenPage() {
     };
   }, [refreshAuth, setClientId, setClientSecret]);
 
+  // Track the page's own width (not the viewport) so the pane logic matches
+  // the @5xl container-query breakpoint even when the sidebar is open.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the connected/bootstrapping states swap which <main> renders, so the observer must re-attach to the new element.
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 1023px)');
-    const syncLayout = () => {
-      setIsNarrowLayout(mediaQuery.matches);
-    };
-    syncLayout();
-    mediaQuery.addEventListener('change', syncLayout);
+    const pageElement = pageRef.current;
+    if (!pageElement) {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const width =
+        entries[0]?.contentBoxSize?.[0]?.inlineSize ?? pageElement.clientWidth;
+      setIsNarrowLayout(width < MAIL_WIDE_LAYOUT_MIN_PX);
+    });
+    observer.observe(pageElement);
     return () => {
-      mediaQuery.removeEventListener('change', syncLayout);
+      observer.disconnect();
     };
-  }, []);
+  }, [authStatus?.connected, isBootstrapping]);
 
   const handleLogin = async () => {
     setPageError('');
@@ -490,11 +501,7 @@ function MailListenPage() {
 
   const loadMoreThreads = useCallback(async () => {
     const pageToken = nextPageTokenRef.current;
-    if (
-      !pageToken ||
-      isLoadingThreads ||
-      isLoadingMoreThreadsRef.current
-    ) {
+    if (!pageToken || isLoadingThreads || isLoadingMoreThreadsRef.current) {
       return;
     }
 
@@ -646,9 +653,9 @@ function MailListenPage() {
 
   if (isBootstrapping) {
     return (
-      <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6'>
-        <p className='flex items-center gap-2 text-muted-foreground text-sm'>
-          <LoaderCircle className='size-4 animate-spin' />
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 @xl/content:px-6 px-4 py-6">
+        <p className="flex items-center gap-2 text-muted-foreground text-sm">
+          <LoaderCircle className="size-4 animate-spin" />
           Checking Gmail connection…
         </p>
       </main>
@@ -674,34 +681,37 @@ function MailListenPage() {
   const showDetailPane = !isNarrowLayout || narrowPane === 'detail';
 
   return (
-    <main className='flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8'>
-      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
-        <div className='flex flex-col gap-2'>
-          <div className='flex items-center gap-2'>
-            <Mail className='size-5 text-primary' aria-hidden='true' />
-            <h1 className='font-semibold text-2xl tracking-tight'>
+    <main
+      ref={pageRef}
+      className="flex w-full flex-col gap-6 @5xl/content:px-8 @xl/content:px-6 px-4 py-6"
+    >
+      <div className="flex @xl/content:flex-row flex-col @xl/content:items-start @xl/content:justify-between gap-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <Mail className="size-5 text-primary" aria-hidden="true" />
+            <h1 className="font-semibold text-2xl tracking-tight">
               Mail listen
             </h1>
-            <Badge variant='secondary' className='rounded-full'>
+            <Badge variant="secondary" className="rounded-full">
               PoC
             </Badge>
           </div>
-          <p className='max-w-2xl text-muted-foreground text-sm leading-6'>
+          <p className="max-w-2xl text-muted-foreground text-sm leading-6">
             Pick an unread, important, or newsletter thread and generate Kokoro
             audio on-device.
           </p>
         </div>
-        <div className='flex flex-wrap items-center gap-2'>
-          <Badge className='rounded-full' variant='secondary'>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge className="rounded-full" variant="secondary">
             {authStatus?.email}
           </Badge>
           <Button
-            type='button'
-            variant='outline'
-            size='sm'
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => void handleLogout()}
           >
-            <LogOut className='size-4' />
+            <LogOut className="size-4" />
             Disconnect
           </Button>
         </div>
@@ -709,33 +719,33 @@ function MailListenPage() {
 
       {displayError ? (
         <div
-          role='alert'
-          className='rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm'
+          role="alert"
+          className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm"
         >
           {displayError}
         </div>
       ) : null}
 
-      <div className='lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8'>
+      <div className="@5xl/content:grid @5xl/content:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] @5xl/content:items-start @5xl/content:gap-8">
         <Activity
           mode={showListPane ? 'visible' : 'hidden'}
-          name='mail-mailbox-list'
+          name="mail-mailbox-list"
         >
           <section
             className={cn(
               'flex min-w-0 flex-col gap-4',
-              'lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)]',
+              '@5xl/content:sticky @5xl/content:top-14 @5xl/content:h-[calc(100dvh-3.5rem)]',
             )}
           >
-            <div className='flex shrink-0 items-center justify-between gap-2'>
-              <h2 className='font-heading font-medium text-base'>Mailbox</h2>
+            <div className="flex shrink-0 items-center justify-between gap-2">
+              <h2 className="font-heading font-medium text-base">Mailbox</h2>
               <Button
-                type='button'
-                size='sm'
-                variant='ghost'
+                type="button"
+                size="sm"
+                variant="ghost"
                 onClick={() => void loadThreads()}
                 disabled={isLoadingThreads}
-                aria-label='Refresh threads'
+                aria-label="Refresh threads"
               >
                 <RefreshCw
                   className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
@@ -743,7 +753,7 @@ function MailListenPage() {
               </Button>
             </div>
 
-            <div className='grid shrink-0 gap-2'>
+            <div className="grid shrink-0 gap-2">
               <Label>Category</Label>
               <Select
                 value={mailbox}
@@ -753,7 +763,7 @@ function MailListenPage() {
                   }
                 }}
               >
-                <SelectTrigger className='w-full'>
+                <SelectTrigger className="w-full">
                   <SelectValue>
                     {(value) =>
                       MAILBOX_OPTIONS.find((option) => option.value === value)
@@ -778,16 +788,16 @@ function MailListenPage() {
             <div
               ref={threadListRef}
               onScroll={handleThreadListScroll}
-              className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'
+              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain @5xl/content:pb-2"
             >
-              <div className='grid gap-1'>
+              <div className="grid gap-1">
                 {isLoadingThreads ? (
-                  <p className='px-3 py-3 text-muted-foreground text-sm'>
+                  <p className="px-3 py-3 text-muted-foreground text-sm">
                     Loading…
                   </p>
                 ) : null}
                 {!isLoadingThreads && threads.length === 0 ? (
-                  <p className='px-3 py-3 text-muted-foreground text-sm'>
+                  <p className="px-3 py-3 text-muted-foreground text-sm">
                     No threads in this mailbox.
                   </p>
                 ) : null}
@@ -796,7 +806,7 @@ function MailListenPage() {
                   return (
                     <button
                       key={thread.id}
-                      type='button'
+                      type="button"
                       onClick={() => void handleSelectThread(thread.id)}
                       className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
                         isActive
@@ -804,31 +814,31 @@ function MailListenPage() {
                           : 'hover:bg-muted/50'
                       }`}
                     >
-                      <div className='flex items-start justify-between gap-2'>
-                        <p className='font-medium text-sm leading-5'>
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-medium text-sm leading-5">
                           {thread.subject}
                         </p>
                         {thread.unread ? (
                           <Badge
-                            className='shrink-0 rounded-full'
-                            variant='secondary'
+                            className="shrink-0 rounded-full"
+                            variant="secondary"
                           >
                             unread
                           </Badge>
                         ) : null}
                       </div>
-                      <p className='mt-1 text-muted-foreground text-xs'>
+                      <p className="mt-1 text-muted-foreground text-xs">
                         {thread.from}
                       </p>
-                      <p className='mt-1 line-clamp-2 text-muted-foreground text-xs leading-5'>
+                      <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-5">
                         {thread.snippet}
                       </p>
                     </button>
                   );
                 })}
                 {isLoadingMoreThreads ? (
-                  <p className='flex items-center gap-2 px-3 py-3 text-muted-foreground text-sm'>
-                    <LoaderCircle className='size-4 animate-spin' />
+                  <p className="flex items-center gap-2 px-3 py-3 text-muted-foreground text-sm">
+                    <LoaderCircle className="size-4 animate-spin" />
                     Loading more…
                   </p>
                 ) : null}
@@ -836,7 +846,7 @@ function MailListenPage() {
                 !isLoadingMoreThreads &&
                 nextPageToken === null &&
                 threads.length > 0 ? (
-                  <p className='px-3 py-3 text-center text-muted-foreground text-xs'>
+                  <p className="px-3 py-3 text-center text-muted-foreground text-xs">
                     End of mailbox
                   </p>
                 ) : null}
@@ -847,64 +857,64 @@ function MailListenPage() {
 
         <Activity
           mode={showDetailPane ? 'visible' : 'hidden'}
-          name='mail-listen-detail'
+          name="mail-listen-detail"
         >
-          <Card className='min-w-0 shadow-sm backdrop-blur'>
-            <CardHeader className='gap-3 pb-3'>
-              <div className='flex items-center gap-2'>
+          <Card className="min-w-0 shadow-sm backdrop-blur">
+            <CardHeader className="gap-3 pb-3">
+              <div className="flex items-center gap-2">
                 <Button
-                  type='button'
-                  variant='ghost'
-                  size='sm'
-                  className='-ml-2 lg:hidden'
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="-ml-2 @5xl/content:hidden"
                   onClick={() => setNarrowPane('list')}
                 >
-                  <ArrowLeft className='size-4' />
+                  <ArrowLeft className="size-4" />
                   Mailbox
                 </Button>
-                <CardTitle className='text-base'>Listen</CardTitle>
+                <CardTitle className="text-base">Listen</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className='grid gap-4'>
+            <CardContent className="grid gap-4">
               {isLoadingMessage ? (
-                <p className='flex items-center gap-2 text-muted-foreground text-sm'>
-                  <LoaderCircle className='size-4 animate-spin' />
+                <p className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <LoaderCircle className="size-4 animate-spin" />
                   Extracting email text…
                 </p>
               ) : null}
 
               {!selectedMessage && !isLoadingMessage ? (
-                <p className='text-muted-foreground text-sm'>
+                <p className="text-muted-foreground text-sm">
                   Select a thread to extract speech text and generate audio.
                 </p>
               ) : null}
 
               {selectedMessage ? (
                 <>
-                  <div className='flex items-start justify-between gap-3'>
-                    <div className='grid min-w-0 gap-1'>
-                      <p className='font-medium text-sm'>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="grid min-w-0 gap-1">
+                      <p className="font-medium text-sm">
                         {selectedMessage.subject}
                       </p>
-                      <p className='text-muted-foreground text-xs'>
+                      <p className="text-muted-foreground text-xs">
                         {selectedMessage.from} · {selectedMessage.date}
                       </p>
                     </div>
                     {savedOutputPath ? (
                       <Button
-                        type='button'
-                        variant='ghost'
-                        size='icon-sm'
-                        className='shrink-0'
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        className="shrink-0"
                         onClick={() => void handleRevealInFinder()}
                         disabled={isRevealingAudio}
-                        aria-label='Reveal track in Finder'
-                        title='Reveal track in Finder'
+                        aria-label="Reveal track in Finder"
+                        title="Reveal track in Finder"
                       >
                         {isRevealingAudio ? (
-                          <LoaderCircle className='size-4 animate-spin' />
+                          <LoaderCircle className="size-4 animate-spin" />
                         ) : (
-                          <FolderOpen className='size-4' />
+                          <FolderOpen className="size-4" />
                         )}
                       </Button>
                     ) : null}
@@ -912,7 +922,7 @@ function MailListenPage() {
 
                   {!hasSynthesizedAudio ? (
                     <>
-                      <div className='grid gap-2 sm:max-w-xs'>
+                      <div className="grid @xl/content:max-w-xs gap-2">
                         <Label>Voice</Label>
                         <Select
                           value={style}
@@ -920,7 +930,7 @@ function MailListenPage() {
                             setStyle(value ?? 'af_heart')
                           }
                         >
-                          <SelectTrigger className='w-full'>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -934,26 +944,26 @@ function MailListenPage() {
                         </Select>
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-2'>
+                      <div className="flex flex-wrap items-center gap-2">
                         <Button
-                          type='button'
+                          type="button"
                           onClick={() => void handleGenerate()}
                           disabled={
                             isGenerating || !selectedMessage.speechText.trim()
                           }
                         >
                           {isGenerating ? (
-                            <LoaderCircle className='size-4 animate-spin' />
+                            <LoaderCircle className="size-4 animate-spin" />
                           ) : (
-                            <AudioLinesIcon className='size-4' />
+                            <AudioLinesIcon className="size-4" />
                           )}
                           Generate audio
                         </Button>
                       </div>
 
                       {isGenerating || generatedDurationSec > 0 ? (
-                        <div className='grid gap-2'>
-                          <div className='flex justify-between text-muted-foreground text-xs'>
+                        <div className="grid gap-2">
+                          <div className="flex justify-between text-muted-foreground text-xs">
                             <span>
                               {isGenerating ? 'Generating…' : 'Ready'}
                             </span>
@@ -990,10 +1000,10 @@ function MailListenPage() {
                     />
                   ) : null}
 
-                  <div className='grid gap-2'>
-                    <Label htmlFor='mail-speech-text'>Speech text</Label>
+                  <div className="grid gap-2">
+                    <Label htmlFor="mail-speech-text">Speech text</Label>
                     <Textarea
-                      id='mail-speech-text'
+                      id="mail-speech-text"
                       value={selectedMessage.speechText}
                       onChange={(event) =>
                         setSelectedMessage({
@@ -1001,7 +1011,7 @@ function MailListenPage() {
                           speechText: event.target.value,
                         })
                       }
-                      className='min-h-56 font-mono text-sm'
+                      className="min-h-56 font-mono text-sm"
                     />
                   </div>
                 </>

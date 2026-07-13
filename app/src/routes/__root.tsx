@@ -24,7 +24,7 @@ function RootLayout() {
         <AppSidebar />
         <SidebarInset className="min-w-0 overflow-hidden">
           <div
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain"
+            className="@container/content flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain"
             inert={isSynthesisLocked}
           >
             <AppTopbar />
