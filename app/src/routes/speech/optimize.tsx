@@ -76,9 +76,9 @@ function SpeechTextOptimizerPage() {
   };
 
   return (
-    <main className='min-h-[calc(100vh-4.5rem)] p-4 md:p-6'>
+    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
       <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
-        <div className='flex flex-col gap-3 pb-2 sm:flex-row sm:items-end sm:justify-between'>
+        <div className='flex flex-col gap-3 pb-2 @xl/content:flex-row @xl/content:items-end @xl/content:justify-between'>
           <div className='space-y-1'>
             <h1 className='font-semibold text-2xl tracking-tight'>
               Speech text optimizer
@@ -110,7 +110,7 @@ function SpeechTextOptimizerPage() {
           </div>
         </div>
 
-        <div className='grid min-w-0 grid-cols-1 gap-4 xl:grid-cols-2'>
+        <div className='grid min-w-0 grid-cols-1 gap-4 @7xl/content:grid-cols-2'>
           <Card className='min-w-0 shadow-sm backdrop-blur'>
             <CardHeader>
               <CardTitle>Markdown</CardTitle>
