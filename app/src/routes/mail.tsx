@@ -753,11 +753,20 @@ function MailListenPage() {
               }}
             >
               <SelectTrigger className='w-full'>
-                <SelectValue />
+                <SelectValue>
+                  {(value) =>
+                    MAILBOX_OPTIONS.find((option) => option.value === value)
+                      ?.label ?? value
+                  }
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {MAILBOX_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    label={option.label}
+                  >
                     {option.label}
                   </SelectItem>
                 ))}
