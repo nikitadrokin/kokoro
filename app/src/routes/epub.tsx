@@ -1119,7 +1119,7 @@ function EpubReaderPage() {
       : null;
 
   return (
-    <main className='min-h-[calc(100vh-4.5rem)] p-4 md:p-6'>
+    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
       <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
         <div className='pb-2'>
           <div className='space-y-1'>
@@ -1133,10 +1133,10 @@ function EpubReaderPage() {
           </div>
         </div>
 
-        <div className='grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)]'>
+        <div className='grid min-w-0 grid-cols-1 gap-4 @5xl/content:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)]'>
           <Tabs
             defaultValue='library'
-            className='flex min-w-0 flex-col gap-3 lg:self-start'
+            className='flex min-w-0 flex-col gap-3 @5xl/content:self-start'
           >
             <TabsList className='grid h-9 w-full grid-cols-2'>
               <TabsTrigger value='library' className='h-7'>
@@ -1345,7 +1345,7 @@ function EpubReaderPage() {
                     )}
                   </div>
 
-                  <div className='max-h-[min(42dvh,520px)] space-y-0 overflow-y-auto rounded-lg lg:max-h-[min(60dvh,520px)]'>
+                  <div className='max-h-[min(42dvh,520px)] space-y-0 overflow-y-auto rounded-lg @5xl/content:max-h-[min(60dvh,520px)]'>
                     {chapters.length === 0 ? (
                       <p className='p-3 text-muted-foreground text-sm'>
                         No chapters yet. Choose an EPUB to list its spine or
