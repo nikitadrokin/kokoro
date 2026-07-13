@@ -688,7 +688,7 @@ function MailListenPage() {
   return (
     <main
       ref={pageRef}
-      className='flex w-full flex-col gap-6 @5xl/content:px-8 @xl/content:px-6 px-4 py-6'
+      className='flex w-full flex-col gap-6 @5xl/content:px-8 @xl/content:px-6 px-4 pt-6'
     >
       <div className='flex @xl/content:flex-row flex-col @xl/content:items-start @xl/content:justify-between gap-3'>
         <div className='flex flex-col gap-2'>
@@ -861,7 +861,7 @@ function MailListenPage() {
           mode={showDetailPane ? 'visible' : 'hidden'}
           name='mail-listen-detail'
         >
-          <Card className='min-w-0 shadow-sm backdrop-blur'>
+          <Card className='min-w-0 shadow-sm backdrop-blur mb-6'>
             <CardHeader className='gap-3 pb-3'>
               <div className='flex items-center gap-2'>
                 <Button
