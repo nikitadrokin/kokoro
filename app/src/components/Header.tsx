@@ -4,6 +4,7 @@ import {
   BookOpenIcon,
   HeadphonesIcon,
   LayoutGridIcon,
+  MailIcon,
   ShieldAlertIcon,
   SparklesIcon,
   SquarePenIcon,
@@ -45,6 +46,12 @@ const speechItems = [
 ] as const;
 
 const navItems = [
+  {
+    to: '/mail',
+    label: 'Mail',
+    description: 'Listen to Gmail locally with on-device speech',
+    icon: MailIcon,
+  },
   {
     to: '/epub',
     label: 'EPUB reader',

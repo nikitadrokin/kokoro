@@ -1,3 +1,5 @@
+mod gmail;
+
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::{
@@ -1475,7 +1477,13 @@ pub fn run() {
             list_imported_epub_books,
             delete_imported_epub_book,
             prepare_app_update,
-            install_prepared_app_update
+            install_prepared_app_update,
+            gmail::gmail_save_client_config,
+            gmail::gmail_get_client_config,
+            gmail::gmail_auth_status,
+            gmail::gmail_logout,
+            gmail::gmail_login,
+            gmail::gmail_get_access_token
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
