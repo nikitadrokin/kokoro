@@ -50,6 +50,14 @@ const SOURCE_LABELS: Record<AudioSource, string> = {
   book: 'Book',
 };
 
+/** Labels for the library source filter select (value → trigger/item text). */
+const SOURCE_FILTER_LABELS: Record<SourceFilter, string> = {
+  all: 'All sources',
+  speech: 'Speech',
+  mail: 'Mail',
+  book: 'Books',
+};
+
 const SOURCE_ICONS: Record<AudioSource, typeof Mic> = {
   speech: Mic,
   mail: Mail,
@@ -321,16 +329,27 @@ function LibraryPage() {
                 >
                   <SelectTrigger
                     size="sm"
-                    className="w-32"
+                    className="w-36"
                     aria-label="Filter by source"
                   >
-                    <SelectValue placeholder="All sources" />
+                    <SelectValue>
+                      {(value) =>
+                        value !== null && value in SOURCE_FILTER_LABELS
+                          ? SOURCE_FILTER_LABELS[value as SourceFilter]
+                          : value
+                      }
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All sources</SelectItem>
-                    <SelectItem value="speech">Speech</SelectItem>
-                    <SelectItem value="mail">Mail</SelectItem>
-                    <SelectItem value="book">Books</SelectItem>
+                    {(
+                      Object.entries(SOURCE_FILTER_LABELS) as Array<
+                        [SourceFilter, string]
+                      >
+                    ).map(([value, label]) => (
+                      <SelectItem key={value} value={value} label={label}>
+                        {label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button
