@@ -27,10 +27,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
-import {
-  estimateAudioDurationSec,
-  formatDuration,
-} from '@/lib/speech-audio';
+import { estimateAudioDurationSec, formatDuration } from '@/lib/speech-audio';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
 import { VOICE_OPTIONS } from '@/lib/voice-options';
 import { usePlaygroundStore } from '@/stores/playground-store';
@@ -227,14 +224,14 @@ function PlaygroundPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
-        <div className="pb-4">
-          <div className="space-y-1">
-            <h1 className="font-semibold text-2xl tracking-tight">
+    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
+      <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
+        <div className='pb-4'>
+          <div className='space-y-1'>
+            <h1 className='font-semibold text-2xl tracking-tight'>
               Generate and audition speech
             </h1>
-            <p className="max-w-2xl text-muted-foreground text-sm">
+            <p className='max-w-2xl text-muted-foreground text-sm'>
               Write your script, pick a voice, then generate. Choose a playback
               mode — stream immediately, save and stream, or save silently for
               full spatial audio quality.
@@ -242,39 +239,43 @@ function PlaygroundPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 @5xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
-          <Card className="shadow-sm backdrop-blur">
+        <div className='grid gap-4 @5xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] mb-6'>
+          <Card className='shadow-sm backdrop-blur'>
             <CardHeader>
               <CardTitle>Script</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="playground-text">Text</Label>
+            <CardContent className='space-y-4'>
+              <div className='space-y-2'>
+                <Label htmlFor='playground-text'>Text</Label>
                 <Textarea
-                  id="playground-text"
-                  aria-label="Text to synthesize"
-                  className="min-h-72 resize-y"
+                  id='playground-text'
+                  aria-label='Text to synthesize'
+                  className='min-h-72 resize-y'
                   value={text}
                   onChange={(event) => setText(event.target.value)}
                   onKeyDown={(event) => {
-                    if (event.key === 'Enter' && event.metaKey && !isGenerating) {
+                    if (
+                      event.key === 'Enter' &&
+                      event.metaKey &&
+                      !isGenerating
+                    ) {
                       void handleGenerate();
                     }
                   }}
-                  placeholder="Enter text for Kokoro to synthesize."
+                  placeholder='Enter text for Kokoro to synthesize.'
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="voice-select">Voice</Label>
+              <div className='space-y-2'>
+                <Label htmlFor='voice-select'>Voice</Label>
                 <Select
                   value={style}
                   onValueChange={(value) => setStyle(value ?? '')}
                 >
                   <SelectTrigger
-                    id="voice-select"
-                    className="w-full"
-                    aria-label="Voice style"
+                    id='voice-select'
+                    className='w-full'
+                    aria-label='Voice style'
                   >
                     <SelectValue>
                       {(value: string | null) =>
@@ -285,11 +286,15 @@ function PlaygroundPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {VOICE_OPTIONS.map((voice) => (
-                      <SelectItem key={voice.value} value={voice.value} label={voice.label}>
-                        <span className="flex flex-1 items-center justify-between gap-2">
+                      <SelectItem
+                        key={voice.value}
+                        value={voice.value}
+                        label={voice.label}
+                      >
+                        <span className='flex flex-1 items-center justify-between gap-2'>
                           {voice.label}
                           {voice.badge !== undefined && (
-                            <Badge variant="secondary" className="text-[10px]">
+                            <Badge variant='secondary' className='text-[10px]'>
                               {voice.badge}
                             </Badge>
                           )}
@@ -300,7 +305,7 @@ function PlaygroundPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
+              <div className='space-y-2'>
                 <Label>Playback mode</Label>
                 <RadioGroup
                   value={playbackMode}
@@ -309,60 +314,60 @@ function PlaygroundPage() {
                       setPlaybackMode(value);
                     }
                   }}
-                  className="gap-2"
+                  className='gap-2'
                 >
                   <label
-                    htmlFor="mode-stream"
-                    className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5"
+                    htmlFor='mode-stream'
+                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
                   >
                     <RadioGroupItem
-                      id="mode-stream"
-                      value="stream"
-                      className="mt-0.5 shrink-0"
+                      id='mode-stream'
+                      value='stream'
+                      className='mt-0.5 shrink-0'
                     />
-                    <div className="grid gap-0.5">
-                      <span className="font-medium text-sm leading-none">
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
                         Stream only
                       </span>
-                      <span className="text-muted-foreground text-xs">
+                      <span className='text-muted-foreground text-xs'>
                         Play immediately, no file saved
                       </span>
                     </div>
                   </label>
 
                   <label
-                    htmlFor="mode-save-stream"
-                    className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5"
+                    htmlFor='mode-save-stream'
+                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
                   >
                     <RadioGroupItem
-                      id="mode-save-stream"
-                      value="save-stream"
-                      className="mt-0.5 shrink-0"
+                      id='mode-save-stream'
+                      value='save-stream'
+                      className='mt-0.5 shrink-0'
                     />
-                    <div className="grid gap-0.5">
-                      <span className="font-medium text-sm leading-none">
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
                         Save &amp; stream
                       </span>
-                      <span className="text-muted-foreground text-xs">
+                      <span className='text-muted-foreground text-xs'>
                         Save WAV and stream audio while synthesizing
                       </span>
                     </div>
                   </label>
 
                   <label
-                    htmlFor="mode-save-silent"
-                    className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5"
+                    htmlFor='mode-save-silent'
+                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
                   >
                     <RadioGroupItem
-                      id="mode-save-silent"
-                      value="save-silent"
-                      className="mt-0.5 shrink-0"
+                      id='mode-save-silent'
+                      value='save-silent'
+                      className='mt-0.5 shrink-0'
                     />
-                    <div className="grid gap-0.5">
-                      <span className="font-medium text-sm leading-none">
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
                         Save silently
                       </span>
-                      <span className="text-muted-foreground text-xs">
+                      <span className='text-muted-foreground text-xs'>
                         Save WAV without auto-playing — use Play for full
                         spatial audio
                       </span>
@@ -372,26 +377,26 @@ function PlaygroundPage() {
               </div>
 
               {error ? (
-                <div className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm">
+                <div className='rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm'>
                   {error}
                 </div>
               ) : null}
 
               <Button
-                className="w-full @xl/content:w-auto @xl/content:min-w-48"
+                className='w-full @xl/content:w-auto @xl/content:min-w-48'
                 onClick={handleGenerate}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
-                  <LoaderCircle className="size-4 animate-spin" />
+                  <LoaderCircle className='size-4 animate-spin' />
                 ) : (
-                  <AudioLinesIcon className="size-4" />
+                  <AudioLinesIcon className='size-4' />
                 )}
                 {isGenerating ? 'Generating…' : 'Generate audio'}
               </Button>
 
               {isGenerating && estimatedDurationSec > 0 ? (
-                <div className="grid gap-1">
+                <div className='grid gap-1'>
                   <Progress
                     value={Math.round(
                       Math.min(
@@ -400,9 +405,8 @@ function PlaygroundPage() {
                       ) * 100,
                     )}
                   />
-                  <p className="text-muted-foreground text-xs tabular-nums">
-                    {formatDuration(generatedDurationSec)} generated ·{' '}
-                    ~
+                  <p className='text-muted-foreground text-xs tabular-nums'>
+                    {formatDuration(generatedDurationSec)} generated · ~
                     {formatDuration(
                       Math.max(estimatedDurationSec - generatedDurationSec, 0),
                     )}{' '}
@@ -413,52 +417,52 @@ function PlaygroundPage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 @5xl/content:self-start">
-            <Card className="shadow-sm backdrop-blur">
+          <div className='grid gap-4 @5xl/content:self-start'>
+            <Card className='shadow-sm backdrop-blur'>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileAudio className="size-4 text-muted-foreground" />
+                <CardTitle className='flex items-center gap-2'>
+                  <FileAudio className='size-4 text-muted-foreground' />
                   Audio
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid gap-3">
-                <div className="rounded-lg">
+              <CardContent className='grid gap-3'>
+                <div className='rounded-lg'>
                   {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
                   <audio
                     ref={audioRef}
                     controls
-                    preload="auto"
+                    preload='auto'
                     src={audioUrl || undefined}
-                    aria-label="Generated audio preview"
-                    className="h-10 w-full"
+                    aria-label='Generated audio preview'
+                    className='h-10 w-full'
                   />
                 </div>
 
                 <Button
-                  variant="secondary"
-                  className="w-full"
+                  variant='secondary'
+                  className='w-full'
                   onClick={handlePlay}
                   disabled={!audioUrl || isGenerating}
                 >
-                  <Play className="size-4" />
+                  <Play className='size-4' />
                   Play again
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="shadow-sm backdrop-blur">
-              <CardHeader className="grid-cols-[1fr_auto] items-center">
-                <CardTitle className="flex items-center gap-2">
-                  <Music2 className="size-4 text-muted-foreground" />
+            <Card className='shadow-sm backdrop-blur'>
+              <CardHeader className='grid-cols-[1fr_auto] items-center'>
+                <CardTitle className='flex items-center gap-2'>
+                  <Music2 className='size-4 text-muted-foreground' />
                   Saved audio
                 </CardTitle>
                 <Button
-                  variant="outline"
-                  size="icon-sm"
+                  variant='outline'
+                  size='icon-sm'
                   onClick={() => void loadSavedAudio()}
                   disabled={isLoadingSavedAudio}
-                  aria-label="Refresh saved audio"
-                  title="Refresh saved audio"
+                  aria-label='Refresh saved audio'
+                  title='Refresh saved audio'
                 >
                   <RefreshCw
                     className={
@@ -467,15 +471,15 @@ function PlaygroundPage() {
                   />
                 </Button>
               </CardHeader>
-              <CardContent className="grid gap-3">
+              <CardContent className='grid gap-3'>
                 {savedAudioError ? (
-                  <div className="rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm">
+                  <div className='rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm'>
                     {savedAudioError}
                   </div>
                 ) : null}
 
                 {savedAudioFiles.length > 0 ? (
-                  <div className="grid max-h-80 gap-2 overflow-y-auto pr-1">
+                  <div className='grid max-h-80 gap-2 overflow-y-auto pr-1'>
                     {savedAudioFiles.map((file) => {
                       const isActive = savedOutputPath === file.path;
                       const isDeleting = deletingAudioPath === file.path;
@@ -486,45 +490,47 @@ function PlaygroundPage() {
                       return (
                         <div
                           key={file.path}
-                          className="grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-3 py-2"
+                          className='grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-3 py-2'
                         >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-sm">
+                          <div className='min-w-0'>
+                            <p className='truncate font-medium text-sm'>
                               {file.name}
                             </p>
-                            <p className="truncate text-muted-foreground text-xs">
+                            <p className='truncate text-muted-foreground text-xs'>
                               {formatModifiedTime(file.modifiedSec)} ·{' '}
                               {formatFileSize(file.sizeBytes)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className='flex items-center gap-2'>
                             <Button
                               variant={isActive ? 'default' : 'secondary'}
-                              size="icon-sm"
+                              size='icon-sm'
                               onClick={() => handlePlaySavedAudio(file)}
                               disabled={isDeleting}
                               aria-label={`Play ${file.name}`}
                               title={`Play ${file.name}`}
                             >
-                              <Play className="size-4" />
+                              <Play className='size-4' />
                             </Button>
                             <Button
-                              variant="outline"
-                              size="icon-sm"
+                              variant='outline'
+                              size='icon-sm'
                               onClick={() => void handleRevealSavedAudio(file)}
-                              disabled={isDeleting || Boolean(revealingAudioPath)}
+                              disabled={
+                                isDeleting || Boolean(revealingAudioPath)
+                              }
                               aria-label={`Reveal ${file.name} in Finder`}
                               title={`Reveal ${file.name} in Finder`}
                             >
                               {isRevealing ? (
-                                <LoaderCircle className="size-4 animate-spin" />
+                                <LoaderCircle className='size-4 animate-spin' />
                               ) : (
-                                <FolderOpen className="size-4" />
+                                <FolderOpen className='size-4' />
                               )}
                             </Button>
                             <Button
-                              variant="destructive"
-                              size="icon-sm"
+                              variant='destructive'
+                              size='icon-sm'
                               onClick={() => void handleDeleteSavedAudio(file)}
                               disabled={Boolean(deletingAudioPath)}
                               aria-label={
@@ -535,11 +541,11 @@ function PlaygroundPage() {
                               title={isConfirmingDelete ? 'Confirm?' : 'Delete'}
                             >
                               {isDeleting ? (
-                                <LoaderCircle className="size-4 animate-spin" />
+                                <LoaderCircle className='size-4 animate-spin' />
                               ) : isConfirmingDelete ? (
-                                <Check className="size-4" />
+                                <Check className='size-4' />
                               ) : (
-                                <Trash2 className="size-4" />
+                                <Trash2 className='size-4' />
                               )}
                             </Button>
                           </div>
@@ -548,7 +554,7 @@ function PlaygroundPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-sm">
+                  <p className='text-muted-foreground text-sm'>
                     {isLoadingSavedAudio
                       ? 'Loading saved audio…'
                       : 'Saved WAV files will appear here.'}
