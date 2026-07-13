@@ -602,21 +602,6 @@ function MailListenPage() {
                   </p>
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="mail-speech-text">Speech text</Label>
-                  <Textarea
-                    id="mail-speech-text"
-                    value={selectedMessage.speechText}
-                    onChange={(event) =>
-                      setSelectedMessage({
-                        ...selectedMessage,
-                        speechText: event.target.value,
-                      })
-                    }
-                    className="min-h-56 font-mono text-sm"
-                  />
-                </div>
-
                 <div className="grid gap-2 sm:max-w-xs">
                   <Label>Voice</Label>
                   <Select
@@ -703,6 +688,21 @@ function MailListenPage() {
                   controls
                   className="w-full"
                 />
+
+                <div className="grid gap-2">
+                  <Label htmlFor="mail-speech-text">Speech text</Label>
+                  <Textarea
+                    id="mail-speech-text"
+                    value={selectedMessage.speechText}
+                    onChange={(event) =>
+                      setSelectedMessage({
+                        ...selectedMessage,
+                        speechText: event.target.value,
+                      })
+                    }
+                    className="min-h-56 font-mono text-sm"
+                  />
+                </div>
               </>
             ) : null}
           </CardContent>
