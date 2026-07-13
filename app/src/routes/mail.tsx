@@ -436,7 +436,7 @@ function MailListenPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6">
+    <main className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -478,103 +478,102 @@ function MailListenPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-        <Card className="min-w-0">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-base">Mailbox</CardTitle>
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() => void loadThreads()}
-                disabled={isLoadingThreads}
-                aria-label="Refresh threads"
-              >
-                <RefreshCw
-                  className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
-                />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid gap-2">
-              <Label>Category</Label>
-              <Select
-                value={mailbox}
-                onValueChange={(value) => {
-                  if (
-                    value === 'important' ||
-                    value === 'updates' ||
-                    value === 'promotions' ||
-                    value === 'inbox'
-                  ) {
-                    setMailbox(value);
-                  }
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {MAILBOX_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start">
+        <section className="grid min-w-0 gap-5">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="font-heading font-medium text-base">Mailbox</h2>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => void loadThreads()}
+              disabled={isLoadingThreads}
+              aria-label="Refresh threads"
+            >
+              <RefreshCw
+                className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
+              />
+            </Button>
+          </div>
 
-            <div className="grid max-h-[28rem] gap-2 overflow-y-auto pr-1">
-              {isLoadingThreads ? (
-                <p className="text-muted-foreground text-sm">Loading…</p>
-              ) : null}
-              {!isLoadingThreads && threads.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  No threads in this mailbox.
-                </p>
-              ) : null}
-              {threads.map((thread) => {
-                const isActive = thread.id === selectedThreadId;
-                return (
-                  <button
-                    key={thread.id}
-                    type="button"
-                    onClick={() => void handleSelectThread(thread.id)}
-                    className={`rounded-2xl border px-3 py-3 text-left transition-colors ${
-                      isActive
-                        ? 'border-primary/40 bg-primary/5'
-                        : 'hover:bg-muted/60'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-sm leading-5">
-                        {thread.subject}
-                      </p>
-                      {thread.unread ? (
-                        <Badge
-                          className="shrink-0 rounded-full"
-                          variant="secondary"
-                        >
-                          unread
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <p className="mt-1 text-muted-foreground text-xs">
-                      {thread.from}
-                    </p>
-                    <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-5">
-                      {thread.snippet}
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+          <div className="grid gap-2">
+            <Label>Category</Label>
+            <Select
+              value={mailbox}
+              onValueChange={(value) => {
+                if (
+                  value === 'important' ||
+                  value === 'updates' ||
+                  value === 'promotions' ||
+                  value === 'inbox'
+                ) {
+                  setMailbox(value);
+                }
+              }}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MAILBOX_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Card className="min-w-0">
+          <div className="grid max-h-[min(70dvh,36rem)] gap-1 overflow-y-auto">
+            {isLoadingThreads ? (
+              <p className="px-3 py-3 text-muted-foreground text-sm">
+                Loading…
+              </p>
+            ) : null}
+            {!isLoadingThreads && threads.length === 0 ? (
+              <p className="px-3 py-3 text-muted-foreground text-sm">
+                No threads in this mailbox.
+              </p>
+            ) : null}
+            {threads.map((thread) => {
+              const isActive = thread.id === selectedThreadId;
+              return (
+                <button
+                  key={thread.id}
+                  type="button"
+                  onClick={() => void handleSelectThread(thread.id)}
+                  className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
+                    isActive
+                      ? 'bg-card shadow-md ring-1 ring-foreground/5'
+                      : 'hover:bg-muted/50'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-medium text-sm leading-5">
+                      {thread.subject}
+                    </p>
+                    {thread.unread ? (
+                      <Badge
+                        className="shrink-0 rounded-full"
+                        variant="secondary"
+                      >
+                        unread
+                      </Badge>
+                    ) : null}
+                  </div>
+                  <p className="mt-1 text-muted-foreground text-xs">
+                    {thread.from}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-5">
+                    {thread.snippet}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <Card className="min-w-0 shadow-sm backdrop-blur">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Listen</CardTitle>
           </CardHeader>
