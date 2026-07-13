@@ -342,9 +342,9 @@ function MailListenPage() {
 
   if (isBootstrapping) {
     return (
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6">
-        <p className="flex items-center gap-2 text-muted-foreground text-sm">
-          <LoaderCircle className="size-4 animate-spin" />
+      <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6'>
+        <p className='flex items-center gap-2 text-muted-foreground text-sm'>
+          <LoaderCircle className='size-4 animate-spin' />
           Checking Gmail connection…
         </p>
       </main>
@@ -353,18 +353,18 @@ function MailListenPage() {
 
   if (!connected) {
     return (
-      <main className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Mail className="size-5 text-primary" aria-hidden="true" />
-            <h1 className="font-semibold text-2xl tracking-tight">
+      <main className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6'>
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center gap-2'>
+            <Mail className='size-5 text-primary' aria-hidden='true' />
+            <h1 className='font-semibold text-2xl tracking-tight'>
               Mail listen
             </h1>
-            <Badge variant="secondary" className="rounded-full">
+            <Badge variant='secondary' className='rounded-full'>
               PoC
             </Badge>
           </div>
-          <p className="max-w-2xl text-muted-foreground text-sm leading-6">
+          <p className='max-w-2xl text-muted-foreground text-sm leading-6'>
             Connect Gmail once. Credentials stay in localStorage on this device;
             speech is generated on-device.
           </p>
@@ -372,33 +372,33 @@ function MailListenPage() {
 
         {displayError ? (
           <div
-            role="alert"
-            className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm"
+            role='alert'
+            className='rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm'
           >
             {displayError}
           </div>
         ) : null}
 
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ShieldCheck className="size-4 text-muted-foreground" />
+          <CardHeader className='pb-3'>
+            <CardTitle className='flex items-center gap-2 text-base'>
+              <ShieldCheck className='size-4 text-muted-foreground' />
               Google OAuth setup
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-5">
-            <ol className="grid gap-3">
+          <CardContent className='grid gap-5'>
+            <ol className='grid gap-3'>
               {SETUP_STEPS.map((step, index) => (
                 <li
                   key={step.title}
-                  className="grid grid-cols-[auto_1fr] gap-3 rounded-2xl border px-3 py-3"
+                  className='grid grid-cols-[auto_1fr] gap-3 rounded-2xl border px-3 py-3'
                 >
-                  <span className="grid size-7 place-items-center rounded-full bg-muted font-medium text-xs">
+                  <span className='grid size-7 place-items-center rounded-full bg-muted font-medium text-xs'>
                     {index + 1}
                   </span>
-                  <div className="grid gap-1">
-                    <p className="font-medium text-sm">{step.title}</p>
-                    <p className="text-muted-foreground text-xs leading-5">
+                  <div className='grid gap-1'>
+                    <p className='font-medium text-sm'>{step.title}</p>
+                    <p className='text-muted-foreground text-xs leading-5'>
                       {step.body}
                     </p>
                   </div>
@@ -406,80 +406,80 @@ function MailListenPage() {
               ))}
             </ol>
 
-            <div className="grid gap-2 rounded-2xl border bg-muted/30 px-3 py-3">
-              <Label htmlFor="gmail-redirect-uri">
+            <div className='grid gap-2 rounded-2xl border bg-muted/30 px-3 py-3'>
+              <Label htmlFor='gmail-redirect-uri'>
                 Authorized redirect URI (port {GMAIL_OAUTH_LOOPBACK_PORT})
               </Label>
-              <div className="flex flex-col gap-2 sm:flex-row">
+              <div className='flex flex-col gap-2 sm:flex-row'>
                 <Input
-                  id="gmail-redirect-uri"
+                  id='gmail-redirect-uri'
                   value={GMAIL_OAUTH_REDIRECT_URI}
                   readOnly
-                  className="font-mono text-xs"
+                  className='font-mono text-xs'
                 />
                 <Button
-                  type="button"
-                  variant="outline"
-                  className="shrink-0"
+                  type='button'
+                  variant='outline'
+                  className='shrink-0'
                   onClick={() => void handleCopyRedirectUri()}
                 >
                   {copiedRedirect ? (
-                    <Check className="size-4" />
+                    <Check className='size-4' />
                   ) : (
-                    <Copy className="size-4" />
+                    <Copy className='size-4' />
                   )}
                   {copiedRedirect ? 'Copied' : 'Copy'}
                 </Button>
               </div>
-              <p className="text-muted-foreground text-xs leading-5">
+              <p className='text-muted-foreground text-xs leading-5'>
                 Copy this into Authorized redirect URIs for the same Client ID
                 you paste below, then click Save in Google Cloud. Use
                 `127.0.0.1`, not `localhost`.
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label htmlFor="gmail-client-id">Client ID</Label>
+            <div className='grid gap-3 sm:grid-cols-2'>
+              <div className='grid gap-2'>
+                <Label htmlFor='gmail-client-id'>Client ID</Label>
                 <Input
-                  id="gmail-client-id"
+                  id='gmail-client-id'
                   value={clientId}
                   onChange={(event) => setClientId(event.target.value)}
-                  placeholder="xxxxx.apps.googleusercontent.com"
-                  autoComplete="off"
+                  placeholder='xxxxx.apps.googleusercontent.com'
+                  autoComplete='off'
                   disabled={isLoggingIn}
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="gmail-client-secret">
+              <div className='grid gap-2'>
+                <Label htmlFor='gmail-client-secret'>
                   Client secret (required for Web clients)
                 </Label>
                 <Input
-                  id="gmail-client-secret"
-                  type="password"
+                  id='gmail-client-secret'
+                  type='password'
                   value={clientSecret}
                   onChange={(event) => setClientSecret(event.target.value)}
-                  placeholder="Optional for some Desktop clients"
-                  autoComplete="off"
+                  placeholder='Optional for some Desktop clients'
+                  autoComplete='off'
                   disabled={isLoggingIn}
                 />
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className='flex flex-wrap items-center gap-2'>
               <Button
-                type="button"
+                type='button'
                 onClick={() => void handleLogin()}
                 disabled={isLoggingIn || !clientId.trim()}
               >
                 {isLoggingIn ? (
-                  <LoaderCircle className="size-4 animate-spin" />
+                  <LoaderCircle className='size-4 animate-spin' />
                 ) : (
-                  <Mail className="size-4" />
+                  <Mail className='size-4' />
                 )}
                 Sign in with Google
               </Button>
-              <p className="text-muted-foreground text-xs">
+              <p className='text-muted-foreground text-xs'>
                 Client ID and secret save automatically in localStorage.
               </p>
             </div>
@@ -490,34 +490,34 @@ function MailListenPage() {
   }
 
   return (
-    <main className="flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <Mail className="size-5 text-primary" aria-hidden="true" />
-            <h1 className="font-semibold text-2xl tracking-tight">
+    <main className='flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+        <div className='flex flex-col gap-2'>
+          <div className='flex items-center gap-2'>
+            <Mail className='size-5 text-primary' aria-hidden='true' />
+            <h1 className='font-semibold text-2xl tracking-tight'>
               Mail listen
             </h1>
-            <Badge variant="secondary" className="rounded-full">
+            <Badge variant='secondary' className='rounded-full'>
               PoC
             </Badge>
           </div>
-          <p className="max-w-2xl text-muted-foreground text-sm leading-6">
+          <p className='max-w-2xl text-muted-foreground text-sm leading-6'>
             Pick an important or newsletter thread and generate Kokoro audio
             on-device.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge className="rounded-full" variant="secondary">
+        <div className='flex flex-wrap items-center gap-2'>
+          <Badge className='rounded-full' variant='secondary'>
             {authStatus?.email}
           </Badge>
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
+            type='button'
+            variant='outline'
+            size='sm'
             onClick={() => void handleLogout()}
           >
-            <LogOut className="size-4" />
+            <LogOut className='size-4' />
             Disconnect
           </Button>
         </div>
@@ -525,24 +525,24 @@ function MailListenPage() {
 
       {displayError ? (
         <div
-          role="alert"
-          className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm"
+          role='alert'
+          className='rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm'
         >
           {displayError}
         </div>
       ) : null}
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start">
-        <section className="grid min-w-0 gap-5">
-          <div className="flex items-center justify-between gap-2">
-            <h2 className="font-heading font-medium text-base">Mailbox</h2>
+      <div className='grid gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start'>
+        <section className='grid min-w-0 gap-5'>
+          <div className='flex items-center justify-between gap-2'>
+            <h2 className='font-heading font-medium text-base'>Mailbox</h2>
             <Button
-              type="button"
-              size="sm"
-              variant="ghost"
+              type='button'
+              size='sm'
+              variant='ghost'
               onClick={() => void loadThreads()}
               disabled={isLoadingThreads}
-              aria-label="Refresh threads"
+              aria-label='Refresh threads'
             >
               <RefreshCw
                 className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
@@ -550,7 +550,7 @@ function MailListenPage() {
             </Button>
           </div>
 
-          <div className="grid gap-2">
+          <div className='grid gap-2'>
             <Label>Category</Label>
             <Select
               value={mailbox}
@@ -565,7 +565,7 @@ function MailListenPage() {
                 }
               }}
             >
-              <SelectTrigger className="w-full">
+              <SelectTrigger className='w-full'>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -578,14 +578,14 @@ function MailListenPage() {
             </Select>
           </div>
 
-          <div className="grid max-h-[min(70dvh,36rem)] gap-1 overflow-y-auto">
+          <div className='grid max-h-[min(70dvh,36rem)] gap-1 overflow-y-auto'>
             {isLoadingThreads ? (
-              <p className="px-3 py-3 text-muted-foreground text-sm">
+              <p className='px-3 py-3 text-muted-foreground text-sm'>
                 Loading…
               </p>
             ) : null}
             {!isLoadingThreads && threads.length === 0 ? (
-              <p className="px-3 py-3 text-muted-foreground text-sm">
+              <p className='px-3 py-3 text-muted-foreground text-sm'>
                 No threads in this mailbox.
               </p>
             ) : null}
@@ -594,7 +594,7 @@ function MailListenPage() {
               return (
                 <button
                   key={thread.id}
-                  type="button"
+                  type='button'
                   onClick={() => void handleSelectThread(thread.id)}
                   className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
                     isActive
@@ -602,23 +602,23 @@ function MailListenPage() {
                       : 'hover:bg-muted/50'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="font-medium text-sm leading-5">
+                  <div className='flex items-start justify-between gap-2'>
+                    <p className='font-medium text-sm leading-5'>
                       {thread.subject}
                     </p>
                     {thread.unread ? (
                       <Badge
-                        className="shrink-0 rounded-full"
-                        variant="secondary"
+                        className='shrink-0 rounded-full'
+                        variant='secondary'
                       >
                         unread
                       </Badge>
                     ) : null}
                   </div>
-                  <p className="mt-1 text-muted-foreground text-xs">
+                  <p className='mt-1 text-muted-foreground text-xs'>
                     {thread.from}
                   </p>
-                  <p className="mt-1 line-clamp-2 text-muted-foreground text-xs leading-5">
+                  <p className='mt-1 line-clamp-2 text-muted-foreground text-xs leading-5'>
                     {thread.snippet}
                   </p>
                 </button>
@@ -627,42 +627,42 @@ function MailListenPage() {
           </div>
         </section>
 
-        <Card className="min-w-0 shadow-sm backdrop-blur">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Listen</CardTitle>
+        <Card className='min-w-0 shadow-sm backdrop-blur'>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-base'>Listen</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
+          <CardContent className='grid gap-4'>
             {isLoadingMessage ? (
-              <p className="flex items-center gap-2 text-muted-foreground text-sm">
-                <LoaderCircle className="size-4 animate-spin" />
+              <p className='flex items-center gap-2 text-muted-foreground text-sm'>
+                <LoaderCircle className='size-4 animate-spin' />
                 Extracting email text…
               </p>
             ) : null}
 
             {!selectedMessage && !isLoadingMessage ? (
-              <p className="text-muted-foreground text-sm">
+              <p className='text-muted-foreground text-sm'>
                 Select a thread to extract speech text and generate audio.
               </p>
             ) : null}
 
             {selectedMessage ? (
               <>
-                <div className="grid gap-1">
-                  <p className="font-medium text-sm">
+                <div className='grid gap-1'>
+                  <p className='font-medium text-sm'>
                     {selectedMessage.subject}
                   </p>
-                  <p className="text-muted-foreground text-xs">
+                  <p className='text-muted-foreground text-xs'>
                     {selectedMessage.from} · {selectedMessage.date}
                   </p>
                 </div>
 
-                <div className="grid gap-2 sm:max-w-xs">
+                <div className='grid gap-2 sm:max-w-xs'>
                   <Label>Voice</Label>
                   <Select
                     value={style}
                     onValueChange={(value) => setStyle(value ?? 'af_heart')}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className='w-full'>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -676,25 +676,25 @@ function MailListenPage() {
                   </Select>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
+                <div className='flex flex-wrap items-center gap-2'>
                   <Button
-                    type="button"
+                    type='button'
                     onClick={() => void handleGenerate()}
                     disabled={
                       isGenerating || !selectedMessage.speechText.trim()
                     }
                   >
                     {isGenerating ? (
-                      <LoaderCircle className="size-4 animate-spin" />
+                      <LoaderCircle className='size-4 animate-spin' />
                     ) : (
-                      <AudioLinesIcon className="size-4" />
+                      <AudioLinesIcon className='size-4' />
                     )}
                     Generate audio
                   </Button>
                   {audioUrl ? (
                     <Button
-                      type="button"
-                      variant="outline"
+                      type='button'
+                      variant='outline'
                       onClick={() => void handlePlay()}
                     >
                       Play
@@ -703,8 +703,8 @@ function MailListenPage() {
                 </div>
 
                 {isGenerating || generatedDurationSec > 0 ? (
-                  <div className="grid gap-2">
-                    <div className="flex justify-between text-muted-foreground text-xs">
+                  <div className='grid gap-2'>
+                    <div className='flex justify-between text-muted-foreground text-xs'>
                       <span>{isGenerating ? 'Generating…' : 'Ready'}</span>
                       <span>
                         {formatDuration(
@@ -730,7 +730,7 @@ function MailListenPage() {
                 ) : null}
 
                 {savedOutputPath ? (
-                  <p className="break-all text-muted-foreground text-xs">
+                  <p className='break-all text-muted-foreground text-xs'>
                     Saved to {savedOutputPath}
                   </p>
                 ) : null}
@@ -741,14 +741,14 @@ function MailListenPage() {
                     ref={audioRef}
                     src={audioUrl}
                     controls
-                    className="w-full"
+                    className='w-full'
                   />
                 ) : null}
 
-                <div className="grid gap-2">
-                  <Label htmlFor="mail-speech-text">Speech text</Label>
+                <div className='grid gap-2'>
+                  <Label htmlFor='mail-speech-text'>Speech text</Label>
                   <Textarea
-                    id="mail-speech-text"
+                    id='mail-speech-text'
                     value={selectedMessage.speechText}
                     onChange={(event) =>
                       setSelectedMessage({
@@ -756,7 +756,7 @@ function MailListenPage() {
                         speechText: event.target.value,
                       })
                     }
-                    className="min-h-56 font-mono text-sm"
+                    className='min-h-56 font-mono text-sm'
                   />
                 </div>
               </>
