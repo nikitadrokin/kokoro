@@ -1,6 +1,8 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
-import Header from '@/components/Header';
+import AppSidebar from '@/components/AppSidebar';
+import AppTopbar from '@/components/AppTopbar';
 import SynthesisLock from '@/components/SynthesisLock';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -18,16 +20,19 @@ function RootLayout() {
   return (
     <TooltipProvider>
       <SynthesisLock />
-      <div className='flex h-dvh flex-col overflow-hidden bg-background text-foreground'>
-        <div
-          className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain'
-          inert={isSynthesisLocked}
-        >
-          <Header />
-          <Outlet />
-        </div>
+      <SidebarProvider className="h-dvh min-h-0 overflow-hidden bg-background text-foreground">
+        <AppSidebar />
+        <SidebarInset className="min-w-0 overflow-hidden">
+          <div
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain"
+            inert={isSynthesisLocked}
+          >
+            <AppTopbar />
+            <Outlet />
+          </div>
+        </SidebarInset>
         <Toaster />
-      </div>
+      </SidebarProvider>
     </TooltipProvider>
   );
 }
