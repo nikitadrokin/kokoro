@@ -227,7 +227,7 @@ function PlaygroundPage() {
   };
 
   return (
-    <main className="min-h-[calc(100vh-4.5rem)] p-4 md:p-6">
+    <main className="min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
         <div className="pb-4">
           <div className="space-y-1">
@@ -242,7 +242,7 @@ function PlaygroundPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+        <div className="grid gap-4 @7xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
           <Card className="shadow-sm backdrop-blur">
             <CardHeader>
               <CardTitle>Script</CardTitle>
@@ -378,7 +378,7 @@ function PlaygroundPage() {
               ) : null}
 
               <Button
-                className="w-full sm:w-auto sm:min-w-48"
+                className="w-full @xl/content:w-auto @xl/content:min-w-48"
                 onClick={handleGenerate}
                 disabled={isGenerating}
               >
@@ -413,7 +413,7 @@ function PlaygroundPage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 xl:self-start">
+          <div className="grid gap-4 @7xl/content:self-start">
             <Card className="shadow-sm backdrop-blur">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
