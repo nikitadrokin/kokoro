@@ -3,6 +3,7 @@ import { convertFileSrc, invoke, isTauri } from '@tauri-apps/api/core';
 import {
   ArrowLeft,
   AudioLinesIcon,
+  FolderOpen,
   LoaderCircle,
   LogOut,
   Mail,
@@ -10,7 +11,13 @@ import {
   Play,
   RefreshCw,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import { MailConnectSetup } from '@/components/MailConnectSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -288,6 +295,7 @@ function MailListenPage() {
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
   const [narrowPane, setNarrowPane] = useState<NarrowMailPane>('list');
   const [isNarrowLayout, setIsNarrowLayout] = useState(false);
+  const [isRevealingAudio, setIsRevealingAudio] = useState(false);
 
   const {
     audioUrl,
@@ -495,6 +503,25 @@ function MailListenPage() {
       outputSubdir: 'mail',
       mono: true,
     });
+  };
+
+  const handleRevealInFinder = async () => {
+    if (!savedOutputPath || isRevealingAudio) {
+      return;
+    }
+    setPageError('');
+    setIsRevealingAudio(true);
+    try {
+      await invoke('reveal_saved_audio_in_finder', { path: savedOutputPath });
+    } catch (caughtError) {
+      setPageError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : String(caughtError),
+      );
+    } finally {
+      setIsRevealingAudio(false);
+    }
   };
 
   const connected = Boolean(authStatus?.connected);
@@ -718,13 +745,33 @@ function MailListenPage() {
 
             {selectedMessage ? (
               <>
-                <div className='grid gap-1'>
-                  <p className='font-medium text-sm'>
-                    {selectedMessage.subject}
-                  </p>
-                  <p className='text-muted-foreground text-xs'>
-                    {selectedMessage.from} · {selectedMessage.date}
-                  </p>
+                <div className='flex items-start justify-between gap-3'>
+                  <div className='grid min-w-0 gap-1'>
+                    <p className='font-medium text-sm'>
+                      {selectedMessage.subject}
+                    </p>
+                    <p className='text-muted-foreground text-xs'>
+                      {selectedMessage.from} · {selectedMessage.date}
+                    </p>
+                  </div>
+                  {savedOutputPath ? (
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      size='icon-sm'
+                      className='shrink-0'
+                      onClick={() => void handleRevealInFinder()}
+                      disabled={isRevealingAudio}
+                      aria-label='Reveal track in Finder'
+                      title='Reveal track in Finder'
+                    >
+                      {isRevealingAudio ? (
+                        <LoaderCircle className='size-4 animate-spin' />
+                      ) : (
+                        <FolderOpen className='size-4' />
+                      )}
+                    </Button>
+                  ) : null}
                 </div>
 
                 {!hasSynthesizedAudio ? (
@@ -803,12 +850,6 @@ function MailListenPage() {
                     audioRef={audioRef}
                     audioUrl={audioUrl}
                   />
-                ) : null}
-
-                {savedOutputPath ? (
-                  <p className='break-all text-muted-foreground text-xs'>
-                    Saved to {savedOutputPath}
-                  </p>
                 ) : null}
 
                 <div className='grid gap-2'>
