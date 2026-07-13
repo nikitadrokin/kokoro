@@ -12,6 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import {
+  Activity,
   useCallback,
   useEffect,
   useRef,
@@ -715,299 +716,299 @@ function MailListenPage() {
         </div>
       ) : null}
 
-      <div className='relative lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8'>
-        <section
-          aria-hidden={!showListPane}
-          className={cn(
-            'flex min-w-0 flex-col gap-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)]',
-            showListPane
-              ? 'relative translate-x-0'
-              : 'pointer-events-none absolute inset-x-0 top-0 -translate-x-full',
-          )}
+      <div className='lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8'>
+        <Activity
+          mode={showListPane ? 'visible' : 'hidden'}
+          name='mail-mailbox-list'
         >
-          <div className='flex shrink-0 items-center justify-between gap-2'>
-            <h2 className='font-heading font-medium text-base'>Mailbox</h2>
-            <Button
-              type='button'
-              size='sm'
-              variant='ghost'
-              onClick={() => void loadThreads()}
-              disabled={isLoadingThreads}
-              aria-label='Refresh threads'
-            >
-              <RefreshCw
-                className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
-              />
-            </Button>
-          </div>
-
-          <div className='grid shrink-0 gap-2'>
-            <Label>Category</Label>
-            <Select
-              value={mailbox}
-              onValueChange={(value) => {
-                if (isMailMailbox(value)) {
-                  setMailbox(value);
-                }
-              }}
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue>
-                  {(value) =>
-                    MAILBOX_OPTIONS.find((option) => option.value === value)
-                      ?.label ?? value
-                  }
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {MAILBOX_OPTIONS.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    label={option.label}
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div
-            ref={threadListRef}
-            onScroll={handleThreadListScroll}
-            className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'
+          <section
+            className={cn(
+              'flex min-w-0 flex-col gap-4',
+              'lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)]',
+            )}
           >
-            <div className='grid gap-1'>
-              {isLoadingThreads ? (
-                <p className='px-3 py-3 text-muted-foreground text-sm'>
-                  Loading…
-                </p>
-              ) : null}
-              {!isLoadingThreads && threads.length === 0 ? (
-                <p className='px-3 py-3 text-muted-foreground text-sm'>
-                  No threads in this mailbox.
-                </p>
-              ) : null}
-              {threads.map((thread) => {
-                const isActive = thread.id === selectedThreadId;
-                return (
-                  <button
-                    key={thread.id}
-                    type='button'
-                    onClick={() => void handleSelectThread(thread.id)}
-                    className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
-                      isActive
-                        ? 'bg-card shadow-md ring-1 ring-foreground/5'
-                        : 'hover:bg-muted/50'
-                    }`}
-                  >
-                    <div className='flex items-start justify-between gap-2'>
-                      <p className='font-medium text-sm leading-5'>
-                        {thread.subject}
-                      </p>
-                      {thread.unread ? (
-                        <Badge
-                          className='shrink-0 rounded-full'
-                          variant='secondary'
-                        >
-                          unread
-                        </Badge>
-                      ) : null}
-                    </div>
-                    <p className='mt-1 text-muted-foreground text-xs'>
-                      {thread.from}
-                    </p>
-                    <p className='mt-1 line-clamp-2 text-muted-foreground text-xs leading-5'>
-                      {thread.snippet}
-                    </p>
-                  </button>
-                );
-              })}
-              {isLoadingMoreThreads ? (
-                <p className='flex items-center gap-2 px-3 py-3 text-muted-foreground text-sm'>
-                  <LoaderCircle className='size-4 animate-spin' />
-                  Loading more…
-                </p>
-              ) : null}
-              {!isLoadingThreads &&
-              !isLoadingMoreThreads &&
-              nextPageToken === null &&
-              threads.length > 0 ? (
-                <p className='px-3 py-3 text-center text-muted-foreground text-xs'>
-                  End of mailbox
-                </p>
-              ) : null}
-            </div>
-          </div>
-        </section>
-
-        <Card
-          aria-hidden={!showDetailPane}
-          className={cn(
-            'min-w-0 shadow-sm backdrop-blur transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            showDetailPane
-              ? 'relative translate-x-0'
-              : 'pointer-events-none absolute inset-x-0 top-0 translate-x-full',
-          )}
-        >
-          <CardHeader className='gap-3 pb-3'>
-            <div className='flex items-center gap-2'>
+            <div className='flex shrink-0 items-center justify-between gap-2'>
+              <h2 className='font-heading font-medium text-base'>Mailbox</h2>
               <Button
                 type='button'
-                variant='ghost'
                 size='sm'
-                className='-ml-2 lg:hidden'
-                onClick={() => setNarrowPane('list')}
+                variant='ghost'
+                onClick={() => void loadThreads()}
+                disabled={isLoadingThreads}
+                aria-label='Refresh threads'
               >
-                <ArrowLeft className='size-4' />
-                Mailbox
+                <RefreshCw
+                  className={`size-4 ${isLoadingThreads ? 'animate-spin' : ''}`}
+                />
               </Button>
-              <CardTitle className='text-base'>Listen</CardTitle>
             </div>
-          </CardHeader>
-          <CardContent className='grid gap-4'>
-            {isLoadingMessage ? (
-              <p className='flex items-center gap-2 text-muted-foreground text-sm'>
-                <LoaderCircle className='size-4 animate-spin' />
-                Extracting email text…
-              </p>
-            ) : null}
 
-            {!selectedMessage && !isLoadingMessage ? (
-              <p className='text-muted-foreground text-sm'>
-                Select a thread to extract speech text and generate audio.
-              </p>
-            ) : null}
-
-            {selectedMessage ? (
-              <>
-                <div className='flex items-start justify-between gap-3'>
-                  <div className='grid min-w-0 gap-1'>
-                    <p className='font-medium text-sm'>
-                      {selectedMessage.subject}
-                    </p>
-                    <p className='text-muted-foreground text-xs'>
-                      {selectedMessage.from} · {selectedMessage.date}
-                    </p>
-                  </div>
-                  {savedOutputPath ? (
-                    <Button
-                      type='button'
-                      variant='ghost'
-                      size='icon-sm'
-                      className='shrink-0'
-                      onClick={() => void handleRevealInFinder()}
-                      disabled={isRevealingAudio}
-                      aria-label='Reveal track in Finder'
-                      title='Reveal track in Finder'
+            <div className='grid shrink-0 gap-2'>
+              <Label>Category</Label>
+              <Select
+                value={mailbox}
+                onValueChange={(value) => {
+                  if (isMailMailbox(value)) {
+                    setMailbox(value);
+                  }
+                }}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue>
+                    {(value) =>
+                      MAILBOX_OPTIONS.find((option) => option.value === value)
+                        ?.label ?? value
+                    }
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {MAILBOX_OPTIONS.map((option) => (
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      label={option.label}
                     >
-                      {isRevealingAudio ? (
-                        <LoaderCircle className='size-4 animate-spin' />
-                      ) : (
-                        <FolderOpen className='size-4' />
-                      )}
-                    </Button>
-                  ) : null}
-                </div>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                {!hasSynthesizedAudio ? (
-                  <>
-                    <div className='grid gap-2 sm:max-w-xs'>
-                      <Label>Voice</Label>
-                      <Select
-                        value={style}
-                        onValueChange={(value) => setStyle(value ?? 'af_heart')}
-                      >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {VOICE_OPTIONS.map((voice) => (
-                            <SelectItem key={voice.value} value={voice.value}>
-                              {voice.label}
-                              {voice.badge ? ` (${voice.badge})` : ''}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+            <div
+              ref={threadListRef}
+              onScroll={handleThreadListScroll}
+              className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'
+            >
+              <div className='grid gap-1'>
+                {isLoadingThreads ? (
+                  <p className='px-3 py-3 text-muted-foreground text-sm'>
+                    Loading…
+                  </p>
+                ) : null}
+                {!isLoadingThreads && threads.length === 0 ? (
+                  <p className='px-3 py-3 text-muted-foreground text-sm'>
+                    No threads in this mailbox.
+                  </p>
+                ) : null}
+                {threads.map((thread) => {
+                  const isActive = thread.id === selectedThreadId;
+                  return (
+                    <button
+                      key={thread.id}
+                      type='button'
+                      onClick={() => void handleSelectThread(thread.id)}
+                      className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
+                        isActive
+                          ? 'bg-card shadow-md ring-1 ring-foreground/5'
+                          : 'hover:bg-muted/50'
+                      }`}
+                    >
+                      <div className='flex items-start justify-between gap-2'>
+                        <p className='font-medium text-sm leading-5'>
+                          {thread.subject}
+                        </p>
+                        {thread.unread ? (
+                          <Badge
+                            className='shrink-0 rounded-full'
+                            variant='secondary'
+                          >
+                            unread
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <p className='mt-1 text-muted-foreground text-xs'>
+                        {thread.from}
+                      </p>
+                      <p className='mt-1 line-clamp-2 text-muted-foreground text-xs leading-5'>
+                        {thread.snippet}
+                      </p>
+                    </button>
+                  );
+                })}
+                {isLoadingMoreThreads ? (
+                  <p className='flex items-center gap-2 px-3 py-3 text-muted-foreground text-sm'>
+                    <LoaderCircle className='size-4 animate-spin' />
+                    Loading more…
+                  </p>
+                ) : null}
+                {!isLoadingThreads &&
+                !isLoadingMoreThreads &&
+                nextPageToken === null &&
+                threads.length > 0 ? (
+                  <p className='px-3 py-3 text-center text-muted-foreground text-xs'>
+                    End of mailbox
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          </section>
+        </Activity>
+
+        <Activity
+          mode={showDetailPane ? 'visible' : 'hidden'}
+          name='mail-listen-detail'
+        >
+          <Card className='min-w-0 shadow-sm backdrop-blur'>
+            <CardHeader className='gap-3 pb-3'>
+              <div className='flex items-center gap-2'>
+                <Button
+                  type='button'
+                  variant='ghost'
+                  size='sm'
+                  className='-ml-2 lg:hidden'
+                  onClick={() => setNarrowPane('list')}
+                >
+                  <ArrowLeft className='size-4' />
+                  Mailbox
+                </Button>
+                <CardTitle className='text-base'>Listen</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className='grid gap-4'>
+              {isLoadingMessage ? (
+                <p className='flex items-center gap-2 text-muted-foreground text-sm'>
+                  <LoaderCircle className='size-4 animate-spin' />
+                  Extracting email text…
+                </p>
+              ) : null}
+
+              {!selectedMessage && !isLoadingMessage ? (
+                <p className='text-muted-foreground text-sm'>
+                  Select a thread to extract speech text and generate audio.
+                </p>
+              ) : null}
+
+              {selectedMessage ? (
+                <>
+                  <div className='flex items-start justify-between gap-3'>
+                    <div className='grid min-w-0 gap-1'>
+                      <p className='font-medium text-sm'>
+                        {selectedMessage.subject}
+                      </p>
+                      <p className='text-muted-foreground text-xs'>
+                        {selectedMessage.from} · {selectedMessage.date}
+                      </p>
                     </div>
-
-                    <div className='flex flex-wrap items-center gap-2'>
+                    {savedOutputPath ? (
                       <Button
                         type='button'
-                        onClick={() => void handleGenerate()}
-                        disabled={
-                          isGenerating || !selectedMessage.speechText.trim()
-                        }
+                        variant='ghost'
+                        size='icon-sm'
+                        className='shrink-0'
+                        onClick={() => void handleRevealInFinder()}
+                        disabled={isRevealingAudio}
+                        aria-label='Reveal track in Finder'
+                        title='Reveal track in Finder'
                       >
-                        {isGenerating ? (
+                        {isRevealingAudio ? (
                           <LoaderCircle className='size-4 animate-spin' />
                         ) : (
-                          <AudioLinesIcon className='size-4' />
+                          <FolderOpen className='size-4' />
                         )}
-                        Generate audio
                       </Button>
-                    </div>
-
-                    {isGenerating || generatedDurationSec > 0 ? (
-                      <div className='grid gap-2'>
-                        <div className='flex justify-between text-muted-foreground text-xs'>
-                          <span>
-                            {isGenerating ? 'Generating…' : 'Ready'}
-                          </span>
-                          <span>
-                            {formatDuration(
-                              generatedDurationSec || estimatedDurationSec,
-                            )}
-                          </span>
-                        </div>
-                        <Progress
-                          value={
-                            isGenerating
-                              ? Math.min(
-                                  95,
-                                  estimatedDurationSec > 0
-                                    ? (generatedDurationSec /
-                                        estimatedDurationSec) *
-                                        100
-                                    : 15,
-                                )
-                              : 100
-                          }
-                        />
-                      </div>
                     ) : null}
-                  </>
-                ) : null}
+                  </div>
 
-                {audioUrl ? (
-                  <MailAudioPlayer
-                    key={audioUrl}
-                    audioRef={audioRef}
-                    audioUrl={audioUrl}
-                  />
-                ) : null}
+                  {!hasSynthesizedAudio ? (
+                    <>
+                      <div className='grid gap-2 sm:max-w-xs'>
+                        <Label>Voice</Label>
+                        <Select
+                          value={style}
+                          onValueChange={(value) =>
+                            setStyle(value ?? 'af_heart')
+                          }
+                        >
+                          <SelectTrigger className='w-full'>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VOICE_OPTIONS.map((voice) => (
+                              <SelectItem key={voice.value} value={voice.value}>
+                                {voice.label}
+                                {voice.badge ? ` (${voice.badge})` : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                <div className='grid gap-2'>
-                  <Label htmlFor='mail-speech-text'>Speech text</Label>
-                  <Textarea
-                    id='mail-speech-text'
-                    value={selectedMessage.speechText}
-                    onChange={(event) =>
-                      setSelectedMessage({
-                        ...selectedMessage,
-                        speechText: event.target.value,
-                      })
-                    }
-                    className='min-h-56 font-mono text-sm'
-                  />
-                </div>
-              </>
-            ) : null}
-          </CardContent>
-        </Card>
+                      <div className='flex flex-wrap items-center gap-2'>
+                        <Button
+                          type='button'
+                          onClick={() => void handleGenerate()}
+                          disabled={
+                            isGenerating || !selectedMessage.speechText.trim()
+                          }
+                        >
+                          {isGenerating ? (
+                            <LoaderCircle className='size-4 animate-spin' />
+                          ) : (
+                            <AudioLinesIcon className='size-4' />
+                          )}
+                          Generate audio
+                        </Button>
+                      </div>
+
+                      {isGenerating || generatedDurationSec > 0 ? (
+                        <div className='grid gap-2'>
+                          <div className='flex justify-between text-muted-foreground text-xs'>
+                            <span>
+                              {isGenerating ? 'Generating…' : 'Ready'}
+                            </span>
+                            <span>
+                              {formatDuration(
+                                generatedDurationSec || estimatedDurationSec,
+                              )}
+                            </span>
+                          </div>
+                          <Progress
+                            value={
+                              isGenerating
+                                ? Math.min(
+                                    95,
+                                    estimatedDurationSec > 0
+                                      ? (generatedDurationSec /
+                                          estimatedDurationSec) *
+                                          100
+                                      : 15,
+                                  )
+                                : 100
+                            }
+                          />
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
+
+                  {audioUrl ? (
+                    <MailAudioPlayer
+                      key={audioUrl}
+                      audioRef={audioRef}
+                      audioUrl={audioUrl}
+                    />
+                  ) : null}
+
+                  <div className='grid gap-2'>
+                    <Label htmlFor='mail-speech-text'>Speech text</Label>
+                    <Textarea
+                      id='mail-speech-text'
+                      value={selectedMessage.speechText}
+                      onChange={(event) =>
+                        setSelectedMessage({
+                          ...selectedMessage,
+                          speechText: event.target.value,
+                        })
+                      }
+                      className='min-h-56 font-mono text-sm'
+                    />
+                  </div>
+                </>
+              ) : null}
+            </CardContent>
+          </Card>
+        </Activity>
       </div>
     </main>
   );
