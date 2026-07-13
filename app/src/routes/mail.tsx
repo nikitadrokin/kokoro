@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { isTauri } from '@tauri-apps/api/core';
+import { convertFileSrc, invoke, isTauri } from '@tauri-apps/api/core';
 import {
   AudioLinesIcon,
   Check,
@@ -48,6 +48,13 @@ import { useSettingsStore } from '@/stores/settings-store';
 
 export const Route = createFileRoute('/mail')({ component: MailListenPage });
 
+type SavedAudioFile = {
+  name: string;
+  path: string;
+  modifiedSec?: number | null;
+  sizeBytes: number;
+};
+
 const MAILBOX_OPTIONS: Array<{ value: MailMailbox; label: string }> = [
   { value: 'important', label: 'Important' },
   { value: 'updates', label: 'Updates' },
@@ -73,6 +80,31 @@ const SETUP_STEPS = [
     body: 'Client ID must belong to the client where you just saved the redirect URI. Web clients also need the client secret. Credentials stay in localStorage on this device.',
   },
 ] as const;
+
+/** Builds a stable filename stem that starts with the Gmail message id. */
+function mailAudioOutputLabel(messageId: string, subject: string): string {
+  const safeSubject = subject
+    .replace(/[^\w\s-]+/g, '')
+    .trim()
+    .slice(0, 48);
+  return `${messageId}-${safeSubject || 'email'}`;
+}
+
+/** Finds the newest saved WAV for a Gmail message under the mail/ output folder. */
+function findSavedMailAudio(
+  files: SavedAudioFile[],
+  messageId: string,
+): SavedAudioFile | undefined {
+  const prefix = `${messageId.toLowerCase()}-`;
+  return files.find((file) => {
+    const normalized = file.name.replace(/\\/g, '/').toLowerCase();
+    if (!normalized.startsWith('mail/')) {
+      return false;
+    }
+    const baseName = normalized.slice(normalized.lastIndexOf('/') + 1);
+    return baseName.startsWith(prefix);
+  });
+}
 
 function MailListenPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -101,6 +133,7 @@ function MailListenPage() {
 
   const {
     audioUrl,
+    clearPlayerSource,
     error: speechError,
     generateStream,
     generatedDurationSec,
@@ -108,6 +141,7 @@ function MailListenPage() {
     play: handlePlay,
     savedOutputPath,
     setError: setSpeechError,
+    setPlayerSource,
   } = useSpeechStreamGeneration({ audioRef });
 
   const refreshAuth = useCallback(async () => {
@@ -116,6 +150,22 @@ function MailListenPage() {
     return status;
   }, []);
 
+  const loadSavedAudioForMessage = useCallback(
+    async (messageId: string) => {
+      try {
+        const files = await invoke<SavedAudioFile[]>('list_saved_audio');
+        const match = findSavedMailAudio(files, messageId);
+        if (match) {
+          setPlayerSource(convertFileSrc(match.path), match.path);
+          return;
+        }
+      } catch {
+        // Missing or unreadable library just means no prior take for this email.
+      }
+      clearPlayerSource();
+    },
+    [clearPlayerSource, setPlayerSource],
+  );
   useEffect(() => {
     let cancelled = false;
 
@@ -189,6 +239,7 @@ function MailListenPage() {
       setThreads([]);
       setSelectedThreadId('');
       setSelectedMessage(null);
+      clearPlayerSource();
       await refreshAuth();
     } catch (caughtError) {
       setPageError(
@@ -204,6 +255,7 @@ function MailListenPage() {
     setIsLoadingThreads(true);
     setSelectedThreadId('');
     setSelectedMessage(null);
+    clearPlayerSource();
     try {
       const nextThreads = await listMailboxThreads(mailbox, 15);
       setThreads(nextThreads);
@@ -217,7 +269,7 @@ function MailListenPage() {
     } finally {
       setIsLoadingThreads(false);
     }
-  }, [mailbox]);
+  }, [clearPlayerSource, mailbox]);
 
   useEffect(() => {
     if (!authStatus?.connected) {
@@ -231,10 +283,13 @@ function MailListenPage() {
     setSelectedMessage(null);
     setSpeechError('');
     setPageError('');
+    setEstimatedDurationSec(0);
+    clearPlayerSource();
     setIsLoadingMessage(true);
     try {
       const message = await getThreadMessageForSpeech(threadId);
       setSelectedMessage(message);
+      await loadSavedAudioForMessage(message.id);
     } catch (caughtError) {
       setPageError(
         caughtError instanceof Error
@@ -254,16 +309,15 @@ function MailListenPage() {
     setEstimatedDurationSec(
       estimateAudioDurationSec(selectedMessage.speechText),
     );
-    const safeLabel = selectedMessage.subject
-      .replace(/[^\w\s-]+/g, '')
-      .trim()
-      .slice(0, 48);
     await generateStream({
       text: selectedMessage.speechText,
       style,
       saveToDisk: playbackMode !== 'stream',
       streamAudio: playbackMode !== 'save-silent',
-      outputLabel: safeLabel || 'email',
+      outputLabel: mailAudioOutputLabel(
+        selectedMessage.id,
+        selectedMessage.subject,
+      ),
       outputSubdir: 'mail',
       mono: true,
     });
@@ -681,13 +735,15 @@ function MailListenPage() {
                   </p>
                 ) : null}
 
-                {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
-                <audio
-                  ref={audioRef}
-                  src={audioUrl || undefined}
-                  controls
-                  className="w-full"
-                />
+                {audioUrl ? (
+                  // biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet.
+                  <audio
+                    ref={audioRef}
+                    src={audioUrl}
+                    controls
+                    className="w-full"
+                  />
+                ) : null}
 
                 <div className="grid gap-2">
                   <Label htmlFor="mail-speech-text">Speech text</Label>

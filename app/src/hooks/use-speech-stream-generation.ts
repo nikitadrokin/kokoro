@@ -171,6 +171,7 @@ export function useSpeechStreamGeneration({
     audioRef.current?.removeAttribute('src');
     audioRef.current?.load();
     setSavedOutputPath('');
+    setGeneratedDurationSec(0);
     setAudioUrl((currentUrl) => {
       if (currentUrl) {
         revokeBlobUrl(currentUrl);
