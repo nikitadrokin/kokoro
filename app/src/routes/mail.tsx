@@ -6,9 +6,11 @@ import {
   LoaderCircle,
   LogOut,
   Mail,
+  Pause,
+  Play,
   RefreshCw,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { MailConnectSetup } from '@/components/MailConnectSetup';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import {
@@ -45,6 +48,7 @@ import { useSettingsStore } from '@/stores/settings-store';
 
 export const Route = createFileRoute('/mail')({ component: MailListenPage });
 
+/** Saved WAV metadata returned by the Tauri library listing command. */
 type SavedAudioFile = {
   name: string;
   path: string;
@@ -55,12 +59,26 @@ type SavedAudioFile = {
 /** Which pane is frontmost when the window is too narrow for side-by-side. */
 type NarrowMailPane = 'list' | 'detail';
 
+/** Props for the compact mail listen playback bar. */
+type MailAudioPlayerProps = {
+  audioRef: RefObject<HTMLAudioElement | null>;
+  audioUrl: string;
+};
+
 const MAILBOX_OPTIONS: Array<{ value: MailMailbox; label: string }> = [
   { value: 'important', label: 'Important' },
   { value: 'updates', label: 'Updates' },
   { value: 'promotions', label: 'Promotions / newsletters' },
   { value: 'inbox', label: 'Inbox' },
 ];
+
+/** Playback rates available in the mail audio player, from 0.5x to 2x. */
+const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] as const;
+
+/** Formats a playback rate for the speed dropdown label. */
+function formatSpeedLabel(speed: number): string {
+  return `${speed.toFixed(2).replace(/\.?0+$/, '')}x`;
+}
 
 /** Builds a stable filename stem that starts with the Gmail message id. */
 function mailAudioOutputLabel(messageId: string, subject: string): string {
@@ -85,6 +103,164 @@ function findSavedMailAudio(
     const baseName = normalized.slice(normalized.lastIndexOf('/') + 1);
     return baseName.startsWith(prefix);
   });
+}
+
+/**
+ * Compact mail listen player: play/pause, seek, duration, and speed.
+ * Uses a hidden audio element so the chrome matches the rest of the app.
+ */
+function MailAudioPlayer({ audioRef, audioUrl }: MailAudioPlayerProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTimeSec, setCurrentTimeSec] = useState(0);
+  const [durationSec, setDurationSec] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
+  const isSeekingRef = useRef(false);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+
+    const syncTime = () => {
+      if (!isSeekingRef.current) {
+        setCurrentTimeSec(audio.currentTime);
+      }
+    };
+
+    const syncDuration = () => {
+      if (Number.isFinite(audio.duration) && audio.duration > 0) {
+        setDurationSec(audio.duration);
+      }
+    };
+
+    const handlePlay = () => setIsPlaying(true);
+    const handlePause = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTimeSec(audio.duration || 0);
+    };
+
+    syncDuration();
+    syncTime();
+    setIsPlaying(!audio.paused);
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    audio.addEventListener('timeupdate', syncTime);
+    audio.addEventListener('loadedmetadata', syncDuration);
+    audio.addEventListener('durationchange', syncDuration);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('timeupdate', syncTime);
+      audio.removeEventListener('loadedmetadata', syncDuration);
+      audio.removeEventListener('durationchange', syncDuration);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [audioRef]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    audio.playbackRate = playbackSpeed;
+  }, [audioRef, playbackSpeed]);
+
+  const handleTogglePlayback = () => {
+    const audio = audioRef.current;
+    if (!audio) {
+      return;
+    }
+    if (audio.paused) {
+      void audio.play().catch(() => undefined);
+      return;
+    }
+    audio.pause();
+  };
+
+  const handleSeek = (value: number | readonly number[]) => {
+    const nextTime = Array.isArray(value) ? (value[0] ?? 0) : value;
+    setCurrentTimeSec(nextTime);
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = nextTime;
+    }
+  };
+
+  const seekMax = durationSec > 0 ? durationSec : 0;
+
+  return (
+    <div className='flex items-center gap-3 rounded-2xl bg-muted/40 px-3 py-2.5 ring-1 ring-foreground/5'>
+      {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        preload='metadata'
+        className='hidden'
+      />
+      <Button
+        type='button'
+        size='icon-sm'
+        variant='default'
+        onClick={handleTogglePlayback}
+        aria-label={isPlaying ? 'Pause' : 'Play'}
+        className='shrink-0'
+      >
+        {isPlaying ? (
+          <Pause className='size-4' />
+        ) : (
+          <Play className='size-4 fill-current' />
+        )}
+      </Button>
+      <Slider
+        min={0}
+        max={seekMax}
+        step={0.1}
+        value={[Math.min(currentTimeSec, seekMax)]}
+        onValueChange={handleSeek}
+        onPointerDown={() => {
+          isSeekingRef.current = true;
+        }}
+        onPointerUp={() => {
+          isSeekingRef.current = false;
+        }}
+        disabled={seekMax <= 0}
+        aria-label='Seek'
+        className='min-w-0 flex-1'
+      />
+      <span className='shrink-0 text-muted-foreground text-xs tabular-nums'>
+        {formatDuration(durationSec || currentTimeSec)}
+      </span>
+      <Select
+        value={String(playbackSpeed)}
+        onValueChange={(value) => {
+          const nextSpeed = Number(value);
+          if (Number.isFinite(nextSpeed) && nextSpeed > 0) {
+            setPlaybackSpeed(nextSpeed);
+          }
+        }}
+      >
+        <SelectTrigger
+          size='sm'
+          className='h-8 w-19 shrink-0'
+          aria-label='Playback speed'
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent align='end'>
+          {PLAYBACK_SPEED_OPTIONS.map((speed) => (
+            <SelectItem key={speed} value={String(speed)}>
+              {formatSpeedLabel(speed)}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
 }
 
 function MailListenPage() {
@@ -120,11 +296,12 @@ function MailListenPage() {
     generateStream,
     generatedDurationSec,
     isGenerating,
-    play: handlePlay,
     savedOutputPath,
     setError: setSpeechError,
     setPlayerSource,
   } = useSpeechStreamGeneration({ audioRef });
+
+  const hasSynthesizedAudio = Boolean(audioUrl) && !isGenerating;
 
   const refreshAuth = useCallback(async () => {
     const status = await getGmailAuthStatus();
@@ -550,93 +727,88 @@ function MailListenPage() {
                   </p>
                 </div>
 
-                <div className='grid gap-2 sm:max-w-xs'>
-                  <Label>Voice</Label>
-                  <Select
-                    value={style}
-                    onValueChange={(value) => setStyle(value ?? 'af_heart')}
-                  >
-                    <SelectTrigger className='w-full'>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VOICE_OPTIONS.map((voice) => (
-                        <SelectItem key={voice.value} value={voice.value}>
-                          {voice.label}
-                          {voice.badge ? ` (${voice.badge})` : ''}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className='flex flex-wrap items-center gap-2'>
-                  <Button
-                    type='button'
-                    onClick={() => void handleGenerate()}
-                    disabled={
-                      isGenerating || !selectedMessage.speechText.trim()
-                    }
-                  >
-                    {isGenerating ? (
-                      <LoaderCircle className='size-4 animate-spin' />
-                    ) : (
-                      <AudioLinesIcon className='size-4' />
-                    )}
-                    Generate audio
-                  </Button>
-                  {audioUrl ? (
-                    <Button
-                      type='button'
-                      variant='outline'
-                      onClick={() => void handlePlay()}
-                    >
-                      Play
-                    </Button>
-                  ) : null}
-                </div>
-
-                {isGenerating || generatedDurationSec > 0 ? (
-                  <div className='grid gap-2'>
-                    <div className='flex justify-between text-muted-foreground text-xs'>
-                      <span>{isGenerating ? 'Generating…' : 'Ready'}</span>
-                      <span>
-                        {formatDuration(
-                          generatedDurationSec || estimatedDurationSec,
-                        )}
-                      </span>
+                {!hasSynthesizedAudio ? (
+                  <>
+                    <div className='grid gap-2 sm:max-w-xs'>
+                      <Label>Voice</Label>
+                      <Select
+                        value={style}
+                        onValueChange={(value) => setStyle(value ?? 'af_heart')}
+                      >
+                        <SelectTrigger className='w-full'>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {VOICE_OPTIONS.map((voice) => (
+                            <SelectItem key={voice.value} value={voice.value}>
+                              {voice.label}
+                              {voice.badge ? ` (${voice.badge})` : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Progress
-                      value={
-                        isGenerating
-                          ? Math.min(
-                              95,
-                              estimatedDurationSec > 0
-                                ? (generatedDurationSec /
-                                    estimatedDurationSec) *
-                                    100
-                                : 15,
-                            )
-                          : 100
-                      }
-                    />
-                  </div>
+
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <Button
+                        type='button'
+                        onClick={() => void handleGenerate()}
+                        disabled={
+                          isGenerating || !selectedMessage.speechText.trim()
+                        }
+                      >
+                        {isGenerating ? (
+                          <LoaderCircle className='size-4 animate-spin' />
+                        ) : (
+                          <AudioLinesIcon className='size-4' />
+                        )}
+                        Generate audio
+                      </Button>
+                    </div>
+
+                    {isGenerating || generatedDurationSec > 0 ? (
+                      <div className='grid gap-2'>
+                        <div className='flex justify-between text-muted-foreground text-xs'>
+                          <span>
+                            {isGenerating ? 'Generating…' : 'Ready'}
+                          </span>
+                          <span>
+                            {formatDuration(
+                              generatedDurationSec || estimatedDurationSec,
+                            )}
+                          </span>
+                        </div>
+                        <Progress
+                          value={
+                            isGenerating
+                              ? Math.min(
+                                  95,
+                                  estimatedDurationSec > 0
+                                    ? (generatedDurationSec /
+                                        estimatedDurationSec) *
+                                        100
+                                    : 15,
+                                )
+                              : 100
+                          }
+                        />
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
+
+                {audioUrl ? (
+                  <MailAudioPlayer
+                    key={audioUrl}
+                    audioRef={audioRef}
+                    audioUrl={audioUrl}
+                  />
                 ) : null}
 
                 {savedOutputPath ? (
                   <p className='break-all text-muted-foreground text-xs'>
                     Saved to {savedOutputPath}
                   </p>
-                ) : null}
-
-                {audioUrl ? (
-                  // biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet.
-                  <audio
-                    ref={audioRef}
-                    src={audioUrl}
-                    controls
-                    className='w-full'
-                  />
                 ) : null}
 
                 <div className='grid gap-2'>
