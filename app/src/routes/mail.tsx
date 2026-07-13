@@ -420,8 +420,13 @@ function MailListenPage() {
       return;
     }
     const observer = new ResizeObserver((entries) => {
+      // Measure the border-box (not content-box): <main> is w-full with no
+      // border, so its border-box width equals the @container/content width the
+      // @5xl container query keys on. Using content-box would be smaller by
+      // <main>'s padding, opening a dead zone where CSS shows the two-column
+      // grid but JS still hides the detail pane.
       const width =
-        entries[0]?.contentBoxSize?.[0]?.inlineSize ?? pageElement.clientWidth;
+        entries[0]?.borderBoxSize?.[0]?.inlineSize ?? pageElement.offsetWidth;
       setIsNarrowLayout(width < MAIL_WIDE_LAYOUT_MIN_PX);
     });
     observer.observe(pageElement);
