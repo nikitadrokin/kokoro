@@ -20,16 +20,16 @@ export default function AppTopbar() {
       data-tauri-drag-region
       aria-hidden={isNavigationLocked}
       className={cn(
-        'sticky top-0 z-50 flex h-11 shrink-0 items-center gap-2 border-b bg-background/90 pr-4 backdrop-blur transition-[padding] duration-200 supports-backdrop-filter:bg-background/70',
+        'sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/90 pr-4 backdrop-blur transition-[padding] duration-200 supports-backdrop-filter:bg-background/70',
         clearTrafficLights ? 'pl-[88px]' : 'pl-2',
         isNavigationLocked && 'pointer-events-none opacity-60',
       )}
     >
-      <SidebarTrigger aria-label="Toggle sidebar" />
+      <SidebarTrigger aria-label='Toggle sidebar' />
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className='ml-auto flex items-center gap-2'>
         {import.meta.env.DEV && (
-          <Badge className="h-7 select-none rounded-full bg-orange-500/15 px-3 py-0.5 font-mono font-semibold text-[11px] text-orange-500 ring-1 ring-orange-500/30">
+          <Badge className='h-7 select-none rounded-full bg-orange-500/15 px-3 py-0.5 font-mono font-semibold text-[11px] text-orange-500 ring-1 ring-orange-500/30'>
             dev
           </Badge>
         )}
