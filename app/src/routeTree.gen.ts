@@ -15,9 +15,6 @@ import { Route as LibraryRouteImport } from './routes/library'
 import { Route as EpubRouteImport } from './routes/epub'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SpeechOptimizeRouteImport } from './routes/speech/optimize'
-import { Route as MockupsStudioRouteImport } from './routes/mockups/studio'
-import { Route as MockupsConsoleRouteImport } from './routes/mockups/console'
-import { Route as MockupsAuroraRouteImport } from './routes/mockups/aurora'
 
 const TroubleshootRoute = TroubleshootRouteImport.update({
   id: '/troubleshoot',
@@ -49,21 +46,6 @@ const SpeechOptimizeRoute = SpeechOptimizeRouteImport.update({
   path: '/speech/optimize',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MockupsStudioRoute = MockupsStudioRouteImport.update({
-  id: '/mockups/studio',
-  path: '/mockups/studio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MockupsConsoleRoute = MockupsConsoleRouteImport.update({
-  id: '/mockups/console',
-  path: '/mockups/console',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MockupsAuroraRoute = MockupsAuroraRouteImport.update({
-  id: '/mockups/aurora',
-  path: '/mockups/aurora',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -71,9 +53,6 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/troubleshoot': typeof TroubleshootRoute
-  '/mockups/aurora': typeof MockupsAuroraRoute
-  '/mockups/console': typeof MockupsConsoleRoute
-  '/mockups/studio': typeof MockupsStudioRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
 export interface FileRoutesByTo {
@@ -82,9 +61,6 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/troubleshoot': typeof TroubleshootRoute
-  '/mockups/aurora': typeof MockupsAuroraRoute
-  '/mockups/console': typeof MockupsConsoleRoute
-  '/mockups/studio': typeof MockupsStudioRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
 export interface FileRoutesById {
@@ -94,9 +70,6 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/troubleshoot': typeof TroubleshootRoute
-  '/mockups/aurora': typeof MockupsAuroraRoute
-  '/mockups/console': typeof MockupsConsoleRoute
-  '/mockups/studio': typeof MockupsStudioRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
 export interface FileRouteTypes {
@@ -107,9 +80,6 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/troubleshoot'
-    | '/mockups/aurora'
-    | '/mockups/console'
-    | '/mockups/studio'
     | '/speech/optimize'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -118,9 +88,6 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/troubleshoot'
-    | '/mockups/aurora'
-    | '/mockups/console'
-    | '/mockups/studio'
     | '/speech/optimize'
   id:
     | '__root__'
@@ -129,9 +96,6 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/troubleshoot'
-    | '/mockups/aurora'
-    | '/mockups/console'
-    | '/mockups/studio'
     | '/speech/optimize'
   fileRoutesById: FileRoutesById
 }
@@ -141,9 +105,6 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   MailRoute: typeof MailRoute
   TroubleshootRoute: typeof TroubleshootRoute
-  MockupsAuroraRoute: typeof MockupsAuroraRoute
-  MockupsConsoleRoute: typeof MockupsConsoleRoute
-  MockupsStudioRoute: typeof MockupsStudioRoute
   SpeechOptimizeRoute: typeof SpeechOptimizeRoute
 }
 
@@ -191,27 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SpeechOptimizeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mockups/studio': {
-      id: '/mockups/studio'
-      path: '/mockups/studio'
-      fullPath: '/mockups/studio'
-      preLoaderRoute: typeof MockupsStudioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mockups/console': {
-      id: '/mockups/console'
-      path: '/mockups/console'
-      fullPath: '/mockups/console'
-      preLoaderRoute: typeof MockupsConsoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mockups/aurora': {
-      id: '/mockups/aurora'
-      path: '/mockups/aurora'
-      fullPath: '/mockups/aurora'
-      preLoaderRoute: typeof MockupsAuroraRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -221,9 +161,6 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   MailRoute: MailRoute,
   TroubleshootRoute: TroubleshootRoute,
-  MockupsAuroraRoute: MockupsAuroraRoute,
-  MockupsConsoleRoute: MockupsConsoleRoute,
-  MockupsStudioRoute: MockupsStudioRoute,
   SpeechOptimizeRoute: SpeechOptimizeRoute,
 }
 export const routeTree = rootRouteImport

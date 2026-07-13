@@ -3,13 +3,9 @@ import {
   AudioLinesIcon,
   BookOpenIcon,
   HeadphonesIcon,
-  LayoutGridIcon,
   MailIcon,
   ShieldAlertIcon,
-  SparklesIcon,
-  SquarePenIcon,
   WandSparkles,
-  WavesIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -66,27 +62,6 @@ const navItems = [
   },
 ] as const;
 
-const mockupItems = [
-  {
-    to: '/mockups/studio',
-    label: 'Studio',
-    description: 'Calm single-column composer with a floating control bar',
-    icon: SparklesIcon,
-  },
-  {
-    to: '/mockups/console',
-    label: 'Console',
-    description: 'Pro two-pane workspace with a now-playing rail',
-    icon: SquarePenIcon,
-  },
-  {
-    to: '/mockups/aurora',
-    label: 'Aurora',
-    description: 'Soft bento layout that leans into the large radius',
-    icon: WavesIcon,
-  },
-] as const;
-
 const troubleshootLabel = 'Fix "not verified" / codesign errors';
 
 export default function Header() {
@@ -95,7 +70,6 @@ export default function Header() {
   });
   const isNavigationLocked = useSynthesisLockStore(selectIsSynthesisLocked);
   const isSpeechActive = pathname === '/' || pathname.startsWith('/speech');
-  const isMockupsActive = pathname.startsWith('/mockups');
 
   return (
     <header
@@ -186,49 +160,6 @@ export default function Header() {
               </NavigationMenuItem>
             );
           })}
-
-          <NavigationMenuItem>
-            <NavigationMenuTrigger
-              className={cn(
-                'h-9 gap-1.5 whitespace-nowrap rounded-full px-3 py-2 font-medium',
-                isMockupsActive && 'bg-muted text-foreground',
-              )}
-              aria-label='Design mockups'
-            >
-              <LayoutGridIcon
-                className='size-4 text-muted-foreground'
-                aria-hidden='true'
-              />
-              <span>Mockups</span>
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className='w-[min(28rem,calc(100vw-2rem))]'>
-              <div className='grid gap-1'>
-                {mockupItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = pathname === item.to;
-
-                  return (
-                    <NavigationMenuLink
-                      key={item.to}
-                      active={isActive}
-                      render={<Link to={item.to} />}
-                      className='grid grid-cols-[auto_1fr] items-start gap-x-3 gap-y-1 rounded-2xl px-3 py-3'
-                      aria-label={item.description}
-                    >
-                      <Icon
-                        className='mt-0.5 size-4 text-muted-foreground'
-                        aria-hidden='true'
-                      />
-                      <span className='font-medium'>{item.label}</span>
-                      <span className='col-start-2 text-muted-foreground text-xs leading-5'>
-                        {item.description}
-                      </span>
-                    </NavigationMenuLink>
-                  );
-                })}
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
 
           <div className='ml-auto flex items-center gap-2'>
             {import.meta.env.DEV && (
