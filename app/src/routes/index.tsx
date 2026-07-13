@@ -242,7 +242,7 @@ function PlaygroundPage() {
           </div>
         </div>
 
-        <div className="grid gap-4 @7xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+        <div className="grid gap-4 @5xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
           <Card className="shadow-sm backdrop-blur">
             <CardHeader>
               <CardTitle>Script</CardTitle>
@@ -413,7 +413,7 @@ function PlaygroundPage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 @7xl/content:self-start">
+          <div className="grid gap-4 @5xl/content:self-start">
             <Card className="shadow-sm backdrop-blur">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">

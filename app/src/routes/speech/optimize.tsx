@@ -110,7 +110,7 @@ function SpeechTextOptimizerPage() {
           </div>
         </div>
 
-        <div className='grid min-w-0 grid-cols-1 gap-4 @7xl/content:grid-cols-2'>
+        <div className='grid min-w-0 grid-cols-1 gap-4 @5xl/content:grid-cols-2'>
           <Card className='min-w-0 shadow-sm backdrop-blur'>
             <CardHeader>
               <CardTitle>Markdown</CardTitle>
