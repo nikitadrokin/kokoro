@@ -24,13 +24,27 @@ export type GmailMessageForSpeech = {
 };
 
 /** Preset Gmail search queries inspired by Zero's category defaults. */
-export type MailMailbox = 'important' | 'updates' | 'promotions' | 'inbox';
+export type MailMailbox =
+  | 'unread'
+  | 'important'
+  | 'updates'
+  | 'promotions'
+  | 'inbox';
 
 export const MAIL_MAILBOX_QUERIES: Record<MailMailbox, string> = {
+  unread: 'is:unread -in:sent -in:draft',
   important: 'is:important -in:sent -in:draft',
   updates: 'category:updates -in:sent -in:draft',
   promotions: 'category:promotions -in:sent -in:draft',
   inbox: 'in:inbox',
+};
+
+/** Paginated thread list returned by {@link listMailboxThreads}. */
+export type ListMailboxThreadsResult = {
+  /** Thread summaries for the current page. */
+  threads: GmailThreadSummary[];
+  /** Token for the next page, or null when there are no more results. */
+  nextPageToken: string | null;
 };
 
 export type GmailAuthStatus = {

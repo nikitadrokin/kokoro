@@ -73,11 +73,31 @@ type MailAudioPlayerProps = {
 };
 
 const MAILBOX_OPTIONS: Array<{ value: MailMailbox; label: string }> = [
+  { value: 'unread', label: 'Unread' },
   { value: 'important', label: 'Important' },
   { value: 'updates', label: 'Updates' },
   { value: 'promotions', label: 'Promotions / newsletters' },
   { value: 'inbox', label: 'Inbox' },
 ];
+
+/** How many threads to fetch per mailbox page. */
+const MAILBOX_PAGE_SIZE = 15;
+
+/** Scroll distance from the bottom that triggers loading the next page. */
+const MAILBOX_SCROLL_LOAD_THRESHOLD_PX = 120;
+
+/** Valid mailbox category values for the category select. */
+const MAIL_MAILBOX_VALUES: ReadonlyArray<MailMailbox> = MAILBOX_OPTIONS.map(
+  (option) => option.value,
+);
+
+/** Returns whether a select value is a known mailbox category. */
+function isMailMailbox(value: string | null): value is MailMailbox {
+  if (value === null) {
+    return false;
+  }
+  return MAIL_MAILBOX_VALUES.some((mailbox) => mailbox === value);
+}
 
 /** Playback rates available in the mail audio player, from 0.5x to 2x. */
 const PLAYBACK_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2] as const;
@@ -281,8 +301,9 @@ function MailListenPage() {
   );
 
   const [authStatus, setAuthStatus] = useState<GmailAuthStatus | null>(null);
-  const [mailbox, setMailbox] = useState<MailMailbox>('important');
+  const [mailbox, setMailbox] = useState<MailMailbox>('unread');
   const [threads, setThreads] = useState<GmailThreadSummary[]>([]);
+  const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [selectedThreadId, setSelectedThreadId] = useState('');
   const [selectedMessage, setSelectedMessage] =
     useState<GmailMessageForSpeech | null>(null);
@@ -290,12 +311,16 @@ function MailListenPage() {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoadingThreads, setIsLoadingThreads] = useState(false);
+  const [isLoadingMoreThreads, setIsLoadingMoreThreads] = useState(false);
   const [isLoadingMessage, setIsLoadingMessage] = useState(false);
   const [pageError, setPageError] = useState('');
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
   const [narrowPane, setNarrowPane] = useState<NarrowMailPane>('list');
   const [isNarrowLayout, setIsNarrowLayout] = useState(false);
   const [isRevealingAudio, setIsRevealingAudio] = useState(false);
+  const threadListRef = useRef<HTMLDivElement | null>(null);
+  const nextPageTokenRef = useRef<string | null>(null);
+  const isLoadingMoreThreadsRef = useRef(false);
 
   const {
     audioUrl,
@@ -416,6 +441,8 @@ function MailListenPage() {
     try {
       await logoutFromGmail();
       setThreads([]);
+      nextPageTokenRef.current = null;
+      setNextPageToken(null);
       setSelectedThreadId('');
       setSelectedMessage(null);
       setNarrowPane('list');
@@ -433,15 +460,23 @@ function MailListenPage() {
   const loadThreads = useCallback(async () => {
     setPageError('');
     setIsLoadingThreads(true);
+    setIsLoadingMoreThreads(false);
+    isLoadingMoreThreadsRef.current = false;
+    nextPageTokenRef.current = null;
+    setNextPageToken(null);
     setSelectedThreadId('');
     setSelectedMessage(null);
     setNarrowPane('list');
     clearPlayerSource();
     try {
-      const nextThreads = await listMailboxThreads(mailbox, 15);
-      setThreads(nextThreads);
+      const result = await listMailboxThreads(mailbox, MAILBOX_PAGE_SIZE);
+      setThreads(result.threads);
+      nextPageTokenRef.current = result.nextPageToken;
+      setNextPageToken(result.nextPageToken);
     } catch (caughtError) {
       setThreads([]);
+      nextPageTokenRef.current = null;
+      setNextPageToken(null);
       setPageError(
         caughtError instanceof Error
           ? caughtError.message
@@ -452,12 +487,93 @@ function MailListenPage() {
     }
   }, [clearPlayerSource, mailbox]);
 
+  const loadMoreThreads = useCallback(async () => {
+    const pageToken = nextPageTokenRef.current;
+    if (
+      !pageToken ||
+      isLoadingThreads ||
+      isLoadingMoreThreadsRef.current
+    ) {
+      return;
+    }
+
+    isLoadingMoreThreadsRef.current = true;
+    setIsLoadingMoreThreads(true);
+    setPageError('');
+    try {
+      const result = await listMailboxThreads(
+        mailbox,
+        MAILBOX_PAGE_SIZE,
+        pageToken,
+      );
+      setThreads((current) => {
+        const seenIds = new Set(current.map((thread) => thread.id));
+        const appended = result.threads.filter(
+          (thread) => !seenIds.has(thread.id),
+        );
+        return [...current, ...appended];
+      });
+      nextPageTokenRef.current = result.nextPageToken;
+      setNextPageToken(result.nextPageToken);
+    } catch (caughtError) {
+      setPageError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : String(caughtError),
+      );
+    } finally {
+      isLoadingMoreThreadsRef.current = false;
+      setIsLoadingMoreThreads(false);
+    }
+  }, [isLoadingThreads, mailbox]);
+
   useEffect(() => {
     if (!authStatus?.connected) {
       return;
     }
     void loadThreads();
   }, [authStatus?.connected, loadThreads]);
+
+  useEffect(() => {
+    const listElement = threadListRef.current;
+    if (
+      !listElement ||
+      isLoadingThreads ||
+      isLoadingMoreThreads ||
+      !nextPageToken
+    ) {
+      return;
+    }
+
+    if (
+      listElement.scrollHeight <=
+      listElement.clientHeight + MAILBOX_SCROLL_LOAD_THRESHOLD_PX
+    ) {
+      void loadMoreThreads();
+    }
+  }, [
+    isLoadingMoreThreads,
+    isLoadingThreads,
+    loadMoreThreads,
+    nextPageToken,
+    threads.length,
+  ]);
+
+  const handleThreadListScroll = useCallback(() => {
+    const listElement = threadListRef.current;
+    if (!listElement || !nextPageTokenRef.current) {
+      return;
+    }
+
+    const distanceFromBottom =
+      listElement.scrollHeight -
+      listElement.scrollTop -
+      listElement.clientHeight;
+
+    if (distanceFromBottom <= MAILBOX_SCROLL_LOAD_THRESHOLD_PX) {
+      void loadMoreThreads();
+    }
+  }, [loadMoreThreads]);
 
   const handleSelectThread = async (threadId: string) => {
     setSelectedThreadId(threadId);
@@ -570,8 +686,8 @@ function MailListenPage() {
             </Badge>
           </div>
           <p className='max-w-2xl text-muted-foreground text-sm leading-6'>
-            Pick an important or newsletter thread and generate Kokoro audio
-            on-device.
+            Pick an unread, important, or newsletter thread and generate Kokoro
+            audio on-device.
           </p>
         </div>
         <div className='flex flex-wrap items-center gap-2'>
@@ -631,12 +747,7 @@ function MailListenPage() {
             <Select
               value={mailbox}
               onValueChange={(value) => {
-                if (
-                  value === 'important' ||
-                  value === 'updates' ||
-                  value === 'promotions' ||
-                  value === 'inbox'
-                ) {
+                if (isMailMailbox(value)) {
                   setMailbox(value);
                 }
               }}
@@ -654,7 +765,11 @@ function MailListenPage() {
             </Select>
           </div>
 
-          <div className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'>
+          <div
+            ref={threadListRef}
+            onScroll={handleThreadListScroll}
+            className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'
+          >
             <div className='grid gap-1'>
               {isLoadingThreads ? (
                 <p className='px-3 py-3 text-muted-foreground text-sm'>
@@ -701,6 +816,20 @@ function MailListenPage() {
                   </button>
                 );
               })}
+              {isLoadingMoreThreads ? (
+                <p className='flex items-center gap-2 px-3 py-3 text-muted-foreground text-sm'>
+                  <LoaderCircle className='size-4 animate-spin' />
+                  Loading more…
+                </p>
+              ) : null}
+              {!isLoadingThreads &&
+              !isLoadingMoreThreads &&
+              nextPageToken === null &&
+              threads.length > 0 ? (
+                <p className='px-3 py-3 text-center text-muted-foreground text-xs'>
+                  End of mailbox
+                </p>
+              ) : null}
             </div>
           </div>
         </section>

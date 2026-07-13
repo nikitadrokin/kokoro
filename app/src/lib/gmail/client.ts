@@ -17,6 +17,7 @@ import {
   type GmailThreadResponse,
   type GmailThreadSummary,
   type GmailThreadsListResponse,
+  type ListMailboxThreadsResult,
   MAIL_MAILBOX_QUERIES,
   type MailMailbox,
 } from './types';
@@ -145,16 +146,18 @@ export async function logoutFromGmail(): Promise<void> {
 }
 
 /**
- * Lists recent threads for a mailbox, then hydrates each with metadata.
- * Mirrors Zero's live `threads.list` + metadata path (no Durable Object cache).
+ * Lists threads for a mailbox, then hydrates each with metadata.
+ * Pass `pageToken` from a previous result to fetch the next page.
  */
 export async function listMailboxThreads(
   mailbox: MailMailbox,
   maxResults = 20,
-): Promise<GmailThreadSummary[]> {
+  pageToken?: string | null,
+): Promise<ListMailboxThreadsResult> {
   const list = await gmailFetch<GmailThreadsListResponse>('/threads', {
     q: MAIL_MAILBOX_QUERIES[mailbox],
     maxResults,
+    pageToken: pageToken ?? undefined,
   });
 
   const threadIds = (list.threads ?? [])
@@ -179,7 +182,10 @@ export async function listMailboxThreads(
     summaries.push(messageToSummary({ ...latest, threadId }));
   }
 
-  return summaries;
+  return {
+    threads: summaries,
+    nextPageToken: list.nextPageToken ?? null,
+  };
 }
 
 /** Loads a full thread and returns the latest non-draft message for TTS. */

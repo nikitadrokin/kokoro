@@ -23,6 +23,7 @@ export {
   type GmailClientConfig,
   type GmailMessageForSpeech,
   type GmailThreadSummary,
+  type ListMailboxThreadsResult,
   MAIL_MAILBOX_QUERIES,
   type MailMailbox,
 } from './types';
