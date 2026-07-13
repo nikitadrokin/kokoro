@@ -55,9 +55,6 @@ type SavedAudioFile = {
 /** Which pane is frontmost when the window is too narrow for side-by-side. */
 type NarrowMailPane = 'list' | 'detail';
 
-/** Approx app chrome height so the mail workspace fills the remaining viewport. */
-const APP_HEADER_OFFSET = '3.5rem';
-
 const MAILBOX_OPTIONS: Array<{ value: MailMailbox; label: string }> = [
   { value: 'important', label: 'Important' },
   { value: 'updates', label: 'Updates' },
@@ -352,12 +349,12 @@ function MailListenPage() {
     );
   }
 
+  const showListPane = !isNarrowLayout || narrowPane === 'list';
+  const showDetailPane = !isNarrowLayout || narrowPane === 'detail';
+
   return (
-    <main
-      className='flex w-full flex-col gap-4 overflow-hidden px-4 py-4 sm:px-6 lg:px-8'
-      style={{ height: `calc(100dvh - ${APP_HEADER_OFFSET})` }}
-    >
-      <div className='flex shrink-0 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
+    <main className='flex w-full flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8'>
+      <div className='flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between'>
         <div className='flex flex-col gap-2'>
           <div className='flex items-center gap-2'>
             <Mail className='size-5 text-primary' aria-hidden='true' />
@@ -392,21 +389,21 @@ function MailListenPage() {
       {displayError ? (
         <div
           role='alert'
-          className='shrink-0 rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm'
+          className='rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-destructive text-sm'
         >
           {displayError}
         </div>
       ) : null}
 
-      <div className='relative min-h-0 flex-1 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-8'>
+      <div className='relative lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-8'>
         <section
-          aria-hidden={isNarrowLayout && narrowPane === 'detail'}
+          aria-hidden={!showListPane}
           className={cn(
-            'flex min-h-0 min-w-0 flex-col gap-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'absolute inset-0 lg:static lg:translate-x-0',
-            narrowPane === 'detail'
-              ? 'pointer-events-none -translate-x-full lg:pointer-events-auto'
-              : 'translate-x-0',
+            'flex min-w-0 flex-col gap-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'lg:sticky lg:top-14 lg:h-[calc(100dvh-3.5rem)]',
+            showListPane
+              ? 'relative translate-x-0'
+              : 'pointer-events-none absolute inset-x-0 top-0 -translate-x-full',
           )}
         >
           <div className='flex shrink-0 items-center justify-between gap-2'>
@@ -453,8 +450,8 @@ function MailListenPage() {
             </Select>
           </div>
 
-          <div className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain'>
-            <div className='grid gap-1 pb-2'>
+          <div className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain lg:pb-2'>
+            <div className='grid gap-1'>
               {isLoadingThreads ? (
                 <p className='px-3 py-3 text-muted-foreground text-sm'>
                   Loading…
@@ -505,16 +502,15 @@ function MailListenPage() {
         </section>
 
         <Card
-          aria-hidden={isNarrowLayout && narrowPane === 'list'}
+          aria-hidden={!showDetailPane}
           className={cn(
-            'min-h-0 min-w-0 gap-0 overflow-hidden shadow-sm backdrop-blur transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'absolute inset-0 lg:static lg:translate-x-0',
-            narrowPane === 'list'
-              ? 'pointer-events-none translate-x-full lg:pointer-events-auto'
-              : 'translate-x-0',
+            'min-w-0 shadow-sm backdrop-blur transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            showDetailPane
+              ? 'relative translate-x-0'
+              : 'pointer-events-none absolute inset-x-0 top-0 translate-x-full',
           )}
         >
-          <CardHeader className='shrink-0 gap-3 pb-3'>
+          <CardHeader className='gap-3 pb-3'>
             <div className='flex items-center gap-2'>
               <Button
                 type='button'
@@ -529,138 +525,136 @@ function MailListenPage() {
               <CardTitle className='text-base'>Listen</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain'>
-            <div className='grid gap-4 pb-2'>
-              {isLoadingMessage ? (
-                <p className='flex items-center gap-2 text-muted-foreground text-sm'>
-                  <LoaderCircle className='size-4 animate-spin' />
-                  Extracting email text…
-                </p>
-              ) : null}
+          <CardContent className='grid gap-4'>
+            {isLoadingMessage ? (
+              <p className='flex items-center gap-2 text-muted-foreground text-sm'>
+                <LoaderCircle className='size-4 animate-spin' />
+                Extracting email text…
+              </p>
+            ) : null}
 
-              {!selectedMessage && !isLoadingMessage ? (
-                <p className='text-muted-foreground text-sm'>
-                  Select a thread to extract speech text and generate audio.
-                </p>
-              ) : null}
+            {!selectedMessage && !isLoadingMessage ? (
+              <p className='text-muted-foreground text-sm'>
+                Select a thread to extract speech text and generate audio.
+              </p>
+            ) : null}
 
-              {selectedMessage ? (
-                <>
-                  <div className='grid gap-1'>
-                    <p className='font-medium text-sm'>
-                      {selectedMessage.subject}
-                    </p>
-                    <p className='text-muted-foreground text-xs'>
-                      {selectedMessage.from} · {selectedMessage.date}
-                    </p>
-                  </div>
+            {selectedMessage ? (
+              <>
+                <div className='grid gap-1'>
+                  <p className='font-medium text-sm'>
+                    {selectedMessage.subject}
+                  </p>
+                  <p className='text-muted-foreground text-xs'>
+                    {selectedMessage.from} · {selectedMessage.date}
+                  </p>
+                </div>
 
-                  <div className='grid gap-2 sm:max-w-xs'>
-                    <Label>Voice</Label>
-                    <Select
-                      value={style}
-                      onValueChange={(value) => setStyle(value ?? 'af_heart')}
-                    >
-                      <SelectTrigger className='w-full'>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {VOICE_OPTIONS.map((voice) => (
-                          <SelectItem key={voice.value} value={voice.value}>
-                            {voice.label}
-                            {voice.badge ? ` (${voice.badge})` : ''}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className='grid gap-2 sm:max-w-xs'>
+                  <Label>Voice</Label>
+                  <Select
+                    value={style}
+                    onValueChange={(value) => setStyle(value ?? 'af_heart')}
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VOICE_OPTIONS.map((voice) => (
+                        <SelectItem key={voice.value} value={voice.value}>
+                          {voice.label}
+                          {voice.badge ? ` (${voice.badge})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                  <div className='flex flex-wrap items-center gap-2'>
+                <div className='flex flex-wrap items-center gap-2'>
+                  <Button
+                    type='button'
+                    onClick={() => void handleGenerate()}
+                    disabled={
+                      isGenerating || !selectedMessage.speechText.trim()
+                    }
+                  >
+                    {isGenerating ? (
+                      <LoaderCircle className='size-4 animate-spin' />
+                    ) : (
+                      <AudioLinesIcon className='size-4' />
+                    )}
+                    Generate audio
+                  </Button>
+                  {audioUrl ? (
                     <Button
                       type='button'
-                      onClick={() => void handleGenerate()}
-                      disabled={
-                        isGenerating || !selectedMessage.speechText.trim()
-                      }
+                      variant='outline'
+                      onClick={() => void handlePlay()}
                     >
-                      {isGenerating ? (
-                        <LoaderCircle className='size-4 animate-spin' />
-                      ) : (
-                        <AudioLinesIcon className='size-4' />
-                      )}
-                      Generate audio
+                      Play
                     </Button>
-                    {audioUrl ? (
-                      <Button
-                        type='button'
-                        variant='outline'
-                        onClick={() => void handlePlay()}
-                      >
-                        Play
-                      </Button>
-                    ) : null}
-                  </div>
-
-                  {isGenerating || generatedDurationSec > 0 ? (
-                    <div className='grid gap-2'>
-                      <div className='flex justify-between text-muted-foreground text-xs'>
-                        <span>{isGenerating ? 'Generating…' : 'Ready'}</span>
-                        <span>
-                          {formatDuration(
-                            generatedDurationSec || estimatedDurationSec,
-                          )}
-                        </span>
-                      </div>
-                      <Progress
-                        value={
-                          isGenerating
-                            ? Math.min(
-                                95,
-                                estimatedDurationSec > 0
-                                  ? (generatedDurationSec /
-                                      estimatedDurationSec) *
-                                      100
-                                  : 15,
-                              )
-                            : 100
-                        }
-                      />
-                    </div>
                   ) : null}
+                </div>
 
-                  {savedOutputPath ? (
-                    <p className='break-all text-muted-foreground text-xs'>
-                      Saved to {savedOutputPath}
-                    </p>
-                  ) : null}
-
-                  {audioUrl ? (
-                    // biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet.
-                    <audio
-                      ref={audioRef}
-                      src={audioUrl}
-                      controls
-                      className='w-full'
-                    />
-                  ) : null}
-
+                {isGenerating || generatedDurationSec > 0 ? (
                   <div className='grid gap-2'>
-                    <Label htmlFor='mail-speech-text'>Speech text</Label>
-                    <Textarea
-                      id='mail-speech-text'
-                      value={selectedMessage.speechText}
-                      onChange={(event) =>
-                        setSelectedMessage({
-                          ...selectedMessage,
-                          speechText: event.target.value,
-                        })
+                    <div className='flex justify-between text-muted-foreground text-xs'>
+                      <span>{isGenerating ? 'Generating…' : 'Ready'}</span>
+                      <span>
+                        {formatDuration(
+                          generatedDurationSec || estimatedDurationSec,
+                        )}
+                      </span>
+                    </div>
+                    <Progress
+                      value={
+                        isGenerating
+                          ? Math.min(
+                              95,
+                              estimatedDurationSec > 0
+                                ? (generatedDurationSec /
+                                    estimatedDurationSec) *
+                                    100
+                                : 15,
+                            )
+                          : 100
                       }
-                      className='min-h-56 font-mono text-sm'
                     />
                   </div>
-                </>
-              ) : null}
-            </div>
+                ) : null}
+
+                {savedOutputPath ? (
+                  <p className='break-all text-muted-foreground text-xs'>
+                    Saved to {savedOutputPath}
+                  </p>
+                ) : null}
+
+                {audioUrl ? (
+                  // biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet.
+                  <audio
+                    ref={audioRef}
+                    src={audioUrl}
+                    controls
+                    className='w-full'
+                  />
+                ) : null}
+
+                <div className='grid gap-2'>
+                  <Label htmlFor='mail-speech-text'>Speech text</Label>
+                  <Textarea
+                    id='mail-speech-text'
+                    value={selectedMessage.speechText}
+                    onChange={(event) =>
+                      setSelectedMessage({
+                        ...selectedMessage,
+                        speechText: event.target.value,
+                      })
+                    }
+                    className='min-h-56 font-mono text-sm'
+                  />
+                </div>
+              </>
+            ) : null}
           </CardContent>
         </Card>
       </div>
