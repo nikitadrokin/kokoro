@@ -137,7 +137,119 @@ function WaveBars({ className }: { className?: string }) {
   )
 }
 
+const DURATION = 12 // seconds
+const START = 5 // where the fill settles on load, matching the 0:05 tick
+
+function formatTime(seconds: number) {
+  const total = Math.floor(seconds)
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`
+}
+
+const enterTransition = "clip-path 850ms var(--ease-out-strong)"
+
 function AppPreview() {
+  const fillRef = useRef<HTMLDivElement>(null)
+  const timeRef = useRef<HTMLSpanElement>(null)
+  const trackRef = useRef<HTMLDivElement>(null)
+  const progressRef = useRef(0)
+  const rafRef = useRef<number | null>(null)
+  const lastTsRef = useRef<number | null>(null)
+  const draggingRef = useRef(false)
+  const [playing, setPlaying] = useState(false)
+
+  // Push the current position into the DOM directly, so per-frame playback and
+  // scrubbing don't churn React. `animate` turns on the eased entrance curve;
+  // frame-by-frame updates keep it off so they track 1:1.
+  const paint = (seconds: number, animate = false) => {
+    const pct = (seconds / DURATION) * 100
+    const fill = fillRef.current
+    if (fill) {
+      fill.style.transition = animate ? enterTransition : "none"
+      fill.style.clipPath = `inset(0 ${100 - pct}% 0 0)`
+    }
+    if (timeRef.current) timeRef.current.textContent = formatTime(seconds)
+    trackRef.current?.setAttribute("aria-valuenow", String(Math.round(seconds)))
+  }
+
+  const stop = () => {
+    setPlaying(false)
+    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    rafRef.current = null
+    lastTsRef.current = null
+  }
+
+  const tick = (ts: number) => {
+    if (lastTsRef.current === null) lastTsRef.current = ts
+    const next = progressRef.current + (ts - lastTsRef.current) / 1000
+    lastTsRef.current = ts
+    if (next >= DURATION) {
+      progressRef.current = DURATION
+      paint(DURATION)
+      stop()
+      return
+    }
+    progressRef.current = next
+    paint(next)
+    rafRef.current = requestAnimationFrame(tick)
+  }
+
+  const play = () => {
+    if (progressRef.current >= DURATION) progressRef.current = 0 // replay from start
+    setPlaying(true)
+    lastTsRef.current = null
+    rafRef.current = requestAnimationFrame(tick)
+  }
+
+  const seekTo = (clientX: number) => {
+    const el = trackRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
+    progressRef.current = ratio * DURATION
+    paint(progressRef.current)
+  }
+
+  // Entrance: ease the fill from empty to the 0:05 mark, then hold.
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    progressRef.current = START
+    if (reduce) {
+      paint(START)
+      return
+    }
+    paint(0)
+    const id = requestAnimationFrame(() => paint(START, true))
+    return () => {
+      cancelAnimationFrame(id)
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+    }
+  }, [])
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (playing) stop()
+    draggingRef.current = true
+    e.currentTarget.setPointerCapture(e.pointerId)
+    seekTo(e.clientX)
+  }
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (draggingRef.current) seekTo(e.clientX)
+  }
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    draggingRef.current = false
+    e.currentTarget.releasePointerCapture(e.pointerId)
+  }
+  const onKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
+    e.preventDefault()
+    if (playing) stop()
+    const delta = e.key === "ArrowRight" ? 1 : -1
+    progressRef.current = Math.min(
+      DURATION,
+      Math.max(0, progressRef.current + delta),
+    )
+    paint(progressRef.current)
+  }
+
   return (
     <Card className="overflow-hidden shadow-xl shadow-foreground/[0.03]">
       <CardHeader className="border-b pb-4">
@@ -158,23 +270,52 @@ function AppPreview() {
           speech you can stream now or save for later.
         </p>
 
-        {/* Waveform with a playhead sweeping across it. */}
-        <div className="relative h-14 select-none">
+        {/* Scrubbable waveform — the primary fill is clipped to the playhead. */}
+        <div
+          ref={trackRef}
+          aria-label="Playback position"
+          aria-valuemax={DURATION}
+          aria-valuemin={0}
+          aria-valuenow={0}
+          className="relative h-14 cursor-pointer touch-none select-none rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+          onKeyDown={onKeyDown}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          role="slider"
+          tabIndex={0}
+        >
           <WaveBars className="text-border" />
-          <div className="waveform-fill absolute inset-0">
+          <div
+            ref={fillRef}
+            className="absolute inset-0"
+            style={{ clipPath: "inset(0 100% 0 0)" }}
+          >
             <WaveBars className="text-primary" />
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div
-            aria-hidden="true"
-            className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground"
+          <button
+            aria-label={playing ? "Pause" : "Play"}
+            className="flex size-10 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform duration-100 ease-out active:scale-95"
+            onClick={() => (playing ? stop() : play())}
+            type="button"
           >
-            <Play className="size-4 translate-x-px fill-current" />
-          </div>
-          <span className="font-mono text-sm tabular-nums text-muted-foreground">
-            0:05 / 0:12
+            {playing ? (
+              <Pause className="size-4 fill-current" />
+            ) : (
+              <Play className="size-4 translate-x-px fill-current" />
+            )}
+          </button>
+          <span
+            ref={timeRef}
+            className="font-mono text-sm tabular-nums text-muted-foreground"
+          >
+            0:05
+          </span>
+          <span className="font-mono text-sm tabular-nums text-muted-foreground/60">
+            / {formatTime(DURATION)}
           </span>
           <div className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground">
             <ShieldCheck aria-hidden="true" className="size-4 text-primary" />

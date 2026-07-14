@@ -189,20 +189,6 @@ body,
   }
 }
 
-/* Playhead sweep across the hero waveform — a "this is playing" motif. */
-@keyframes wave-play {
-  0% {
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-.waveform-fill {
-  animation: wave-play 6.5s var(--ease-in-out-strong) infinite alternate;
-}
-
 @keyframes marquee-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
@@ -216,9 +202,5 @@ body,
   }
   .card-lift:hover {
     transform: none;
-  }
-  .waveform-fill {
-    animation: none;
-    clip-path: inset(0 62% 0 0);
   }
 }
