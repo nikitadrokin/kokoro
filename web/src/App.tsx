@@ -114,35 +114,32 @@ function Reveal({
   )
 }
 
-// Bar heights are shaped from the speech clusters and pauses visible in the
-// FFmpeg waveform render of landing-page-track.wav.
+// Peak/RMS amplitudes sampled from landing-page-track.wav — four speech
+// clusters with real pauses, not a repeating decorative pattern.
 const waveformHeights = [
-  22, 38, 54, 31, 47, 62, 43, 26, 12, 18, 35, 58, 44, 29, 52, 37,
-  16, 24, 46, 69, 56, 42, 65, 51, 34, 20, 14, 27, 48, 74, 61, 39,
-  52, 68, 45, 24, 12, 20, 38, 56, 43, 31, 49, 63, 46, 28, 18, 14,
-  25, 44, 57, 40, 29, 47, 62, 51, 34, 19, 12, 30, 49, 37, 24, 16,
+  10, 10, 10, 71, 72, 46, 82, 81, 70, 57, 57, 49, 39, 10, 49, 73,
+  68, 57, 49, 37, 19, 10, 10, 10, 10, 10, 10, 50, 70, 88, 74, 72,
+  52, 61, 62, 70, 66, 62, 60, 71, 48, 73, 77, 66, 33, 10, 10, 65,
+  55, 59, 46, 48, 57, 54, 44, 54, 57, 51, 58, 65, 65, 48, 47, 10,
+  10, 67, 72, 54, 75, 53, 58, 56, 57, 54, 41, 21, 10, 10, 10, 10,
 ] as const
 
 function Waveform({ className }: { className?: string }) {
+  // CSS capsules keep round end-caps under stretch; SVG rx collapses to
+  // squares when the waveform strip is scaled non-uniformly.
   return (
-    <svg
+    <div
       aria-hidden="true"
-      className={cn("h-full w-full", className)}
-      preserveAspectRatio="none"
-      viewBox={`0 0 ${waveformHeights.length} 100`}
+      className={cn("flex h-full w-full items-center gap-px", className)}
     >
       {waveformHeights.map((height, index) => (
-        <rect
+        <span
           key={index}
-          fill="currentColor"
-          height={height}
-          rx="0.35"
-          width="0.7"
-          x={index + 0.15}
-          y={(100 - height) / 2}
+          className="min-w-0 flex-1 rounded-full bg-current"
+          style={{ height: `${height}%` }}
         />
       ))}
-    </svg>
+    </div>
   )
 }
 
