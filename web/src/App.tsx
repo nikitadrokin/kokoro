@@ -137,34 +137,31 @@ function WaveBars({ className }: { className?: string }) {
   )
 }
 
-const DURATION = 12 // seconds
-const START = 5 // where the fill settles on load, matching the 0:05 tick
+const DURATION = 8 // seconds
+const TRACK_URL = "/landing-page-track.wav"
 
 function formatTime(seconds: number) {
   const total = Math.floor(seconds)
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`
 }
 
-const enterTransition = "clip-path 500ms var(--ease-out-strong)"
-
 function AppPreview() {
+  const audioRef = useRef<HTMLAudioElement>(null)
   const fillRef = useRef<HTMLDivElement>(null)
   const timeRef = useRef<HTMLSpanElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   const progressRef = useRef(0)
   const rafRef = useRef<number | null>(null)
-  const lastTsRef = useRef<number | null>(null)
   const draggingRef = useRef(false)
   const [playing, setPlaying] = useState(false)
 
   // Push the current position into the DOM directly, so per-frame playback and
-  // scrubbing don't churn React. `animate` turns on the eased entrance curve;
-  // frame-by-frame updates keep it off so they track 1:1.
-  const paint = (seconds: number, animate = false) => {
+  // scrubbing don't churn React.
+  const paint = (seconds: number) => {
     const pct = (seconds / DURATION) * 100
     const fill = fillRef.current
     if (fill) {
-      fill.style.transition = animate ? enterTransition : "none"
+      fill.style.transition = "none"
       fill.style.clipPath = `inset(0 ${100 - pct}% 0 0)`
     }
     if (timeRef.current) timeRef.current.textContent = formatTime(seconds)
@@ -173,16 +170,16 @@ function AppPreview() {
 
   const stop = () => {
     setPlaying(false)
+    audioRef.current?.pause()
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     rafRef.current = null
-    lastTsRef.current = null
   }
 
-  const tick = (ts: number) => {
-    if (lastTsRef.current === null) lastTsRef.current = ts
-    const next = progressRef.current + (ts - lastTsRef.current) / 1000
-    lastTsRef.current = ts
-    if (next >= DURATION) {
+  const tick = () => {
+    const audio = audioRef.current
+    if (!audio) return
+    const next = Math.min(audio.currentTime, DURATION)
+    if (next >= DURATION || audio.ended) {
       progressRef.current = DURATION
       paint(DURATION)
       stop()
@@ -193,11 +190,19 @@ function AppPreview() {
     rafRef.current = requestAnimationFrame(tick)
   }
 
-  const play = () => {
+  const play = async () => {
+    const audio = audioRef.current
+    if (!audio) return
     if (progressRef.current >= DURATION) progressRef.current = 0 // replay from start
-    setPlaying(true)
-    lastTsRef.current = null
-    rafRef.current = requestAnimationFrame(tick)
+    audio.currentTime = progressRef.current
+    try {
+      await audio.play()
+      setPlaying(true)
+      rafRef.current = requestAnimationFrame(tick)
+    } catch {
+      // Browsers may reject playback until a user gesture is accepted.
+      setPlaying(false)
+    }
   }
 
   const seekTo = (clientX: number) => {
@@ -206,24 +211,14 @@ function AppPreview() {
     const rect = el.getBoundingClientRect()
     const ratio = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width))
     progressRef.current = ratio * DURATION
+    if (audioRef.current) audioRef.current.currentTime = progressRef.current
     paint(progressRef.current)
   }
 
-  // Entrance: ease the fill from empty to the 0:05 mark, then hold.
   useEffect(() => {
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    progressRef.current = START
-    if (reduce) {
-      paint(START)
-      return
-    }
+    progressRef.current = 0
     paint(0)
-    // Force a style flush so the empty state is committed as the transition's
-    // starting point — otherwise the browser coalesces both writes and jumps.
-    void fillRef.current?.getBoundingClientRect().width
-    const id = requestAnimationFrame(() => paint(START, true))
     return () => {
-      cancelAnimationFrame(id)
       if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
     }
   }, [])
@@ -250,11 +245,13 @@ function AppPreview() {
       DURATION,
       Math.max(0, progressRef.current + delta),
     )
+    if (audioRef.current) audioRef.current.currentTime = progressRef.current
     paint(progressRef.current)
   }
 
   return (
     <Card className="overflow-hidden shadow-xl shadow-foreground/[0.03]">
+      <audio ref={audioRef} preload="metadata" src={TRACK_URL} />
       <CardHeader className="border-b pb-4">
         <div className="flex items-center gap-3">
           <div className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
