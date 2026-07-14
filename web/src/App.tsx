@@ -57,15 +57,6 @@ const specs = [
   "Open source, built on Rust and React",
 ]
 
-// Organic waveform: an arch envelope with a little jitter, computed once so
-// the shape is stable between renders.
-const wave = Array.from({ length: 48 }, (_, i) => {
-  const t = i / 47
-  const envelope = Math.sin(t * Math.PI)
-  const jitter = Math.abs(Math.sin(i * 1.7) + Math.sin(i * 0.6)) / 2
-  return Math.max(0.16, Math.min(1, envelope * 0.72 + jitter * 0.34 + 0.14))
-})
-
 function ThemeButton() {
   const { theme, setTheme } = useTheme()
   const isDark = theme === "dark"
@@ -123,17 +114,35 @@ function Reveal({
   )
 }
 
-function WaveBars({ className }: { className?: string }) {
+// Bar heights are shaped from the speech clusters and pauses visible in the
+// FFmpeg waveform render of landing-page-track.wav.
+const waveformHeights = [
+  22, 38, 54, 31, 47, 62, 43, 26, 12, 18, 35, 58, 44, 29, 52, 37,
+  16, 24, 46, 69, 56, 42, 65, 51, 34, 20, 14, 27, 48, 74, 61, 39,
+  52, 68, 45, 24, 12, 20, 38, 56, 43, 31, 49, 63, 46, 28, 18, 14,
+  25, 44, 57, 40, 29, 47, 62, 51, 34, 19, 12, 30, 49, 37, 24, 16,
+] as const
+
+function Waveform({ className }: { className?: string }) {
   return (
-    <div className={cn("flex h-full items-center gap-[3px]", className)}>
-      {wave.map((height, i) => (
-        <span
-          key={i}
-          className="flex-1 rounded-full bg-current"
-          style={{ height: `${Math.round(height * 100)}%` }}
+    <svg
+      aria-hidden="true"
+      className={cn("h-full w-full", className)}
+      preserveAspectRatio="none"
+      viewBox={`0 0 ${waveformHeights.length} 100`}
+    >
+      {waveformHeights.map((height, index) => (
+        <rect
+          key={index}
+          fill="currentColor"
+          height={height}
+          rx="0.35"
+          width="0.7"
+          x={index + 0.15}
+          y={(100 - height) / 2}
         />
       ))}
-    </div>
+    </svg>
   )
 }
 
@@ -285,13 +294,13 @@ function AppPreview() {
           role="slider"
           tabIndex={0}
         >
-          <WaveBars className="text-border" />
+          <Waveform className="text-border" />
           <div
             ref={fillRef}
             className="absolute inset-0"
             style={{ clipPath: "inset(0 100% 0 0)" }}
           >
-            <WaveBars className="text-primary" />
+            <Waveform className="text-primary" />
           </div>
         </div>
 
