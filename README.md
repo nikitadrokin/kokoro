@@ -156,6 +156,7 @@ The Tauri bundle includes:
 | --- | --- |
 | `app/` | Tauri desktop app, React UI, release scripts, and app bundle config. |
 | `app/src-tauri/` | Rust Tauri commands that invoke the `koko` sidecar and return generated WAV data to the UI. |
+| `web/` | Standalone Vite landing page for the downloadable macOS app. |
 | `cli/koko/` | `koko` command-line binary. |
 | `cli/kokoros/` | Rust TTS library and ONNX runtime integration. |
 | `cli/kokoros-openai/` | OpenAI-compatible speech API support. |
