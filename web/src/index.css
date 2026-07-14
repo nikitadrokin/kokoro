@@ -122,6 +122,12 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+:root {
+  /* Strong custom curves — the built-in CSS easings lack punch. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
 html,
 body,
 #root {
@@ -138,13 +144,81 @@ body,
   }
   body {
     @apply overflow-hidden bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
   }
+  /* Optical sizing + size-specific tracking: large text reads too loose,
+     so headings tighten while body stays near zero. */
+  h1,
+  h2 {
+    font-optical-sizing: auto;
+    letter-spacing: -0.021em;
+  }
+}
+
+/* Scroll-reveal: fade + short rise on entry, with a strong ease-out.
+   Elements start hidden and settle when they scroll into view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 600ms var(--ease-out-strong),
+    transform 600ms var(--ease-out-strong);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal[data-visible='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Card hover lift — gated behind real pointers so touch taps don't trigger it. */
+.card-lift {
+  transition:
+    transform 220ms var(--ease-out-strong),
+    box-shadow 220ms var(--ease-out-strong);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-lift:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Playhead sweep across the hero waveform — a "this is playing" motif. */
+@keyframes wave-play {
+  0% {
+    clip-path: inset(0 100% 0 0);
+  }
+  100% {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.waveform-fill {
+  animation: wave-play 6.5s var(--ease-in-out-strong) infinite alternate;
 }
 
 @keyframes marquee-scroll {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Reduced motion means gentler, not zero: keep the cross-fade, drop movement. */
+  .reveal {
+    transform: none;
+    transition: opacity 300ms ease;
+  }
+  .card-lift:hover {
+    transform: none;
+  }
+  .waveform-fill {
+    animation: none;
+    clip-path: inset(0 62% 0 0);
+  }
 }
