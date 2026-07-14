@@ -145,7 +145,7 @@ function formatTime(seconds: number) {
   return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`
 }
 
-const enterTransition = "clip-path 850ms var(--ease-out-strong)"
+const enterTransition = "clip-path 500ms var(--ease-out-strong)"
 
 function AppPreview() {
   const fillRef = useRef<HTMLDivElement>(null)
@@ -218,6 +218,9 @@ function AppPreview() {
       return
     }
     paint(0)
+    // Force a style flush so the empty state is committed as the transition's
+    // starting point — otherwise the browser coalesces both writes and jumps.
+    void fillRef.current?.getBoundingClientRect().width
     const id = requestAnimationFrame(() => paint(START, true))
     return () => {
       cancelAnimationFrame(id)
