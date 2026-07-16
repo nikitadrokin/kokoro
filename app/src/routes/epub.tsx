@@ -19,6 +19,7 @@ import {
   ChevronRight,
   FileAudio,
   FileText,
+  FolderOpen,
   LoaderCircle,
   RefreshCw,
   Save,
@@ -34,6 +35,10 @@ import {
   useRef,
   useState,
 } from 'react';
+import {
+  FileRowContextMenu,
+  quickActionClass,
+} from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -55,6 +60,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import { useShiftHeld } from '@/hooks/use-shift-held';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import {
   extractSelectedSpeechText,
@@ -587,6 +593,8 @@ function EpubReaderPage() {
   const [isLoadingImportedBooks, setIsLoadingImportedBooks] = useState(false);
   const [deletingBookPath, setDeletingBookPath] = useState('');
   const [pendingDeleteBookPath, setPendingDeleteBookPath] = useState('');
+  const [revealingBookPath, setRevealingBookPath] = useState('');
+  const isShiftHeld = useShiftHeld();
   const [isBusy, setIsBusy] = useState(false);
   const [collapsedKeys, setCollapsedKeys] = useState<Set<string>>(new Set());
   const [error, setError] = useState('');
@@ -940,8 +948,30 @@ function EpubReaderPage() {
     [isBusy, openEpubFile],
   );
 
-  const handleDeleteImportedBook = useCallback(
+  const handleRevealImportedBook = useCallback(
     async (book: ImportedEpubBook) => {
+      if (revealingBookPath) {
+        return;
+      }
+
+      setImportedBooksError('');
+      setRevealingBookPath(book.path);
+
+      try {
+        await invoke('reveal_imported_epub_book', { importedPath: book.path });
+      } catch (caught) {
+        const message =
+          caught instanceof Error ? caught.message : String(caught);
+        setImportedBooksError(message);
+      } finally {
+        setRevealingBookPath('');
+      }
+    },
+    [revealingBookPath],
+  );
+
+  const handleDeleteImportedBook = useCallback(
+    async (book: ImportedEpubBook, options?: { skipConfirm?: boolean }) => {
       if (deletingBookPath) {
         return;
       }
@@ -949,7 +979,7 @@ function EpubReaderPage() {
       setError('');
       setImportedBooksError('');
 
-      if (pendingDeleteBookPath !== book.path) {
+      if (!options?.skipConfirm && pendingDeleteBookPath !== book.path) {
         clearBookDeleteConfirmation();
         setPendingDeleteBookPath(book.path);
         deleteBookConfirmationTimeoutRef.current = window.setTimeout(() => {
@@ -1268,13 +1298,44 @@ function EpubReaderPage() {
                           const isActive =
                             lastOpenedBook?.importedPath === book.path;
                           const isDeleting = deletingBookPath === book.path;
+                          const isRevealing = revealingBookPath === book.path;
                           const isConfirmingDelete =
                             pendingDeleteBookPath === book.path;
 
                           return (
-                            <div
+                            <FileRowContextMenu
                               key={book.path}
                               className='grid grid-cols-[1fr_auto] items-center gap-3 border-b py-2 last:border-b-0'
+                              actions={[
+                                {
+                                  key: 'open',
+                                  label: 'Open',
+                                  icon: <BookOpen />,
+                                  onSelect: () =>
+                                    void handleOpenImportedBook(book),
+                                  disabled: isBusy || isDeleting,
+                                },
+                                {
+                                  key: 'reveal',
+                                  label: 'Reveal in Finder',
+                                  icon: <FolderOpen />,
+                                  onSelect: () =>
+                                    void handleRevealImportedBook(book),
+                                  disabled:
+                                    isDeleting || Boolean(revealingBookPath),
+                                },
+                                {
+                                  key: 'delete',
+                                  label: isConfirmingDelete
+                                    ? 'Confirm delete'
+                                    : 'Delete',
+                                  icon: <Trash2 />,
+                                  onSelect: () =>
+                                    void handleDeleteImportedBook(book),
+                                  disabled: Boolean(deletingBookPath),
+                                  destructive: true,
+                                },
+                              ]}
                             >
                               <div className='min-w-0'>
                                 <p className='truncate font-medium text-sm'>
@@ -1306,12 +1367,41 @@ function EpubReaderPage() {
                                 </Button>
                                 <Button
                                   type='button'
+                                  variant='ghost'
+                                  size='icon-sm'
+                                  className={quickActionClass(
+                                    isShiftHeld,
+                                    isRevealing,
+                                  )}
+                                  onClick={() =>
+                                    void handleRevealImportedBook(book)
+                                  }
+                                  disabled={
+                                    isDeleting || Boolean(revealingBookPath)
+                                  }
+                                  aria-label={`Reveal ${book.id} in Finder`}
+                                  title='Reveal in Finder'
+                                >
+                                  {isRevealing ? (
+                                    <LoaderCircle className='size-4 animate-spin' />
+                                  ) : (
+                                    <FolderOpen className='size-4' />
+                                  )}
+                                </Button>
+                                <Button
+                                  type='button'
                                   variant={
                                     isConfirmingDelete ? 'destructive' : 'ghost'
                                   }
                                   size='icon-sm'
-                                  onClick={() =>
-                                    void handleDeleteImportedBook(book)
+                                  className={quickActionClass(
+                                    isShiftHeld,
+                                    isConfirmingDelete || isDeleting,
+                                  )}
+                                  onClick={(event) =>
+                                    void handleDeleteImportedBook(book, {
+                                      skipConfirm: event.shiftKey,
+                                    })
                                   }
                                   disabled={Boolean(deletingBookPath)}
                                   aria-label={
@@ -1332,7 +1422,7 @@ function EpubReaderPage() {
                                   )}
                                 </Button>
                               </div>
-                            </div>
+                            </FileRowContextMenu>
                           );
                         })}
                       </div>
