@@ -9,6 +9,7 @@ import {
   Music2,
   Play,
   RefreshCw,
+  Square,
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -92,6 +93,7 @@ function PlaygroundPage() {
     savedOutputPath,
     setError,
     setPlayerSource,
+    stopGeneration,
   } = useSpeechStreamGeneration({ audioRef });
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
 
@@ -385,15 +387,21 @@ function PlaygroundPage() {
 
               <Button
                 className='w-full @xl/content:w-auto @xl/content:min-w-48'
-                onClick={handleGenerate}
-                disabled={isGenerating}
+                variant={isGenerating ? 'outline' : 'default'}
+                onClick={() => {
+                  if (isGenerating) {
+                    void stopGeneration();
+                  } else {
+                    void handleGenerate();
+                  }
+                }}
               >
                 {isGenerating ? (
-                  <LoaderCircle className='size-4 animate-spin' />
+                  <Square className='size-4' />
                 ) : (
                   <AudioLinesIcon className='size-4' />
                 )}
-                {isGenerating ? 'Generating…' : 'Generate audio'}
+                {isGenerating ? 'Stop generating' : 'Generate audio'}
               </Button>
 
               {isGenerating && estimatedDurationSec > 0 ? (

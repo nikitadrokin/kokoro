@@ -28,6 +28,7 @@ type SynthesizeSpeechStreamResponse = {
   sampleRate: number;
   channels: number;
   savedOutputPath: string | null;
+  cancelled: boolean;
 };
 
 type SpeechStreamChunkEvent = {
@@ -276,6 +277,10 @@ export function useSpeechStreamGeneration({
           },
         );
 
+        if (response.cancelled) {
+          return response;
+        }
+
         const nextUrl = response.savedOutputPath
           ? convertFileSrc(response.savedOutputPath)
           : createFloatWavBlobUrl(
@@ -317,6 +322,20 @@ export function useSpeechStreamGeneration({
     audioRef.current?.play().catch(() => undefined);
   }, [audioRef]);
 
+  const stopGeneration = useCallback(async () => {
+    const streamId = activeStreamIdRef.current;
+    if (!streamId) {
+      return;
+    }
+
+    stopScheduledAudio();
+    try {
+      await invoke('stop_speech_stream', { streamId });
+    } catch {
+      // The stream may have already finished; nothing left to stop.
+    }
+  }, [stopScheduledAudio]);
+
   return {
     audioUrl,
     clearPlayerSource,
@@ -328,5 +347,6 @@ export function useSpeechStreamGeneration({
     savedOutputPath,
     setError,
     setPlayerSource,
+    stopGeneration,
   };
 }

@@ -5,6 +5,7 @@ mod macos_service;
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::HashMap,
     ffi::OsString,
     fs,
     io::{Seek, SeekFrom, Write},
@@ -75,6 +76,71 @@ struct SynthesizeSpeechStreamResponse {
     sample_rate: u32,
     channels: u16,
     saved_output_path: Option<String>,
+    cancelled: bool,
+}
+
+/// Bookkeeping for in-flight speech streams so they can be stopped mid-way.
+#[derive(Default)]
+struct ActiveSpeechStreams(Mutex<HashMap<String, ActiveSpeechStream>>);
+
+struct ActiveSpeechStream {
+    pid: u32,
+    cancelled: bool,
+}
+
+/// Removes a stream's bookkeeping entry on every exit path of
+/// `synthesize_speech_stream`.
+struct ActiveStreamGuard<'a> {
+    streams: &'a ActiveSpeechStreams,
+    stream_id: String,
+}
+
+impl Drop for ActiveStreamGuard<'_> {
+    fn drop(&mut self) {
+        if let Ok(mut map) = self.streams.0.lock() {
+            map.remove(&self.stream_id);
+        }
+    }
+}
+
+#[tauri::command]
+fn stop_speech_stream(
+    stream_id: String,
+    streams: State<'_, ActiveSpeechStreams>,
+) -> Result<(), String> {
+    let pid = {
+        let mut map = streams
+            .0
+            .lock()
+            .map_err(|_| "Failed to lock active speech streams".to_string())?;
+        match map.get_mut(&stream_id) {
+            Some(stream) if !stream.cancelled => {
+                stream.cancelled = true;
+                stream.pid
+            }
+            _ => return Ok(()),
+        }
+    };
+
+    terminate_process(pid)
+}
+
+#[cfg(unix)]
+fn terminate_process(pid: u32) -> Result<(), String> {
+    std::process::Command::new("kill")
+        .args(["-TERM", &pid.to_string()])
+        .status()
+        .map_err(|error| format!("Failed to stop synthesis process: {error}"))
+        .map(|_| ())
+}
+
+#[cfg(windows)]
+fn terminate_process(pid: u32) -> Result<(), String> {
+    std::process::Command::new("taskkill")
+        .args(["/PID", &pid.to_string(), "/T", "/F"])
+        .status()
+        .map_err(|error| format!("Failed to stop synthesis process: {error}"))
+        .map(|_| ())
 }
 
 #[derive(Serialize, Clone)]
@@ -341,6 +407,7 @@ async fn synthesize_speech(
 async fn synthesize_speech_stream(
     request: SynthesizeSpeechRequest,
     app: AppHandle,
+    streams: State<'_, ActiveSpeechStreams>,
 ) -> Result<SynthesizeSpeechStreamResponse, String> {
     let text = request.text.trim().to_string();
     if text.is_empty() {
@@ -456,6 +523,24 @@ async fn synthesize_speech_stream(
         .spawn()
         .map_err(|error| error.to_string())?;
 
+    {
+        let mut map = streams
+            .0
+            .lock()
+            .map_err(|_| "Failed to lock active speech streams".to_string())?;
+        map.insert(
+            stream_id.clone(),
+            ActiveSpeechStream {
+                pid: child.pid(),
+                cancelled: false,
+            },
+        );
+    }
+    let _stream_guard = ActiveStreamGuard {
+        streams: &streams,
+        stream_id: stream_id.clone(),
+    };
+
     let writer_task = tauri::async_runtime::spawn_blocking(move || {
         for chunk in text_chunks {
             child.write(format!("{chunk}\n").as_bytes())?;
@@ -501,8 +586,32 @@ async fn synthesize_speech_stream(
         }
     }
 
-    writer_task
-        .await
+    let writer_result = writer_task.await;
+
+    let was_cancelled = streams
+        .0
+        .lock()
+        .ok()
+        .and_then(|map| map.get(&stream_id).map(|stream| stream.cancelled))
+        .unwrap_or(false);
+
+    if was_cancelled {
+        // The user stopped the stream: discard any partial saved file and
+        // report a clean cancellation instead of a synthesis failure.
+        drop(output_file);
+        if let Some(path) = output_path.as_ref() {
+            let _ = fs::remove_file(path);
+        }
+
+        return Ok(SynthesizeSpeechStreamResponse {
+            sample_rate: STREAM_SAMPLE_RATE,
+            channels: STREAM_CHANNELS,
+            saved_output_path: None,
+            cancelled: true,
+        });
+    }
+
+    writer_result
         .map_err(|error| format!("Failed to finish sending text to koko: {error}"))?
         .map_err(|error| format!("Failed to send text to koko: {error}"))?;
 
@@ -529,6 +638,7 @@ async fn synthesize_speech_stream(
         saved_output_path: output_path
             .filter(|_| should_keep_output)
             .map(|path| path.display().to_string()),
+        cancelled: false,
     })
 }
 
@@ -1490,12 +1600,14 @@ pub fn run() {
     tauri::Builder::default()
         .manage(PreparedAppUpdateState::default())
         .manage(SpeakSelectionState::default())
+        .manage(ActiveSpeechStreams::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             synthesize_speech,
             synthesize_speech_stream,
+            stop_speech_stream,
             list_saved_audio,
             delete_saved_audio,
             reveal_saved_audio_in_finder,

@@ -15,14 +15,15 @@ const SPEAK_SELECTION_EVENT = 'speak-selection-pending';
  */
 export default function SpeakSelectionListener() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { generateStream, isGenerating } = useSpeechStreamGeneration({
-    audioRef,
-  });
+  const { generateStream, isGenerating, stopGeneration } =
+    useSpeechStreamGeneration({ audioRef });
 
   const isGeneratingRef = useRef(isGenerating);
   isGeneratingRef.current = isGenerating;
   const generateStreamRef = useRef(generateStream);
   generateStreamRef.current = generateStream;
+  const stopGenerationRef = useRef(stopGeneration);
+  stopGenerationRef.current = stopGeneration;
 
   useEffect(() => {
     let cancelled = false;
@@ -38,7 +39,12 @@ export default function SpeakSelectionListener() {
         return;
       }
 
-      toast.info('Speaking selection…');
+      toast.info('Speaking selection…', {
+        action: {
+          label: 'Stop',
+          onClick: () => void stopGenerationRef.current(),
+        },
+      });
       const speechText = optimizeMarkdownForSpeech(text) || text;
       const response = await generateStreamRef.current({
         text: speechText,
