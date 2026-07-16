@@ -13,6 +13,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  FileRowContextMenu,
+  quickActionClass,
+} from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useShiftHeld } from '@/hooks/use-shift-held';
 
 export const Route = createFileRoute('/library')({ component: LibraryPage });
 
@@ -126,6 +131,7 @@ function LibraryPage() {
   const [activeFilePath, setActiveFilePath] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
+  const isShiftHeld = useShiftHeld();
 
   const filteredFiles = useMemo(
     () =>
@@ -215,11 +221,11 @@ function LibraryPage() {
   );
 
   const handleDelete = useCallback(
-    async (file: SavedAudioFile) => {
+    async (file: SavedAudioFile, options?: { skipConfirm?: boolean }) => {
       if (deletingPath) return;
       setError('');
 
-      if (pendingDeletePath !== file.path) {
+      if (!options?.skipConfirm && pendingDeletePath !== file.path) {
         clearDeleteConfirmation();
         setPendingDeletePath(file.path);
         deleteConfirmTimeoutRef.current = window.setTimeout(() => {
@@ -398,9 +404,35 @@ function LibraryPage() {
                         const SourceIcon = SOURCE_ICONS[source];
 
                         return (
-                          <div
+                          <FileRowContextMenu
                             key={file.path}
                             className="grid grid-cols-[1fr_auto] items-center gap-3 px-3 py-2"
+                            actions={[
+                              {
+                                key: 'play',
+                                label: 'Play',
+                                icon: <Play />,
+                                onSelect: () => handlePlay(file),
+                                disabled: isDeleting,
+                              },
+                              {
+                                key: 'reveal',
+                                label: 'Reveal in Finder',
+                                icon: <FolderOpen />,
+                                onSelect: () => void handleReveal(file),
+                                disabled: isDeleting || Boolean(revealingPath),
+                              },
+                              {
+                                key: 'delete',
+                                label: isConfirmingDelete
+                                  ? 'Confirm delete'
+                                  : 'Delete',
+                                icon: <Trash2 />,
+                                onSelect: () => void handleDelete(file),
+                                disabled: Boolean(deletingPath),
+                                destructive: true,
+                              },
+                            ]}
                           >
                             <div className="min-w-0">
                               <p
@@ -436,6 +468,10 @@ function LibraryPage() {
                               <Button
                                 variant="ghost"
                                 size="icon-sm"
+                                className={quickActionClass(
+                                  isShiftHeld,
+                                  isRevealing,
+                                )}
                                 onClick={() => void handleReveal(file)}
                                 disabled={isDeleting || Boolean(revealingPath)}
                                 aria-label={`Reveal ${file.name} in Finder`}
@@ -452,7 +488,15 @@ function LibraryPage() {
                                   isConfirmingDelete ? 'destructive' : 'ghost'
                                 }
                                 size="icon-sm"
-                                onClick={() => void handleDelete(file)}
+                                className={quickActionClass(
+                                  isShiftHeld,
+                                  isConfirmingDelete || isDeleting,
+                                )}
+                                onClick={(event) =>
+                                  void handleDelete(file, {
+                                    skipConfirm: event.shiftKey,
+                                  })
+                                }
                                 disabled={Boolean(deletingPath)}
                                 aria-label={
                                   isConfirmingDelete
@@ -472,7 +516,7 @@ function LibraryPage() {
                                 )}
                               </Button>
                             </div>
-                          </div>
+                          </FileRowContextMenu>
                         );
                       })}
                     </div>

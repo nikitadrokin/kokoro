@@ -12,6 +12,10 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  FileRowContextMenu,
+  quickActionClass,
+} from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { useShiftHeld } from '@/hooks/use-shift-held';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import { estimateAudioDurationSec, formatDuration } from '@/lib/speech-audio';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
@@ -80,6 +85,7 @@ function PlaygroundPage() {
   const [pendingDeletePath, setPendingDeletePath] = useState('');
   const [savedAudioFiles, setSavedAudioFiles] = useState<SavedAudioFile[]>([]);
   const [savedAudioError, setSavedAudioError] = useState('');
+  const isShiftHeld = useShiftHeld();
   const {
     audioUrl,
     clearPlayerSource,
@@ -180,7 +186,10 @@ function PlaygroundPage() {
     }
   };
 
-  const handleDeleteSavedAudio = async (file: SavedAudioFile) => {
+  const handleDeleteSavedAudio = async (
+    file: SavedAudioFile,
+    options?: { skipConfirm?: boolean },
+  ) => {
     if (deletingAudioPath) {
       return;
     }
@@ -188,7 +197,7 @@ function PlaygroundPage() {
     setError('');
     setSavedAudioError('');
 
-    if (pendingDeletePath !== file.path) {
+    if (!options?.skipConfirm && pendingDeletePath !== file.path) {
       clearDeleteConfirmation();
       setPendingDeletePath(file.path);
       deleteConfirmationTimeoutRef.current = window.setTimeout(() => {
@@ -488,9 +497,36 @@ function PlaygroundPage() {
                         pendingDeletePath === file.path;
 
                       return (
-                        <div
+                        <FileRowContextMenu
                           key={file.path}
                           className='grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-3 py-2'
+                          actions={[
+                            {
+                              key: 'play',
+                              label: 'Play',
+                              icon: <Play />,
+                              onSelect: () => handlePlaySavedAudio(file),
+                              disabled: isDeleting,
+                            },
+                            {
+                              key: 'reveal',
+                              label: 'Reveal in Finder',
+                              icon: <FolderOpen />,
+                              onSelect: () => void handleRevealSavedAudio(file),
+                              disabled:
+                                isDeleting || Boolean(revealingAudioPath),
+                            },
+                            {
+                              key: 'delete',
+                              label: isConfirmingDelete
+                                ? 'Confirm delete'
+                                : 'Delete',
+                              icon: <Trash2 />,
+                              onSelect: () => void handleDeleteSavedAudio(file),
+                              disabled: Boolean(deletingAudioPath),
+                              destructive: true,
+                            },
+                          ]}
                         >
                           <div className='min-w-0'>
                             <p className='truncate font-medium text-sm'>
@@ -515,6 +551,10 @@ function PlaygroundPage() {
                             <Button
                               variant='outline'
                               size='icon-sm'
+                              className={quickActionClass(
+                                isShiftHeld,
+                                isRevealing,
+                              )}
                               onClick={() => void handleRevealSavedAudio(file)}
                               disabled={
                                 isDeleting || Boolean(revealingAudioPath)
@@ -531,7 +571,15 @@ function PlaygroundPage() {
                             <Button
                               variant='destructive'
                               size='icon-sm'
-                              onClick={() => void handleDeleteSavedAudio(file)}
+                              className={quickActionClass(
+                                isShiftHeld,
+                                isConfirmingDelete || isDeleting,
+                              )}
+                              onClick={(event) =>
+                                void handleDeleteSavedAudio(file, {
+                                  skipConfirm: event.shiftKey,
+                                })
+                              }
                               disabled={Boolean(deletingAudioPath)}
                               aria-label={
                                 isConfirmingDelete
@@ -549,7 +597,7 @@ function PlaygroundPage() {
                               )}
                             </Button>
                           </div>
-                        </div>
+                        </FileRowContextMenu>
                       );
                     })}
                   </div>
