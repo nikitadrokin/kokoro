@@ -67,6 +67,7 @@ function NavGroup({
   label,
   items,
   pathname,
+  isNavigationLocked,
 }: {
   label: string;
   items: readonly {
@@ -76,6 +77,7 @@ function NavGroup({
     icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
   }[];
   pathname: string;
+  isNavigationLocked: boolean;
 }) {
   return (
     <SidebarGroup>
@@ -92,6 +94,7 @@ function NavGroup({
                   tooltip={item.description}
                   render={<Link to={item.to} />}
                   aria-label={item.description}
+                  aria-disabled={isNavigationLocked || undefined}
                 >
                   <Icon className='text-muted-foreground' aria-hidden />
                   <span>{item.label}</span>
@@ -112,19 +115,18 @@ export default function AppSidebar() {
   const isNavigationLocked = useSynthesisLockStore(selectIsSynthesisLocked);
 
   return (
-    <Sidebar
-      collapsible='offcanvas'
-      variant='floating'
-      aria-hidden={isNavigationLocked}
-      className={cn(isNavigationLocked && 'pointer-events-none opacity-60')}
-    >
+    <Sidebar collapsible='offcanvas' variant='floating'>
       {/* Clearance for the macOS traffic lights (overlay titlebar). */}
       <div data-tauri-drag-region className='h-11 shrink-0' />
 
       <SidebarHeader>
         <Link
           to='/'
-          className='inline-flex items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight no-underline transition-colors duration-200 hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30'
+          className={cn(
+            'inline-flex items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight no-underline transition-colors duration-200 hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30',
+            isNavigationLocked && 'pointer-events-none opacity-50',
+          )}
+          aria-disabled={isNavigationLocked || undefined}
           aria-label='Go to Kokoro speech playground'
         >
           <span className='grid size-7 place-items-center rounded-full border bg-card text-primary shadow-sm'>
@@ -135,8 +137,18 @@ export default function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavGroup label='Speech' items={speechItems} pathname={pathname} />
-        <NavGroup label='Listen' items={listenItems} pathname={pathname} />
+        <NavGroup
+          label='Speech'
+          items={speechItems}
+          pathname={pathname}
+          isNavigationLocked={isNavigationLocked}
+        />
+        <NavGroup
+          label='Listen'
+          items={listenItems}
+          pathname={pathname}
+          isNavigationLocked={isNavigationLocked}
+        />
       </SidebarContent>
 
       <SidebarFooter>
@@ -147,6 +159,7 @@ export default function AppSidebar() {
               tooltip={troubleshootLabel}
               render={<Link to='/troubleshoot' />}
               aria-label={troubleshootLabel}
+              aria-disabled={isNavigationLocked || undefined}
             >
               <ShieldAlertIcon className='text-muted-foreground' aria-hidden />
               <span>Troubleshoot</span>
