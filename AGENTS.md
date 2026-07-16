@@ -1,0 +1,1 @@
+You may NEVER use or run the app/scripts/release.ts file. The user will manually run it, and he'll never ask you to use it.
