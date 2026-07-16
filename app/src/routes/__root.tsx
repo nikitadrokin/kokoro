@@ -1,6 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import AppSidebar from '@/components/AppSidebar';
 import AppTopbar from '@/components/AppTopbar';
+import SpeakSelectionListener from '@/components/SpeakSelectionListener';
 import SynthesisLock from '@/components/SynthesisLock';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
@@ -14,6 +15,7 @@ function RootLayout() {
   return (
     <TooltipProvider>
       <SynthesisLock />
+      <SpeakSelectionListener />
       <SidebarProvider className="h-dvh min-h-0 overflow-hidden bg-background text-foreground">
         <AppSidebar />
         <SidebarInset className="min-w-0 overflow-hidden">

@@ -71,7 +71,8 @@ function PlaygroundPage() {
   const deleteConfirmationTimeoutRef = useRef<number | null>(null);
   const text = usePlaygroundStore((state) => state.draftText);
   const setText = usePlaygroundStore((state) => state.setDraftText);
-  const [style, setStyle] = useState('af_heart');
+  const style = useSettingsStore((state) => state.voice);
+  const setStyle = useSettingsStore((state) => state.setVoice);
   const playbackMode = useSettingsStore((state) => state.playbackMode);
   const setPlaybackMode = useSettingsStore((state) => state.setPlaybackMode);
   const [isLoadingSavedAudio, setIsLoadingSavedAudio] = useState(false);

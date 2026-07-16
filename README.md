@@ -29,6 +29,17 @@ The model runs locally. Downloaded model files live outside git in `checkpoints/
 - Optional word-level timestamp TSV output.
 - OpenAI-compatible `/v1/audio/speech` server mode.
 - Streaming support for low-latency audio workflows.
+- macOS system service: select text in any app and run **Services → Speak Selection with Kokoro** to hear it read aloud.
+
+### Speak Selection (macOS)
+
+The desktop app registers a standard macOS Service, so selected text from Safari, Mail, Notes, or any other app can be sent to Kokoro:
+
+1. Install the app (the Services menu only picks up installed `.app` bundles).
+2. Select text anywhere and choose **Services → Speak Selection with Kokoro** from the app menu (or the right-click context menu).
+3. Optionally assign a keyboard shortcut under **System Settings → Keyboard → Keyboard Shortcuts → Services → Text**.
+
+Playback uses the voice last chosen in the playground and streams without bringing the Kokoro window forward. If the app isn't running, macOS launches it and the selection plays once it finishes starting. No Accessibility permission is required — this uses the public `NSServices` pasteboard flow.
 
 ## Quick Start
 

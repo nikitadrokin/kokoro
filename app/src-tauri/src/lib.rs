@@ -1,4 +1,6 @@
 mod gmail;
+#[cfg(target_os = "macos")]
+mod macos_service;
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
@@ -23,6 +25,7 @@ const VOICES_RESOURCE_PATH: &str = "models/voices-v1.0.bin";
 const DEV_MODEL_PATH: &str = "checkpoints/kokoro-v1.0.onnx";
 const DEV_VOICES_PATH: &str = "data/voices-v1.0.bin";
 const SPEECH_STREAM_CHUNK_EVENT: &str = "speech-stream-chunk";
+const SPEAK_SELECTION_EVENT: &str = "speak-selection-pending";
 const STREAM_SAMPLE_RATE: u32 = 24_000;
 const STREAM_CHANNELS: u16 = 1;
 const WAV_HEADER_BYTES: usize = 44;
@@ -153,6 +156,29 @@ struct PreparedAppUpdate {
     version: String,
     update: Update,
     bytes: Vec<u8>,
+}
+
+/// Text handed over by the macOS "Speak Selection with Kokoro" service,
+/// waiting for the webview to pick it up. The latest selection wins.
+#[derive(Default)]
+struct SpeakSelectionState {
+    text: Mutex<Option<String>>,
+}
+
+/// Stores the selection and pings the webview. Called from the AppKit
+/// services provider on the main thread.
+#[cfg(target_os = "macos")]
+pub(crate) fn queue_speak_selection(app: &AppHandle, text: String) {
+    let state = app.state::<SpeakSelectionState>();
+    if let Ok(mut pending) = state.text.lock() {
+        *pending = Some(text);
+    }
+    let _ = app.emit(SPEAK_SELECTION_EVENT, ());
+}
+
+#[tauri::command]
+fn take_speak_selection_text(state: State<'_, SpeakSelectionState>) -> Option<String> {
+    state.text.lock().ok().and_then(|mut pending| pending.take())
 }
 
 #[tauri::command]
@@ -1463,6 +1489,7 @@ fn command_log(output: &Output) -> String {
 pub fn run() {
     tauri::Builder::default()
         .manage(PreparedAppUpdateState::default())
+        .manage(SpeakSelectionState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1478,6 +1505,7 @@ pub fn run() {
             delete_imported_epub_book,
             prepare_app_update,
             install_prepared_app_update,
+            take_speak_selection_text,
             gmail::gmail_save_client_config,
             gmail::gmail_get_client_config,
             gmail::gmail_auth_status,
@@ -1486,6 +1514,9 @@ pub fn run() {
             gmail::gmail_get_access_token
         ])
         .setup(|app| {
+            #[cfg(target_os = "macos")]
+            macos_service::register(&app.handle().clone());
+
             if cfg!(debug_assertions) {
                 app.handle().plugin(
                     tauri_plugin_log::Builder::default()
