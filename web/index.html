@@ -8,21 +8,36 @@
       name="description"
       content="Kokoro is a private, local text-to-speech app for macOS. Turn scripts, books, and email into natural speech on your Mac."
     />
+    <meta name="author" content="Nikita Drokin" />
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
     <meta name="theme-color" content="#ffffff" />
+    <link rel="canonical" href="https://kokoro.nkdr.me/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="Kokoro" />
     <meta property="og:url" content="https://kokoro.nkdr.me/" />
-    <meta property="og:title" content="Kokoro — Local text-to-speech for macOS" />
+    <meta
+      property="og:title"
+      content="Kokoro — Local text-to-speech for macOS"
+    />
     <meta
       property="og:description"
       content="Give scripts, books, and email a natural voice with private on-device synthesis."
     />
     <meta property="og:image" content="https://kokoro.nkdr.me/og-image.png" />
+    <meta
+      property="og:image:secure_url"
+      content="https://kokoro.nkdr.me/og-image.png"
+    />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:logo" content="https://kokoro.nkdr.me/kokoro.png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    <meta property="og:image:width" content="2400" />
+    <meta property="og:image:height" content="1260" />
     <meta
       property="og:image:alt"
       content="Kokoro — give your reading a voice. A native, private text-to-speech app for macOS."
@@ -30,7 +45,10 @@
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Kokoro — Local text-to-speech for macOS" />
+    <meta
+      name="twitter:title"
+      content="Kokoro — Local text-to-speech for macOS"
+    />
     <meta
       name="twitter:description"
       content="Give scripts, books, and email a natural voice with private on-device synthesis."
@@ -41,6 +59,74 @@
       content="Kokoro — give your reading a voice. A native, private text-to-speech app for macOS."
     />
 
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://nikitadrokin.com/#person",
+            "name": "Nikita Drokin",
+            "url": "https://nikitadrokin.com/",
+            "sameAs": ["https://github.com/nikitadrokin"]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://kokoro.nkdr.me/#software",
+            "name": "Kokoro",
+            "url": "https://kokoro.nkdr.me/",
+            "description": "A private, local text-to-speech app for macOS that turns scripts, EPUB books, and email into natural speech.",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "macOS",
+            "isAccessibleForFree": true,
+            "downloadUrl": "https://github.com/nikitadrokin/kokoro/releases/latest",
+            "sameAs": "https://github.com/nikitadrokin/kokoro",
+            "license": "https://opensource.org/license/mit",
+            "author": {
+              "@id": "https://nikitadrokin.com/#person"
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            }
+          }
+        ]
+      }
+    </script>
+    <style>
+      html {
+        background: #fff;
+        color: #251f1c;
+        font-family:
+          Geist,
+          Inter,
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      .initial-content {
+        box-sizing: border-box;
+        margin: 0 auto;
+        max-width: 64rem;
+        padding: 9rem 1.5rem;
+      }
+      .initial-content h1 {
+        font-size: clamp(2.5rem, 6vw, 3.5rem);
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        margin: 0 0 1.5rem;
+        max-width: 36rem;
+      }
+      .initial-content p {
+        color: #776d67;
+        font-size: 1.125rem;
+        line-height: 1.7;
+        margin: 0;
+        max-width: 32rem;
+      }
+    </style>
+
     <title>Kokoro — Local text-to-speech for macOS</title>
     <script
       defer
@@ -49,7 +135,15 @@
     ></script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main class="initial-content">
+        <h1>Give your reading a voice.</h1>
+        <p>
+          Kokoro is a native Mac app that turns scripts, EPUB books, and email
+          into natural speech with private, on-device synthesis.
+        </p>
+      </main>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

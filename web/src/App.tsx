@@ -78,15 +78,19 @@ function Reveal({
   children,
   delay = 0,
   className,
+  eager = false,
 }: {
   children: ReactNode
   delay?: number
   className?: string
+  eager?: boolean
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(eager)
 
   useEffect(() => {
+    if (eager) return
+
     const el = ref.current
     if (!el) return
     const observer = new IntersectionObserver(
@@ -96,11 +100,11 @@ function Reveal({
           observer.disconnect()
         }
       },
-      { threshold: 0.2, rootMargin: "0px 0px -48px 0px" },
+      { threshold: 0.2, rootMargin: "0px 0px -48px 0px" }
     )
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [eager])
 
   return (
     <div
@@ -117,11 +121,11 @@ function Reveal({
 // Peak/RMS amplitudes sampled from landing-page-track.wav — four speech
 // clusters with real pauses, not a repeating decorative pattern.
 const waveformHeights = [
-  10, 10, 10, 71, 72, 46, 82, 81, 70, 57, 57, 49, 39, 10, 49, 73,
-  68, 57, 49, 37, 19, 10, 10, 10, 10, 10, 10, 50, 70, 88, 74, 72,
-  52, 61, 62, 70, 66, 62, 60, 71, 48, 73, 77, 66, 33, 10, 10, 65,
-  55, 59, 46, 48, 57, 54, 44, 54, 57, 51, 58, 65, 65, 48, 47, 10,
-  10, 67, 72, 54, 75, 53, 58, 56, 57, 54, 41, 21, 10, 10, 10, 10,
+  10, 10, 10, 71, 72, 46, 82, 81, 70, 57, 57, 49, 39, 10, 49, 73, 68, 57, 49,
+  37, 19, 10, 10, 10, 10, 10, 10, 50, 70, 88, 74, 72, 52, 61, 62, 70, 66, 62,
+  60, 71, 48, 73, 77, 66, 33, 10, 10, 65, 55, 59, 46, 48, 57, 54, 44, 54, 57,
+  51, 58, 65, 65, 48, 47, 10, 10, 67, 72, 54, 75, 53, 58, 56, 57, 54, 41, 21,
+  10, 10, 10, 10,
 ] as const
 
 function Waveform({ className }: { className?: string }) {
@@ -249,7 +253,7 @@ function AppPreview() {
     const delta = e.key === "ArrowRight" ? 1 : -1
     progressRef.current = Math.min(
       DURATION,
-      Math.max(0, progressRef.current + delta),
+      Math.max(0, progressRef.current + delta)
     )
     if (audioRef.current) audioRef.current.currentTime = progressRef.current
     paint(progressRef.current)
@@ -283,7 +287,7 @@ function AppPreview() {
           aria-valuemax={DURATION}
           aria-valuemin={0}
           aria-valuenow={0}
-          className="relative h-14 cursor-pointer touch-none select-none rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/40"
+          className="relative h-14 cursor-pointer touch-none rounded-md outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/40"
           onKeyDown={onKeyDown}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
@@ -316,11 +320,11 @@ function AppPreview() {
           </button>
           <span
             ref={timeRef}
-            className="font-mono text-sm tabular-nums text-muted-foreground"
+            className="font-mono text-sm text-muted-foreground tabular-nums"
           >
             0:05
           </span>
-          <span className="font-mono text-sm tabular-nums text-muted-foreground/60">
+          <span className="font-mono text-sm text-muted-foreground/60 tabular-nums">
             / {formatTime(DURATION)}
           </span>
           <div className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -343,7 +347,7 @@ function FeatureCard({
       <CardHeader>
         <Icon aria-hidden="true" className="mb-3 size-5 text-primary" />
         <CardTitle>{title}</CardTitle>
-        <CardDescription className="leading-relaxed text-[15px]">
+        <CardDescription className="text-[15px] leading-relaxed">
           {description}
         </CardDescription>
       </CardHeader>
@@ -418,11 +422,11 @@ export function App() {
             aria-hidden="true"
             className="pointer-events-none absolute -top-24 left-1/2 -z-10 size-[36rem] -translate-x-1/2 rounded-full bg-primary/10 opacity-60 blur-[120px]"
           />
-          <Reveal className="flex flex-col items-start gap-6">
-            <h1 className="max-w-xl text-balance font-heading text-4xl font-semibold sm:text-5xl lg:text-[3.5rem] lg:leading-[1.02]">
+          <Reveal className="flex flex-col items-start gap-6" eager>
+            <h1 className="max-w-xl font-heading text-4xl font-semibold text-balance sm:text-5xl lg:text-[3.5rem] lg:leading-[1.02]">
               Give your reading a voice.
             </h1>
-            <p className="max-w-md text-pretty text-lg leading-relaxed text-muted-foreground">
+            <p className="max-w-md text-lg leading-relaxed text-pretty text-muted-foreground">
               A native Mac app that turns scripts, books, and email into natural
               speech. Everything is synthesized on your machine, so your words
               stay with you and playback starts fast.
@@ -461,7 +465,7 @@ export function App() {
             </p>
           </Reveal>
 
-          <Reveal delay={120}>
+          <Reveal eager>
             <AppPreview />
           </Reveal>
         </section>
@@ -508,7 +512,10 @@ export function App() {
             <Button
               nativeButton={false}
               render={
-                <a aria-label="Explore the Kokoro source code" href={sourceUrl} />
+                <a
+                  aria-label="Explore the Kokoro source code"
+                  href={sourceUrl}
+                />
               }
               variant="outline"
             >
@@ -529,7 +536,7 @@ export function App() {
                       key={spec}
                       className={cn(
                         "flex items-center gap-3 py-3 text-[15px]",
-                        i > 0 && "border-t",
+                        i > 0 && "border-t"
                       )}
                     >
                       <Check
@@ -595,6 +602,12 @@ export function App() {
           >
             <Code2 aria-hidden="true" className="size-4" />
             Open source on GitHub
+          </a>
+          <a
+            className="transition-colors duration-150 hover:text-foreground"
+            href="https://nikitadrokin.com/"
+          >
+            Made by Nikita Drokin
           </a>
         </div>
       </footer>
