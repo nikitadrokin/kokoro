@@ -980,6 +980,19 @@ fn delete_imported_epub_book(imported_path: String, app: AppHandle) -> Result<()
     })
 }
 
+#[tauri::command]
+fn reveal_imported_epub_book(imported_path: String, app: AppHandle) -> Result<(), String> {
+    let path = resolve_imported_epub_path(&app, &imported_path)?;
+    if !path.is_file() {
+        return Err(format!(
+            "Imported EPUB `{}` does not exist.",
+            path.display()
+        ));
+    }
+
+    reveal_file_in_finder(&path)
+}
+
 #[cfg(target_os = "macos")]
 fn reveal_file_in_finder(path: &Path) -> Result<(), String> {
     let output = std::process::Command::new("/usr/bin/open")
@@ -1615,6 +1628,7 @@ pub fn run() {
             read_imported_epub_file,
             list_imported_epub_books,
             delete_imported_epub_book,
+            reveal_imported_epub_book,
             prepare_app_update,
             install_prepared_app_update,
             take_speak_selection_text,
