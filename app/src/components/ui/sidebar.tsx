@@ -505,6 +505,7 @@ function SidebarMenuButton({
   size = 'default',
   tooltip,
   className,
+  disabled = false,
   ...props
 }: useRender.ComponentProps<'button'> &
   React.ComponentProps<'button'> & {
@@ -517,6 +518,7 @@ function SidebarMenuButton({
     props: mergeProps<'button'>(
       {
         className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+        disabled,
       },
       props,
     ),
@@ -524,6 +526,7 @@ function SidebarMenuButton({
     state: {
       slot: 'sidebar-menu-button',
       sidebar: 'menu-button',
+      disabled,
       size,
       active: isActive,
     },

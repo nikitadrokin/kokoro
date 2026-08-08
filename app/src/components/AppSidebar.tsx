@@ -1,4 +1,4 @@
-import { Link, useRouterState } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   AudioLinesIcon,
   BookOpenIcon,
@@ -62,22 +62,27 @@ const listenItems = [
 ] as const;
 
 const troubleshootLabel = 'Fix "not verified" / codesign errors';
+const processRunningTooltip = 'Please wait for speech synthesis to finish';
+
+type NavItem = {
+  to: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+};
 
 function NavGroup({
   label,
   items,
   pathname,
   isNavigationLocked,
+  onNavigate,
 }: {
   label: string;
-  items: readonly {
-    to: string;
-    label: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
-  }[];
+  items: readonly NavItem[];
   pathname: string;
   isNavigationLocked: boolean;
+  onNavigate: (to: string) => void;
 }) {
   return (
     <SidebarGroup>
@@ -86,15 +91,34 @@ function NavGroup({
         <SidebarMenu>
           {items.map((item) => {
             const Icon = item.icon;
+            const isActive = pathname === item.to;
 
             return (
               <SidebarMenuItem key={item.to}>
                 <SidebarMenuButton
-                  isActive={pathname === item.to}
-                  tooltip={item.description}
-                  render={<Link to={item.to} />}
-                  aria-label={item.description}
-                  aria-disabled={isNavigationLocked || undefined}
+                  isActive={isActive}
+                  disabled={isNavigationLocked}
+                  className={cn(isNavigationLocked && 'cursor-not-allowed')}
+                  tooltip={
+                    isNavigationLocked
+                      ? {
+                          children: processRunningTooltip,
+                          hidden: false,
+                        }
+                      : item.description
+                  }
+                  aria-label={
+                    isNavigationLocked
+                      ? processRunningTooltip
+                      : item.description
+                  }
+                  onClick={(event) => {
+                    if (isNavigationLocked) {
+                      event.preventDefault();
+                      return;
+                    }
+                    onNavigate(item.to);
+                  }}
                 >
                   <Icon className='text-muted-foreground' aria-hidden />
                   <span>{item.label}</span>
@@ -109,10 +133,15 @@ function NavGroup({
 }
 
 export default function AppSidebar() {
+  const navigate = useNavigate();
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
   const isNavigationLocked = useSynthesisLockStore(selectIsSynthesisLocked);
+
+  const goTo = (to: string) => {
+    void navigate({ to });
+  };
 
   return (
     <Sidebar collapsible='offcanvas' variant='floating'>
@@ -120,20 +149,31 @@ export default function AppSidebar() {
       <div data-tauri-drag-region className='h-11 shrink-0' />
 
       <SidebarHeader>
-        <Link
-          to='/'
+        <button
+          type='button'
           className={cn(
-            'inline-flex items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight no-underline transition-colors duration-200 hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30',
-            isNavigationLocked && 'pointer-events-none opacity-50',
+            'inline-flex items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight transition-colors duration-200 hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30',
+            isNavigationLocked && 'cursor-not-allowed opacity-50',
           )}
-          aria-disabled={isNavigationLocked || undefined}
-          aria-label='Go to Kokoro speech playground'
+          disabled={isNavigationLocked}
+          title={isNavigationLocked ? processRunningTooltip : undefined}
+          aria-label={
+            isNavigationLocked
+              ? processRunningTooltip
+              : 'Go to Kokoro speech playground'
+          }
+          onClick={() => {
+            if (isNavigationLocked) {
+              return;
+            }
+            goTo('/');
+          }}
         >
           <span className='grid size-7 place-items-center rounded-full border bg-card text-primary shadow-sm'>
             <AudioLinesIcon className='size-4' aria-hidden />
           </span>
           <span>Kokoro</span>
-        </Link>
+        </button>
       </SidebarHeader>
 
       <SidebarContent>
@@ -142,12 +182,14 @@ export default function AppSidebar() {
           items={speechItems}
           pathname={pathname}
           isNavigationLocked={isNavigationLocked}
+          onNavigate={goTo}
         />
         <NavGroup
           label='Listen'
           items={listenItems}
           pathname={pathname}
           isNavigationLocked={isNavigationLocked}
+          onNavigate={goTo}
         />
       </SidebarContent>
 
@@ -156,10 +198,26 @@ export default function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               isActive={pathname === '/troubleshoot'}
-              tooltip={troubleshootLabel}
-              render={<Link to='/troubleshoot' />}
-              aria-label={troubleshootLabel}
-              aria-disabled={isNavigationLocked || undefined}
+              disabled={isNavigationLocked}
+              className={cn(isNavigationLocked && 'cursor-not-allowed')}
+              tooltip={
+                isNavigationLocked
+                  ? {
+                      children: processRunningTooltip,
+                      hidden: false,
+                    }
+                  : troubleshootLabel
+              }
+              aria-label={
+                isNavigationLocked ? processRunningTooltip : troubleshootLabel
+              }
+              onClick={(event) => {
+                if (isNavigationLocked) {
+                  event.preventDefault();
+                  return;
+                }
+                goTo('/troubleshoot');
+              }}
             >
               <ShieldAlertIcon className='text-muted-foreground' aria-hidden />
               <span>Troubleshoot</span>

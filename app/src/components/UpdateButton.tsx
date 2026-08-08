@@ -2,6 +2,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { DownloadIcon, Loader2Icon, RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import {
+  selectIsSynthesisLocked,
+  useSynthesisLockStore,
+} from '@/stores/synthesis-lock-store';
 import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
@@ -17,17 +21,22 @@ type UpdateButtonState =
   | 'installing'
   | 'upToDate';
 
+const processRunningTooltip = 'Please wait for speech synthesis to finish';
+
 export default function UpdateButton() {
   const [state, setState] = useState<UpdateButtonState>('unchecked');
   const [availableVersion, setAvailableVersion] = useState<string | null>(null);
+  const isSynthesisLocked = useSynthesisLockStore(selectIsSynthesisLocked);
 
   const isDev = import.meta.env.DEV;
   const isLoading = state === 'preparing' || state === 'installing';
-  const label = updateButtonLabel(state, availableVersion);
+  const label = isSynthesisLocked
+    ? processRunningTooltip
+    : updateButtonLabel(state, availableVersion);
   const variant = state === 'ready' ? 'default' : 'outline';
 
   async function handleUpdateClick() {
-    if (isLoading) {
+    if (isLoading || isSynthesisLocked) {
       return;
     }
 
@@ -108,7 +117,7 @@ export default function UpdateButton() {
             variant={variant}
             size='icon-sm'
             className='shrink-0 rounded-full transition-colors duration-200'
-            disabled={isLoading || isDev}
+            disabled={isLoading || isDev || isSynthesisLocked}
             onClick={handleUpdateClick}
             aria-label={label}
           />
