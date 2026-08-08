@@ -13,10 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FileRowContextMenu,
-  quickActionClass,
-} from '@/components/FileRowContextMenu';
+import { FileRowContextMenu } from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,7 +24,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useShiftHeld } from '@/hooks/use-shift-held';
 
 export const Route = createFileRoute('/library')({ component: LibraryPage });
 
@@ -131,7 +127,6 @@ function LibraryPage() {
   const [activeFilePath, setActiveFilePath] = useState('');
   const [audioUrl, setAudioUrl] = useState('');
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
-  const isShiftHeld = useShiftHeld();
 
   const filteredFiles = useMemo(
     () =>
@@ -468,10 +463,6 @@ function LibraryPage() {
                               <Button
                                 variant="ghost"
                                 size="icon-sm"
-                                className={quickActionClass(
-                                  isShiftHeld,
-                                  isRevealing,
-                                )}
                                 onClick={() => void handleReveal(file)}
                                 disabled={isDeleting || Boolean(revealingPath)}
                                 aria-label={`Reveal ${file.name} in Finder`}
@@ -488,10 +479,6 @@ function LibraryPage() {
                                   isConfirmingDelete ? 'destructive' : 'ghost'
                                 }
                                 size="icon-sm"
-                                className={quickActionClass(
-                                  isShiftHeld,
-                                  isConfirmingDelete || isDeleting,
-                                )}
                                 onClick={(event) =>
                                   void handleDelete(file, {
                                     skipConfirm: event.shiftKey,

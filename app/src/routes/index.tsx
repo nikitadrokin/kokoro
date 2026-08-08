@@ -13,10 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  FileRowContextMenu,
-  quickActionClass,
-} from '@/components/FileRowContextMenu';
+import { FileRowContextMenu } from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,7 +28,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { useShiftHeld } from '@/hooks/use-shift-held';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import { estimateAudioDurationSec, formatDuration } from '@/lib/speech-audio';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
@@ -87,7 +83,6 @@ function PlaygroundPage() {
   const [pendingDeletePath, setPendingDeletePath] = useState('');
   const [savedAudioFiles, setSavedAudioFiles] = useState<SavedAudioFile[]>([]);
   const [savedAudioError, setSavedAudioError] = useState('');
-  const isShiftHeld = useShiftHeld();
   const {
     audioUrl,
     clearPlayerSource,
@@ -560,10 +555,6 @@ function PlaygroundPage() {
                             <Button
                               variant='outline'
                               size='icon-sm'
-                              className={quickActionClass(
-                                isShiftHeld,
-                                isRevealing,
-                              )}
                               onClick={() => void handleRevealSavedAudio(file)}
                               disabled={
                                 isDeleting || Boolean(revealingAudioPath)
@@ -580,10 +571,6 @@ function PlaygroundPage() {
                             <Button
                               variant='destructive'
                               size='icon-sm'
-                              className={quickActionClass(
-                                isShiftHeld,
-                                isConfirmingDelete || isDeleting,
-                              )}
                               onClick={(event) =>
                                 void handleDeleteSavedAudio(file, {
                                   skipConfirm: event.shiftKey,
