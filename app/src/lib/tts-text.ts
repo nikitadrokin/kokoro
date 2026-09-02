@@ -7,6 +7,10 @@ const HEADING_PATTERN = /^\s{0,3}#{1,6}\s+/;
 const REFERENCE_LINK_PATTERN = /^\s*\[[^\]]+\]:\s+\S+/;
 const TERMINAL_PUNCTUATION_PATTERN = /[.!?:;](?:["')\]]+)?$/;
 const TRAILING_COMMA_PATTERN = /,+(?:["')\]]+)?$/;
+const TABLE_ROW_PATTERN = /^\|/;
+// A word split across a PDF line break: a letter, then a hyphen at line end.
+const HYPHEN_BREAK_PATTERN = /(\p{L})[-‐­]$/u;
+const CONTINUES_LOWERCASE_PATTERN = /^\p{Ll}/u;
 
 type MarkdownLine = {
   text: string;
@@ -20,8 +24,82 @@ export type SpeechTextStats = {
   outputCharacters: number;
 };
 
+/**
+ * Rejoins lines that were soft-wrapped in the source (e.g. text copied out of a
+ * PDF, where a single sentence is hard-broken across several display lines).
+ * Without this, every wrap becomes a false sentence boundary once
+ * {@link punctuateLine} appends a period, which the TTS engine reads as a pause.
+ *
+ * Paragraph structure is preserved: blank lines, list items, headings, block
+ * quotes, and table rows still start a fresh logical line. Hyphenated word
+ * breaks ("them-\nselves") are stitched back into one word.
+ */
+export function reflowWrappedText(text: string): string {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  const output: string[] = [];
+  let current = '';
+
+  const flush = () => {
+    if (current) {
+      output.push(current);
+      current = '';
+    }
+  };
+
+  for (const rawLine of lines) {
+    const trimmed = rawLine.trim();
+
+    if (!trimmed) {
+      flush();
+      output.push('');
+      continue;
+    }
+
+    // Headings are always standalone; a following line is a new paragraph.
+    if (HEADING_PATTERN.test(trimmed)) {
+      flush();
+      output.push(trimmed);
+      continue;
+    }
+
+    if (startsNewBlock(trimmed)) {
+      flush();
+      current = trimmed;
+      continue;
+    }
+
+    if (!current) {
+      current = trimmed;
+      continue;
+    }
+
+    if (
+      HYPHEN_BREAK_PATTERN.test(current) &&
+      CONTINUES_LOWERCASE_PATTERN.test(trimmed)
+    ) {
+      current = current.replace(/[-‐­]$/, '') + trimmed;
+    } else {
+      current = `${current} ${trimmed}`;
+    }
+  }
+
+  flush();
+
+  return output.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+function startsNewBlock(line: string): boolean {
+  return (
+    UNORDERED_LIST_PATTERN.test(line) ||
+    ORDERED_LIST_PATTERN.test(line) ||
+    BLOCKQUOTE_PATTERN.test(line) ||
+    TABLE_ROW_PATTERN.test(line) ||
+    TABLE_DIVIDER_PATTERN.test(line)
+  );
+}
+
 export function optimizeMarkdownForSpeech(markdown: string): string {
-  const normalized = markdown
+  const normalized = reflowWrappedText(markdown)
     .replace(/\r\n?/g, '\n')
     .replace(/\t/g, ' ')
     .replace(/\u00a0/g, ' ');
@@ -65,7 +143,7 @@ export function optimizeMarkdownForSpeech(markdown: string): string {
 }
 
 export function optimizePlainTextForSpeech(text: string): string {
-  const normalized = text
+  const normalized = reflowWrappedText(text)
     .replace(/\r\n?/g, '\n')
     .replace(/\t/g, ' ')
     .replace(/\u00a0/g, ' ');

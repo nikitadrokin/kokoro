@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   optimizeMarkdownForSpeech,
   optimizePlainTextForSpeech,
+  reflowWrappedText,
 } from './tts-text';
 
 describe('optimizeMarkdownForSpeech', () => {
@@ -64,6 +65,59 @@ describe('optimizePlainTextForSpeech', () => {
   it('reads numeric ranges with "to"', () => {
     expect(optimizePlainTextForSpeech('The years 1990–1995 were busy')).toBe(
       'The years 1990 to 1995 were busy.',
+    );
+  });
+
+  it('joins PDF soft-wrapped lines into a single spoken sentence', () => {
+    const pasted = `Multitasking means that
+multiple processes can simultaneously reside in memory and each
+may receive use of the CPU.`;
+
+    expect(optimizePlainTextForSpeech(pasted)).toBe(
+      'Multitasking means that multiple processes can simultaneously reside in memory and each may receive use of the CPU.',
+    );
+  });
+});
+
+describe('reflowWrappedText', () => {
+  it('rejoins wrapped lines while preserving paragraph breaks', () => {
+    const input = `The kernel performs the following tasks. A computer has
+one or more central processing units which execute the
+instructions of programs.
+
+Memory management shares physical memory among
+processes in an equitable fashion.`;
+
+    expect(reflowWrappedText(input)).toBe(
+      `The kernel performs the following tasks. A computer has one or more central processing units which execute the instructions of programs.
+
+Memory management shares physical memory among processes in an equitable fashion.`,
+    );
+  });
+
+  it('stitches hyphenated word breaks back together', () => {
+    const input = `the rules are deter-
+mined by the kernel and by the processes them-
+selves.`;
+
+    expect(reflowWrappedText(input)).toBe(
+      'the rules are determined by the kernel and by the processes themselves.',
+    );
+  });
+
+  it('keeps list items and headings on their own lines', () => {
+    const input = `# Tasks performed by the kernel
+Among other things the kernel performs
+the following tasks:
+- Process scheduling picks which
+  process runs next
+- Memory management`;
+
+    expect(reflowWrappedText(input)).toBe(
+      `# Tasks performed by the kernel
+Among other things the kernel performs the following tasks:
+- Process scheduling picks which process runs next
+- Memory management`,
     );
   });
 });
