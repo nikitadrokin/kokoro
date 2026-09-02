@@ -2,6 +2,7 @@ import { useNavigate, useRouterState } from '@tanstack/react-router';
 import {
   AudioLinesIcon,
   BookOpenIcon,
+  FileTextIcon,
   HeadphonesIcon,
   MailIcon,
   ShieldAlertIcon,
@@ -52,6 +53,12 @@ const listenItems = [
     label: 'EPUB reader',
     description: 'Open books and browse chapters inline',
     icon: BookOpenIcon,
+  },
+  {
+    to: '/pdf',
+    label: 'PDF reader',
+    description: 'Read text-based PDFs and convert them to speech',
+    icon: FileTextIcon,
   },
   {
     to: '/library',

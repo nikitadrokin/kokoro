@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TroubleshootRouteImport } from './routes/troubleshoot'
+import { Route as PdfRouteImport } from './routes/pdf'
 import { Route as MailRouteImport } from './routes/mail'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as EpubRouteImport } from './routes/epub'
@@ -19,6 +20,11 @@ import { Route as SpeechOptimizeRouteImport } from './routes/speech/optimize'
 const TroubleshootRoute = TroubleshootRouteImport.update({
   id: '/troubleshoot',
   path: '/troubleshoot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PdfRoute = PdfRouteImport.update({
+  id: '/pdf',
+  path: '/pdf',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MailRoute = MailRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
+  '/pdf': typeof PdfRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
+  '/pdf': typeof PdfRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/epub': typeof EpubRoute
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
+  '/pdf': typeof PdfRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/epub'
     | '/library'
     | '/mail'
+    | '/pdf'
     | '/troubleshoot'
     | '/speech/optimize'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/epub'
     | '/library'
     | '/mail'
+    | '/pdf'
     | '/troubleshoot'
     | '/speech/optimize'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/epub'
     | '/library'
     | '/mail'
+    | '/pdf'
     | '/troubleshoot'
     | '/speech/optimize'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   EpubRoute: typeof EpubRoute
   LibraryRoute: typeof LibraryRoute
   MailRoute: typeof MailRoute
+  PdfRoute: typeof PdfRoute
   TroubleshootRoute: typeof TroubleshootRoute
   SpeechOptimizeRoute: typeof SpeechOptimizeRoute
 }
@@ -115,6 +128,13 @@ declare module '@tanstack/react-router' {
       path: '/troubleshoot'
       fullPath: '/troubleshoot'
       preLoaderRoute: typeof TroubleshootRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pdf': {
+      id: '/pdf'
+      path: '/pdf'
+      fullPath: '/pdf'
+      preLoaderRoute: typeof PdfRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mail': {
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   EpubRoute: EpubRoute,
   LibraryRoute: LibraryRoute,
   MailRoute: MailRoute,
+  PdfRoute: PdfRoute,
   TroubleshootRoute: TroubleshootRoute,
   SpeechOptimizeRoute: SpeechOptimizeRoute,
 }

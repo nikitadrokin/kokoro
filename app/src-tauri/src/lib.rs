@@ -200,6 +200,16 @@ struct ImportedEpubBook {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+struct PdfFilePayload {
+    file_name: String,
+    file_path: String,
+    file_size: u64,
+    file_last_modified: u64,
+    bytes_base64: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct AppUpdateResponse {
     status: AppUpdateStatus,
     version: Option<String>,
@@ -993,6 +1003,52 @@ fn reveal_imported_epub_book(imported_path: String, app: AppHandle) -> Result<()
     reveal_file_in_finder(&path)
 }
 
+fn validate_pdf_path(path: &Path) -> Result<(), String> {
+    if !path
+        .extension()
+        .and_then(|value| value.to_str())
+        .is_some_and(|value| value.eq_ignore_ascii_case("pdf"))
+    {
+        return Err("The selected path is not a PDF file.".to_string());
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn read_pdf_file(path: String) -> Result<PdfFilePayload, String> {
+    let path = PathBuf::from(path.trim());
+    validate_pdf_path(&path)?;
+
+    let metadata = fs::metadata(&path)
+        .map_err(|error| format!("Failed to inspect PDF `{}`: {error}", path.display()))?;
+    if !metadata.is_file() {
+        return Err(format!("PDF `{}` is not a file.", path.display()));
+    }
+
+    let file_name = path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("document.pdf")
+        .to_string();
+    let file_last_modified = metadata
+        .modified()
+        .ok()
+        .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
+        .map(|value| value.as_millis() as u64)
+        .unwrap_or(0);
+    let bytes = fs::read(&path)
+        .map_err(|error| format!("Failed to read PDF `{}`: {error}", path.display()))?;
+
+    Ok(PdfFilePayload {
+        file_name,
+        file_path: path.display().to_string(),
+        file_size: metadata.len(),
+        file_last_modified,
+        bytes_base64: BASE64.encode(bytes),
+    })
+}
+
 #[cfg(target_os = "macos")]
 fn reveal_file_in_finder(path: &Path) -> Result<(), String> {
     let output = std::process::Command::new("/usr/bin/open")
@@ -1629,6 +1685,7 @@ pub fn run() {
             list_imported_epub_books,
             delete_imported_epub_book,
             reveal_imported_epub_book,
+            read_pdf_file,
             prepare_app_update,
             install_prepared_app_update,
             take_speak_selection_text,
