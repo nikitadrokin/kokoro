@@ -12,12 +12,13 @@ function item(
   y: number,
   width: number,
   hasEOL = false,
+  height = 12,
 ): PdfTextItemLike {
   return {
     str,
     transform: [1, 0, 0, 1, x, y],
     width,
-    height: 12,
+    height,
     hasEOL,
   };
 }
@@ -41,6 +42,21 @@ describe('extractPdfPageText', () => {
     ]);
 
     expect(text).toBe('First paragraph.\n\nSecond paragraph.');
+  });
+
+  it('uses visual order and removes superscript citation items', () => {
+    const text = extractPdfPageText([
+      item('The first sentence continues', 40, 680, 180, true, 10.5),
+      item('onto its next visual line.', 40, 664, 150, false, 10.5),
+      item('\u0000', 192, 668, 3, false, 7.9),
+      item('1', 195, 668, 5, false, 7.9),
+      item('\u0000', 200, 668, 3, false, 7.9),
+      item('A visually earlier heading', 40, 720, 250, false, 20),
+    ]);
+
+    expect(text).toBe(
+      'A visually earlier heading\n\nThe first sentence continues\nonto its next visual line.',
+    );
   });
 });
 
@@ -69,5 +85,28 @@ describe('buildPdfSpeechText', () => {
   it('distinguishes image-only pages from text-layer pages', () => {
     expect(hasExtractablePdfText(['', '  '])).toBe(false);
     expect(hasExtractablePdfText(['A short text layer.'])).toBe(true);
+  });
+
+  it('drops orphaned citation lines before speech optimization', () => {
+    const speech = buildPdfSpeechText([
+      `A claim wraps before the sentence
+ends on the next line.
+
+1 2.
+
+Another paragraph has a citation.[3]
+
+4.
+
+The final paragraph.`,
+    ]);
+
+    expect(speech).toBe(
+      `A claim wraps before the sentence ends on the next line.
+
+Another paragraph has a citation.
+
+The final paragraph.`,
+    );
   });
 });

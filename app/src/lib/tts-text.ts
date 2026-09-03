@@ -8,6 +8,7 @@ const REFERENCE_LINK_PATTERN = /^\s*\[[^\]]+\]:\s+\S+/;
 const TERMINAL_PUNCTUATION_PATTERN = /[.!?:;](?:["')\]]+)?$/;
 const TRAILING_COMMA_PATTERN = /,+(?:["')\]]+)?$/;
 const TABLE_ROW_PATTERN = /^\|/;
+const STANDALONE_REFERENCE_LINE_PATTERN = /^(?=[\s[\],.]*\d)[\s[\]\d,.]+$/;
 // A word split across a PDF line break: a letter, then a hyphen at line end.
 const HYPHEN_BREAK_PATTERN = /(\p{L})[-‐­]$/u;
 const CONTINUES_LOWERCASE_PATTERN = /^\p{Ll}/u;
@@ -85,7 +86,10 @@ export function reflowWrappedText(text: string): string {
 
   flush();
 
-  return output.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return output
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function startsNewBlock(line: string): boolean {
@@ -143,7 +147,12 @@ export function optimizeMarkdownForSpeech(markdown: string): string {
 }
 
 export function optimizePlainTextForSpeech(text: string): string {
-  const normalized = reflowWrappedText(text)
+  const withoutOrphanedReferences = text
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .filter((line) => !STANDALONE_REFERENCE_LINE_PATTERN.test(line.trim()))
+    .join('\n');
+  const normalized = reflowWrappedText(withoutOrphanedReferences)
     .replace(/\r\n?/g, '\n')
     .replace(/\t/g, ' ')
     .replace(/\u00a0/g, ' ');
@@ -260,33 +269,35 @@ function expandAbbreviations(text: string): string {
 }
 
 function normalizeSpeechText(text: string): string {
-  return expandAbbreviations(
-    text
-      .replace(/`([^`]+)`/g, '$1')
-      .replace(/[*_~]+/g, '')
-      .replace(/\^\[([^\]]+)\]/g, '$1')
-      .replace(/\[\^?[\w-]+\]/g, ''),
-  )
-    .replace(/https?:\/\/[^\s)]+/gi, formatUrlForSpeech)
-    .replace(
-      /(^|[^\w])\$((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?|\.\d{1,2})(?=\b|[^\d])/g,
-      (_match, prefix: string, amount: string) => {
-        return `${prefix}${formatCurrencyForSpeech(amount)}`;
-      },
+  return (
+    expandAbbreviations(
+      text
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/[*_~]+/g, '')
+        .replace(/\^\[([^\]]+)\]/g, '$1')
+        .replace(/\[\^?[\w-]+\]/g, ''),
     )
-    .replace(/(\d+(?:\.\d+)?)%/g, '$1 percent')
-    // Numeric ranges: "10–20", "10-20", "1990 to 1995" stays readable as "to".
-    .replace(/(\d)\s*[–—-]\s*(?=\d)/g, '$1 to ')
-    .replace(/&amp;/gi, ' and ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&mdash;|&ndash;/gi, ', ')
-    .replace(/&/g, ' and ')
-    .replace(/[“”]/g, '"')
-    .replace(/[‘’]/g, "'")
-    .replace(/\.{3,}/g, '. ')
-    .replace(/[–—]/g, ', ')
-    .replace(/\s+/g, ' ')
-    .trim();
+      .replace(/https?:\/\/[^\s)]+/gi, formatUrlForSpeech)
+      .replace(
+        /(^|[^\w])\$((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?|\.\d{1,2})(?=\b|[^\d])/g,
+        (_match, prefix: string, amount: string) => {
+          return `${prefix}${formatCurrencyForSpeech(amount)}`;
+        },
+      )
+      .replace(/(\d+(?:\.\d+)?)%/g, '$1 percent')
+      // Numeric ranges: "10–20", "10-20", "1990 to 1995" stays readable as "to".
+      .replace(/(\d)\s*[–—-]\s*(?=\d)/g, '$1 to ')
+      .replace(/&amp;/gi, ' and ')
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&mdash;|&ndash;/gi, ', ')
+      .replace(/&/g, ' and ')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/\.{3,}/g, '. ')
+      .replace(/[–—]/g, ', ')
+      .replace(/\s+/g, ' ')
+      .trim()
+  );
 }
 
 function punctuateLine(line: MarkdownLine): string {

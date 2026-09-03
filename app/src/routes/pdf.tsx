@@ -13,7 +13,11 @@ import {
   Save,
   Upload,
 } from 'lucide-react';
-import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+import type {
+  PDFDocumentProxy,
+  RenderTask,
+  TextLayer as PdfJsTextLayer,
+} from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +51,7 @@ import {
 import { estimateAudioDurationSec, formatDuration } from '@/lib/speech-audio';
 import { VOICE_OPTIONS } from '@/lib/voice-options';
 import { type LastOpenedPdf, usePdfStore } from '@/stores/pdf-store';
+import './pdf-reader.css';
 
 export const Route = createFileRoute('/pdf')({ component: PdfReaderPage });
 
@@ -59,7 +64,7 @@ async function loadPdfJs() {
   return pdfJs;
 }
 
-type NarrationScope = 'page' | 'document';
+type NarrationScope = 'page' | 'document' | 'selection';
 type NarrationMode = 'stream' | 'save-stream' | 'save-silent';
 
 type PdfFilePayload = {
@@ -160,9 +165,30 @@ function textItemForExtraction(item: unknown): PdfTextItemLike | null {
   return null;
 }
 
+function selectedPdfText(container: HTMLElement | null): string {
+  const selection = window.getSelection();
+  const anchorNode = selection?.anchorNode;
+  const focusNode = selection?.focusNode;
+  if (
+    !container ||
+    !selection ||
+    selection.rangeCount === 0 ||
+    !anchorNode ||
+    !focusNode ||
+    !container.contains(anchorNode) ||
+    !container.contains(focusNode)
+  ) {
+    return '';
+  }
+
+  return selection.toString().trim();
+}
+
 function PdfReaderPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const pageSurfaceRef = useRef<HTMLDivElement>(null);
+  const textLayerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
   const openingRequestRef = useRef(0);
@@ -210,6 +236,10 @@ function PdfReaderPage() {
   );
   const extractionComplete = pageCount > 0 && pageTexts.length === pageCount;
   const currentPageText = pageTexts[pageNumber - 1] ?? '';
+  const optimizedCurrentPageText = useMemo(
+    () => buildPdfSpeechText([currentPageText]),
+    [currentPageText],
+  );
 
   useEffect(() => {
     lastOpenedPdfRef.current = lastOpenedPdf;
@@ -314,10 +344,14 @@ function PdfReaderPage() {
   useEffect(() => {
     const document = documentRef.current;
     const canvas = canvasRef.current;
+    const pageSurface = pageSurfaceRef.current;
+    const textLayerContainer = textLayerRef.current;
     if (
       documentVersion === 0 ||
       !document ||
       !canvas ||
+      !pageSurface ||
+      !textLayerContainer ||
       pageNumber < 1 ||
       pageNumber > pageCount
     )
@@ -325,7 +359,11 @@ function PdfReaderPage() {
 
     let cancelled = false;
     let renderTask: RenderTask | null = null;
+    let textLayerTask: PdfJsTextLayer | null = null;
+    let textLayerFinished = false;
     const renderCanvas = canvas;
+    const renderSurface = pageSurface;
+    const renderTextLayer = textLayerContainer;
     setIsRendering(true);
 
     async function renderPage() {
@@ -334,10 +372,29 @@ function PdfReaderPage() {
         if (!page || cancelled) return;
         const viewport = page.getViewport({ scale: zoom });
         const outputScale = window.devicePixelRatio || 1;
+        const { TextLayer } = await loadPdfJs();
+        if (cancelled) return;
+
+        renderSurface.style.width = `${Math.floor(viewport.width)}px`;
+        renderSurface.style.height = `${Math.floor(viewport.height)}px`;
+        renderSurface.style.setProperty(
+          '--scale-factor',
+          String(viewport.scale),
+        );
+        renderSurface.style.setProperty('--user-unit', String(page.userUnit));
         renderCanvas.width = Math.floor(viewport.width * outputScale);
         renderCanvas.height = Math.floor(viewport.height * outputScale);
         renderCanvas.style.width = `${Math.floor(viewport.width)}px`;
         renderCanvas.style.height = `${Math.floor(viewport.height)}px`;
+        renderTextLayer.replaceChildren();
+        textLayerTask = new TextLayer({
+          textContentSource: page.streamTextContent({
+            includeMarkedContent: true,
+            disableNormalization: true,
+          }),
+          container: renderTextLayer,
+          viewport,
+        });
         renderTask = page.render({
           canvas: renderCanvas,
           viewport,
@@ -346,12 +403,15 @@ function PdfReaderPage() {
               ? undefined
               : [outputScale, 0, 0, outputScale, 0, 0],
         });
-        await renderTask.promise;
+        await Promise.all([renderTask.promise, textLayerTask.render()]);
+        textLayerFinished = true;
       } catch (caught) {
         if (
           !cancelled &&
           (!(caught instanceof Error) ||
-            caught.name !== 'RenderingCancelledException')
+            !['AbortException', 'RenderingCancelledException'].includes(
+              caught.name,
+            ))
         ) {
           setError(caught instanceof Error ? caught.message : String(caught));
         }
@@ -364,6 +424,8 @@ function PdfReaderPage() {
     return () => {
       cancelled = true;
       renderTask?.cancel();
+      if (!textLayerFinished) textLayerTask?.cancel();
+      renderTextLayer.replaceChildren();
     };
   }, [documentVersion, pageCount, pageNumber, zoom]);
 
@@ -443,13 +505,18 @@ function PdfReaderPage() {
   }, [lastOpenedPdf, openPdf]);
 
   const handleReadAloud = useCallback(async () => {
+    const selectedText = selectedPdfText(textLayerRef.current);
     const text =
       narrationScope === 'document'
         ? buildPdfSpeechText(pageTexts)
-        : buildPdfSpeechText([currentPageText]);
+        : narrationScope === 'selection'
+          ? buildPdfSpeechText([selectedText])
+          : optimizedCurrentPageText;
     if (!text) {
       setNarrationError(
-        'This PDF scope has no readable text. Scanned or image-only pages are not supported yet.',
+        narrationScope === 'selection'
+          ? 'Select text directly on the PDF page before reading a selection.'
+          : 'This PDF scope has no readable text. Scanned or image-only pages are not supported yet.',
       );
       return;
     }
@@ -458,7 +525,9 @@ function PdfReaderPage() {
     const scopeLabel =
       narrationScope === 'document'
         ? 'Complete document'
-        : `Page ${String(pageNumber).padStart(3, '0')}`;
+        : narrationScope === 'selection'
+          ? `Page ${String(pageNumber).padStart(3, '0')} selection`
+          : `Page ${String(pageNumber).padStart(3, '0')}`;
     await generateStream({
       text,
       style: narrationStyle,
@@ -469,7 +538,6 @@ function PdfReaderPage() {
       outputSubdir: `books/${title || 'Untitled PDF'}`,
     });
   }, [
-    currentPageText,
     generateStream,
     narrationMode,
     narrationScope,
@@ -479,6 +547,7 @@ function PdfReaderPage() {
     pageTexts,
     setNarrationError,
     title,
+    optimizedCurrentPageText,
   ]);
 
   return (
@@ -633,13 +702,13 @@ function PdfReaderPage() {
                     </Button>
                   </div>
 
-                  {currentPageText ? (
+                  {optimizedCurrentPageText ? (
                     <details className="group rounded-lg border">
                       <summary className="cursor-pointer px-3 py-2 font-medium text-sm">
-                        Extracted page text
+                        Optimized page text
                       </summary>
                       <p className="max-h-48 overflow-y-auto whitespace-pre-wrap border-t px-3 py-2 text-muted-foreground text-xs leading-relaxed">
-                        {currentPageText}
+                        {optimizedCurrentPageText}
                       </p>
                     </details>
                   ) : null}
@@ -672,7 +741,9 @@ function PdfReaderPage() {
                           {(value: string | null) =>
                             value === 'document'
                               ? 'Complete document'
-                              : 'Current page'
+                              : value === 'selection'
+                                ? 'Selected text'
+                                : 'Current page'
                           }
                         </SelectValue>
                       </SelectTrigger>
@@ -682,6 +753,9 @@ function PdfReaderPage() {
                         </SelectItem>
                         <SelectItem value="document" label="Complete document">
                           Complete document
+                        </SelectItem>
+                        <SelectItem value="selection" label="Selected text">
+                          Selected text
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -923,11 +997,23 @@ function PdfReaderPage() {
                     <LoaderCircle className="size-4 animate-spin" />
                   </div>
                 ) : null}
-                <canvas
-                  ref={canvasRef}
-                  className={pageCount ? 'bg-white shadow-md' : 'hidden'}
-                  aria-label={`PDF page ${pageNumber}`}
-                />
+                <div
+                  ref={pageSurfaceRef}
+                  className={pageCount ? 'pdf-page-surface' : 'hidden'}
+                >
+                  <canvas
+                    ref={canvasRef}
+                    className="pdf-page-canvas"
+                    aria-label={`PDF page ${pageNumber}`}
+                    aria-hidden={Boolean(optimizedCurrentPageText)}
+                  />
+                  <div
+                    ref={textLayerRef}
+                    className="pdf-text-layer"
+                    role="document"
+                    aria-label={`Selectable text for PDF page ${pageNumber}`}
+                  />
+                </div>
               </div>
             </CardContent>
           </Card>

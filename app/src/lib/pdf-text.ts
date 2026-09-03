@@ -19,11 +19,12 @@ type PositionedText = {
 
 const PAGE_NUMBER_PATTERN = /^(?:page\s+)?\d+(?:\s+(?:of|\/)\s*\d+)?$/i;
 const WORD_CHARACTER_PATTERN = /[\p{L}\p{N}]/u;
+const CITATION_NUMBER_PATTERN = /^\d{1,3}$/;
 const NO_SPACE_BEFORE_PATTERN = /^[,.;:!?%)\]}]/;
 const NO_SPACE_AFTER_CHARACTERS = '([{/$';
 
 function normalizeItem(item: PdfTextItemLike): PositionedText | null {
-  const text = item.str.replace(/\s+/g, ' ');
+  const text = item.str.replace(/\p{Cc}/gu, '').replace(/\s+/g, ' ');
   if (!text.trim()) {
     return null;
   }
@@ -36,6 +37,31 @@ function normalizeItem(item: PdfTextItemLike): PositionedText | null {
     height: Math.max(Math.abs(item.height), 1),
     hasEOL: item.hasEOL ?? false,
   };
+}
+
+function isLikelySuperscriptCitation(
+  candidate: PositionedText,
+  items: PositionedText[],
+): boolean {
+  if (!CITATION_NUMBER_PATTERN.test(candidate.text.trim())) {
+    return false;
+  }
+
+  return items.some(
+    (item) =>
+      item !== candidate &&
+      item.height >= candidate.height * 1.2 &&
+      Math.abs(item.y - candidate.y) <= item.height * 0.6,
+  );
+}
+
+function visualReadingOrder(a: PositionedText, b: PositionedText): number {
+  const verticalDistance = b.y - a.y;
+  const sameLineTolerance = Math.min(a.height, b.height) * 0.45;
+  if (Math.abs(verticalDistance) <= sameLineTolerance) {
+    return a.x - b.x;
+  }
+  return verticalDistance;
 }
 
 function shouldInsertSpace(
@@ -63,9 +89,12 @@ function shouldInsertSpace(
  * normalization path, where soft wraps and split hyphenated words are repaired.
  */
 export function extractPdfPageText(items: PdfTextItemLike[]): string {
-  const positioned = items
+  const normalized = items
     .map(normalizeItem)
     .filter((item): item is PositionedText => item !== null);
+  const positioned = normalized
+    .filter((item) => !isLikelySuperscriptCitation(item, normalized))
+    .sort(visualReadingOrder);
   const lines: string[] = [];
   let current = '';
   let baseline = 0;
@@ -96,7 +125,7 @@ export function extractPdfPageText(items: PdfTextItemLike[]): string {
       if (
         previousBaseline !== null &&
         Math.abs(item.y - previousBaseline) >
-          Math.max(previousLineHeight, item.height) * 1.65
+          Math.min(previousLineHeight, item.height) * 1.65
       ) {
         lines.push('');
         addedParagraphBreak = true;
@@ -109,7 +138,7 @@ export function extractPdfPageText(items: PdfTextItemLike[]): string {
         previousBaseline !== null &&
         lines.at(-1) !== '' &&
         Math.abs(item.y - previousBaseline) >
-          Math.max(previousLineHeight, item.height) * 1.65
+          Math.min(previousLineHeight, item.height) * 1.65
       ) {
         lines.push('');
       }

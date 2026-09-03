@@ -77,6 +77,20 @@ may receive use of the CPU.`;
       'Multitasking means that multiple processes can simultaneously reside in memory and each may receive use of the CPU.',
     );
   });
+
+  it('removes standalone citation artifacts without leaving extra breaks', () => {
+    const extracted = `First paragraph.[1]
+
+1 2.
+
+Second paragraph.
+
+4 5.`;
+
+    expect(optimizePlainTextForSpeech(extracted)).toBe(`First paragraph.
+
+Second paragraph.`);
+  });
 });
 
 describe('reflowWrappedText', () => {
