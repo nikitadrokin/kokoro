@@ -15,8 +15,8 @@ import {
 } from 'lucide-react';
 import type {
   PDFDocumentProxy,
-  RenderTask,
   TextLayer as PdfJsTextLayer,
+  RenderTask,
 } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -64,7 +64,7 @@ async function loadPdfJs() {
   return pdfJs;
 }
 
-type NarrationScope = 'page' | 'document' | 'selection';
+type NarrationScope = 'page' | 'document';
 type NarrationMode = 'stream' | 'save-stream' | 'save-silent';
 
 type PdfFilePayload = {
@@ -163,25 +163,6 @@ function textItemForExtraction(item: unknown): PdfTextItemLike | null {
     return item as PdfTextItemLike;
   }
   return null;
-}
-
-function selectedPdfText(container: HTMLElement | null): string {
-  const selection = window.getSelection();
-  const anchorNode = selection?.anchorNode;
-  const focusNode = selection?.focusNode;
-  if (
-    !container ||
-    !selection ||
-    selection.rangeCount === 0 ||
-    !anchorNode ||
-    !focusNode ||
-    !container.contains(anchorNode) ||
-    !container.contains(focusNode)
-  ) {
-    return '';
-  }
-
-  return selection.toString().trim();
 }
 
 function PdfReaderPage() {
@@ -505,18 +486,13 @@ function PdfReaderPage() {
   }, [lastOpenedPdf, openPdf]);
 
   const handleReadAloud = useCallback(async () => {
-    const selectedText = selectedPdfText(textLayerRef.current);
     const text =
       narrationScope === 'document'
         ? buildPdfSpeechText(pageTexts)
-        : narrationScope === 'selection'
-          ? buildPdfSpeechText([selectedText])
-          : optimizedCurrentPageText;
+        : optimizedCurrentPageText;
     if (!text) {
       setNarrationError(
-        narrationScope === 'selection'
-          ? 'Select text directly on the PDF page before reading a selection.'
-          : 'This PDF scope has no readable text. Scanned or image-only pages are not supported yet.',
+        'This PDF scope has no readable text. Scanned or image-only pages are not supported yet.',
       );
       return;
     }
@@ -525,9 +501,7 @@ function PdfReaderPage() {
     const scopeLabel =
       narrationScope === 'document'
         ? 'Complete document'
-        : narrationScope === 'selection'
-          ? `Page ${String(pageNumber).padStart(3, '0')} selection`
-          : `Page ${String(pageNumber).padStart(3, '0')}`;
+        : `Page ${String(pageNumber).padStart(3, '0')}`;
     await generateStream({
       text,
       style: narrationStyle,
@@ -741,9 +715,7 @@ function PdfReaderPage() {
                           {(value: string | null) =>
                             value === 'document'
                               ? 'Complete document'
-                              : value === 'selection'
-                                ? 'Selected text'
-                                : 'Current page'
+                              : 'Current page'
                           }
                         </SelectValue>
                       </SelectTrigger>
@@ -753,9 +725,6 @@ function PdfReaderPage() {
                         </SelectItem>
                         <SelectItem value="document" label="Complete document">
                           Complete document
-                        </SelectItem>
-                        <SelectItem value="selection" label="Selected text">
-                          Selected text
                         </SelectItem>
                       </SelectContent>
                     </Select>
