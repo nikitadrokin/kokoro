@@ -541,11 +541,19 @@ function PdfReaderPage() {
             className="flex min-w-0 flex-col gap-3 @5xl/content:self-start"
           >
             <TabsList className="grid h-9 w-full grid-cols-2">
-              <TabsTrigger value="document" className="h-7">
+              <TabsTrigger
+                value="document"
+                className="h-7"
+                disabled={isNarrating}
+              >
                 <FileText className="size-4" aria-hidden="true" />
                 Document
               </TabsTrigger>
-              <TabsTrigger value="narration" className="h-7">
+              <TabsTrigger
+                value="narration"
+                className="h-7"
+                disabled={isNarrating}
+              >
                 <AudioLinesIcon className="size-4" aria-hidden="true" />
                 Narration
               </TabsTrigger>

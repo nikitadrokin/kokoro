@@ -1169,11 +1169,19 @@ function EpubReaderPage() {
             className='flex min-w-0 flex-col gap-3 @5xl/content:self-start'
           >
             <TabsList className='grid h-9 w-full grid-cols-2'>
-              <TabsTrigger value='library' className='h-7'>
+              <TabsTrigger
+                value='library'
+                className='h-7'
+                disabled={isNarrationBusy}
+              >
                 <BookOpen className='size-4' aria-hidden='true' />
                 Library
               </TabsTrigger>
-              <TabsTrigger value='narration' className='h-7'>
+              <TabsTrigger
+                value='narration'
+                className='h-7'
+                disabled={isNarrationBusy}
+              >
                 <AudioLinesIcon className='size-4' aria-hidden='true' />
                 Narration
               </TabsTrigger>
