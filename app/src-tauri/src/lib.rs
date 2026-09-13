@@ -4,6 +4,7 @@ mod macos_service;
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
     ffi::OsString,
@@ -312,6 +313,7 @@ async fn synthesize_speech(
             &app,
             request.output_label.as_deref(),
             request.output_subdir.as_deref(),
+            &text,
         )?
     } else {
         create_temp_output_path(&app)?
@@ -478,6 +480,7 @@ async fn synthesize_speech_stream(
             &app,
             request.output_label.as_deref(),
             request.output_subdir.as_deref(),
+            &text,
         )?)
     } else {
         None
@@ -1345,6 +1348,7 @@ fn create_saved_output_path(
     app: &AppHandle,
     output_label: Option<&str>,
     output_subdir: Option<&str>,
+    narration_text: &str,
 ) -> Result<PathBuf, String> {
     let base_dir = saved_audio_dir(app)?;
     let base_dir = match output_subdir {
@@ -1359,9 +1363,34 @@ fn create_saved_output_path(
         .as_nanos();
     let stem = output_label
         .map(|value| sanitize_filename_stem(value, "speech"))
-        .unwrap_or_else(|| "speech".to_string());
+        .unwrap_or_else(|| narration_filename_stem(narration_text));
+    let short_hash = generation_short_hash(narration_text, timestamp, std::process::id());
 
-    Ok(base_dir.join(format!("{stem}-{}-{timestamp}.wav", std::process::id())))
+    Ok(base_dir.join(format!("{stem}-{short_hash}.wav")))
+}
+
+fn narration_filename_stem(input: &str) -> String {
+    const MAX_WORDS: usize = 5;
+    const MAX_CHARS: usize = 48;
+
+    let excerpt = input
+        .split_whitespace()
+        .take(MAX_WORDS)
+        .collect::<Vec<_>>()
+        .join(" ")
+        .chars()
+        .take(MAX_CHARS)
+        .collect::<String>();
+
+    sanitize_filename_stem(&excerpt, "speech")
+}
+
+fn generation_short_hash(narration_text: &str, timestamp: u128, process_id: u32) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(narration_text.as_bytes());
+    hasher.update(timestamp.to_le_bytes());
+    hasher.update(process_id.to_le_bytes());
+    format!("{:x}", hasher.finalize())[..8].to_string()
 }
 
 fn saved_audio_dir(app: &AppHandle) -> Result<PathBuf, String> {
@@ -1393,7 +1422,7 @@ fn sanitize_filename_stem(input: &str, fallback: &str) -> String {
     let mut last_was_separator = false;
 
     for character in input.chars() {
-        let next = if character.is_ascii_alphanumeric() {
+        let next = if character.is_alphanumeric() {
             Some(character)
         } else if matches!(character, ' ' | '-' | '_' | '.') {
             Some(character)
@@ -1428,6 +1457,37 @@ fn sanitize_filename_stem(input: &str, fallback: &str) -> String {
         fallback.to_string()
     } else {
         sanitized
+    }
+}
+
+#[cfg(test)]
+mod filename_tests {
+    use super::{generation_short_hash, narration_filename_stem};
+
+    #[test]
+    fn narration_stem_uses_at_most_five_words() {
+        assert_eq!(
+            narration_filename_stem("The quick brown fox jumps over the dog"),
+            "The-quick-brown-fox-jumps"
+        );
+    }
+
+    #[test]
+    fn narration_stem_uses_at_most_forty_eight_characters() {
+        let stem = narration_filename_stem(
+            "supercalifragilisticexpialidocious pseudopseudohypoparathyroidism narration",
+        );
+
+        assert_eq!(stem.chars().count(), 48);
+    }
+
+    #[test]
+    fn generation_hash_is_short_and_distinguishes_generations() {
+        let first = generation_short_hash("Hello world", 1, 42);
+        let second = generation_short_hash("Hello world", 2, 42);
+
+        assert_eq!(first.len(), 8);
+        assert_ne!(first, second);
     }
 }
 
