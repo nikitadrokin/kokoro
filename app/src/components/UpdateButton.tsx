@@ -50,7 +50,6 @@ export default function UpdateButton() {
 
   async function prepareUpdate() {
     setState('preparing');
-    const toastId = toast.loading('Checking for updates...');
 
     try {
       const response = await invoke<AppUpdateResponse>('prepare_app_update');
@@ -58,7 +57,7 @@ export default function UpdateButton() {
       if (response.status === 'upToDate') {
         setAvailableVersion(null);
         setState('upToDate');
-        toast.success('Kokoro is up to date.', { id: toastId });
+        toast.success('Kokoro is up to date.');
         return;
       }
 
@@ -68,11 +67,10 @@ export default function UpdateButton() {
         response.version
           ? `Kokoro v${response.version} is downloaded and ready to install.`
           : 'A Kokoro update is downloaded and ready to install.',
-        { id: toastId },
       );
     } catch (error) {
       setState('unchecked');
-      toast.error(formatUpdateError(error), { id: toastId });
+      toast.error(formatUpdateError(error));
     }
   }
 
