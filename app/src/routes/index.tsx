@@ -389,24 +389,33 @@ function PlaygroundPage() {
                 </div>
               ) : null}
 
-              <Button
-                className='w-full @xl/content:w-auto @xl/content:min-w-48'
-                variant={isGenerating ? 'outline' : 'default'}
-                onClick={() => {
-                  if (isGenerating) {
-                    void stopGeneration();
-                  } else {
-                    void handleGenerate();
-                  }
-                }}
-              >
-                {isGenerating ? (
-                  <Square className='size-4' />
-                ) : (
+              {isGenerating ? (
+                <div className='flex @xl/content:w-auto w-full gap-2'>
+                  <Button
+                    className='@xl/content:min-w-48 flex-1'
+                    disabled
+                  >
+                    <LoaderCircle className='size-4 animate-spin' />
+                    Generating…
+                  </Button>
+                  <Button
+                    type='button'
+                    variant='outline'
+                    onClick={() => void stopGeneration()}
+                  >
+                    <Square className='size-4' />
+                    Stop
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  className='w-full @xl/content:min-w-48 @xl/content:w-auto'
+                  onClick={() => void handleGenerate()}
+                >
                   <AudioLinesIcon className='size-4' />
-                )}
-                {isGenerating ? 'Stop generating' : 'Generate audio'}
-              </Button>
+                  Generate audio
+                </Button>
+              )}
 
               {isGenerating && estimatedDurationSec > 0 ? (
                 <div className='grid gap-1'>

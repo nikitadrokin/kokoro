@@ -24,6 +24,7 @@ import {
   RefreshCw,
   Save,
   Section,
+  Square,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -607,6 +608,7 @@ function EpubReaderPage() {
     isGenerating: isReadingAloud,
     play: playNarration,
     setError: setNarrationError,
+    stopGeneration,
   } = useSpeechStreamGeneration({ audioRef });
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
   const readerSrcDoc = useMemo(
@@ -1708,27 +1710,38 @@ function EpubReaderPage() {
                     </div>
                   ) : null}
 
-                  <Button
-                    type='button'
-                    className='w-full'
-                    onClick={() => void handleReadAloud()}
-                    disabled={!activeChapter || isNarrationBusy}
-                  >
-                    {isNarrationBusy ? (
-                      <LoaderCircle className='size-4 animate-spin' />
-                    ) : narrationMode === 'save-silent' ? (
-                      <Save className='size-4' />
-                    ) : (
-                      <AudioLinesIcon className='size-4' />
-                    )}
-                    {isNarrationBusy
-                      ? narrationMode === 'save-silent'
-                        ? 'Saving…'
-                        : 'Reading…'
-                      : narrationMode === 'save-silent'
+                  {isNarrationBusy ? (
+                    <div className='flex w-full gap-2'>
+                      <Button type='button' className='flex-1' disabled>
+                        <LoaderCircle className='size-4 animate-spin' />
+                        Generating…
+                      </Button>
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={() => void stopGeneration()}
+                      >
+                        <Square className='size-4' />
+                        Stop
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type='button'
+                      className='w-full'
+                      onClick={() => void handleReadAloud()}
+                      disabled={!activeChapter}
+                    >
+                      {narrationMode === 'save-silent' ? (
+                        <Save className='size-4' />
+                      ) : (
+                        <AudioLinesIcon className='size-4' />
+                      )}
+                      {narrationMode === 'save-silent'
                         ? 'Save audio'
                         : 'Read aloud'}
-                  </Button>
+                    </Button>
+                  )}
 
                   {isNarrationBusy && estimatedDurationSec > 0 ? (
                     <div className='grid gap-1'>

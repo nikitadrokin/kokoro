@@ -10,6 +10,7 @@ import {
   Pause,
   Play,
   RefreshCw,
+  Square,
 } from 'lucide-react';
 import {
   Activity,
@@ -337,6 +338,7 @@ function MailListenPage() {
     savedOutputPath,
     setError: setSpeechError,
     setPlayerSource,
+    stopGeneration,
   } = useSpeechStreamGeneration({ audioRef });
 
   const hasSynthesizedAudio = Boolean(audioUrl) && !isGenerating;
@@ -946,22 +948,32 @@ function MailListenPage() {
                         </Select>
                       </div>
 
-                      <div className='flex flex-wrap items-center gap-2'>
+                      {isGenerating ? (
+                        <div className='flex w-full gap-2'>
+                          <Button type='button' className='flex-1' disabled>
+                            <LoaderCircle className='size-4 animate-spin' />
+                            Generating…
+                          </Button>
+                          <Button
+                            type='button'
+                            variant='outline'
+                            onClick={() => void stopGeneration()}
+                          >
+                            <Square className='size-4' />
+                            Stop
+                          </Button>
+                        </div>
+                      ) : (
                         <Button
                           type='button'
+                          className='w-full'
                           onClick={() => void handleGenerate()}
-                          disabled={
-                            isGenerating || !selectedMessage.speechText.trim()
-                          }
+                          disabled={!selectedMessage.speechText.trim()}
                         >
-                          {isGenerating ? (
-                            <LoaderCircle className='size-4 animate-spin' />
-                          ) : (
-                            <AudioLinesIcon className='size-4' />
-                          )}
+                          <AudioLinesIcon className='size-4' />
                           Generate audio
                         </Button>
-                      </div>
+                      )}
 
                       {isGenerating || generatedDurationSec > 0 ? (
                         <div className='grid gap-2'>
