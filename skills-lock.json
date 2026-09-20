@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "shortcuts-generator": {
+      "source": "drewocarr/generate-shortcuts-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "86976fe66a71f6a12d3f098dbe8439ff39f2dedce19997b995cdd1aa1b4b4f50"
+    }
+  }
+}
