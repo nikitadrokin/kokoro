@@ -1,0 +1,33 @@
+#define name PDF to Audio
+#define color blue
+#define glyph headphones
+#define from sharesheet
+#define inputs pdf, file
+#define noinput askfor file
+#define version 18
+
+#include 'actions/web'
+#include 'actions/text'
+
+action 'gettextfrompdf' getTextFromPDF(variable input: 'WFInput'): text
+
+action 'text.combine' joinPDFPages(variable text: 'text'): text {
+	"Show-text": true,
+	"WFTextSeparator": "New Lines"
+}
+
+// Kokoro speech prep: port of app/src/lib/tts-text.ts (optimizePlainTextForSpeech).
+comment('Kokoro speech prep: port of optimizePlainTextForSpeech. Replaces the cloud-model parsing step.')
+
+const pdfPages = getTextFromPDF(ShortcutInput)
+const pdfText = joinPDFPages(pdfPages)
+const encodedPdfText = urlEncode(pdfText)
+
+// Render data:text/html as Rich Text so Shortcuts runs the embedded JS (iOS + macOS).
+@optimizerPage = "data:text/html;charset=utf-8,<body/><script>var __t=decodeURIComponent(\"{encodedPdfText}\");eval(atob(\"__OPTIMIZER_B64__\"));document.body.textContent=encodeURIComponent(optimizePlainTextForSpeech(__t));</script>"
+
+const optimizerURL = url("{@optimizerPage}")
+const speechText = urlDecode("{optimizerURL.richtext}")
+
+const spokenAudio = makeSpokenAudio(speechText)
+quicklook(spokenAudio)
