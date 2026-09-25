@@ -36,6 +36,31 @@ second item;`);
     );
   });
 
+  it('reads compact recurring currency amounts naturally', () => {
+    expect(
+      optimizeMarkdownForSpeech(
+        "You don't need to know whether it'll become a $10k/month app before building it.",
+      ),
+    ).toBe(
+      "You don't need to know whether it'll become a 10 thousand dollars per month app before building it.",
+    );
+    expect(
+      optimizeMarkdownForSpeech('Plans range from $1.5K/year to $2m.'),
+    ).toBe(
+      'Plans range from 1.5 thousand dollars per year to 2 million dollars.',
+    );
+  });
+
+  it('turns sequencing arrows into spoken transitions', () => {
+    expect(
+      optimizeMarkdownForSpeech(
+        'one audience → one problem → one promise → one core loop.',
+      ),
+    ).toBe(
+      'one audience, then one problem, then one promise, then one core loop.',
+    );
+  });
+
   it('removes markdown table dividers and makes table cells pauseable', () => {
     const result = optimizeMarkdownForSpeech(`| Name | Price |
 | --- | --- |

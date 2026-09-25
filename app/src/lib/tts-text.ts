@@ -279,12 +279,24 @@ function normalizeSpeechText(text: string): string {
     )
       .replace(/https?:\/\/[^\s)]+/gi, formatUrlForSpeech)
       .replace(
-        /(^|[^\w])\$((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?|\.\d{1,2})(?=\b|[^\d])/g,
-        (_match, prefix: string, amount: string) => {
-          return `${prefix}${formatCurrencyForSpeech(amount)}`;
+        /(^|[^\w])\$((?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d{1,2})?|\.\d{1,2})([kKmMbB])?(?:\s*\/\s*(day|week|month|year))?(?=\b|[^\d])/g,
+        (
+          _match,
+          prefix: string,
+          amount: string,
+          magnitude: string | undefined,
+          period: string | undefined,
+        ) => {
+          const currency = magnitude
+            ? formatCompactCurrencyForSpeech(amount, magnitude)
+            : formatCurrencyForSpeech(amount);
+          return `${prefix}${currency}${period ? ` per ${period}` : ''}`;
         },
       )
       .replace(/(\d+(?:\.\d+)?)%/g, '$1 percent')
+      // Arrows express a sequence here; saying "then" is more natural than
+      // reading the symbol name aloud.
+      .replace(/\s*(?:→|⇒|⟶|->)\s*/g, ', then ')
       // Numeric ranges: "10–20", "10-20", "1990 to 1995" stays readable as "to".
       .replace(/(\d)\s*[–—-]\s*(?=\d)/g, '$1 to ')
       .replace(/&amp;/gi, ' and ')
@@ -342,6 +354,19 @@ function formatCurrencyForSpeech(amount: string): string {
   }
 
   return `${dollars} ${pluralize('dollar', dollars)}`;
+}
+
+function formatCompactCurrencyForSpeech(
+  amount: string,
+  magnitude: string,
+): string {
+  const magnitudeName: Record<string, string> = {
+    k: 'thousand',
+    m: 'million',
+    b: 'billion',
+  };
+
+  return `${amount.replace(/,/g, '')} ${magnitudeName[magnitude.toLowerCase()]} dollars`;
 }
 
 function pluralize(word: string, count: number): string {
