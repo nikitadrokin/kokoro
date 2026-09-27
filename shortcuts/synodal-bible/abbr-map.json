@@ -1,0 +1,847 @@
+{
+  "10 Сив": {
+    "code": "10Sb",
+    "file": "10Sb.tex",
+    "title": "10-я Сивилл"
+  },
+  "10Сив": {
+    "code": "10Sb",
+    "file": "10Sb.tex",
+    "title": "10-я Сивилл"
+  },
+  "1 Пар": {
+    "code": "1Ch",
+    "file": "1Ch.tex",
+    "title": "1-я Паралипоменон"
+  },
+  "1Пар": {
+    "code": "1Ch",
+    "file": "1Ch.tex",
+    "title": "1-я Паралипоменон"
+  },
+  "1 Кли": {
+    "code": "1Cl",
+    "file": "1Cl.tex",
+    "title": "1-е Климента"
+  },
+  "1Кли": {
+    "code": "1Cl",
+    "file": "1Cl.tex",
+    "title": "1-е Климента"
+  },
+  "1 Кор": {
+    "code": "1Co",
+    "file": "1Co.tex",
+    "title": "1-е Коринфянам"
+  },
+  "1Кор": {
+    "code": "1Co",
+    "file": "1Co.tex",
+    "title": "1-е Коринфянам"
+  },
+  "1 Ено": {
+    "code": "1En",
+    "file": "1En.tex",
+    "title": "1-я Еноха"
+  },
+  "1Ено": {
+    "code": "1En",
+    "file": "1En.tex",
+    "title": "1-я Еноха"
+  },
+  "1 Ермы": {
+    "code": "1Er",
+    "file": "1Er.tex",
+    "title": "1-я Ермы"
+  },
+  "1Ермы": {
+    "code": "1Er",
+    "file": "1Er.tex",
+    "title": "1-я Ермы"
+  },
+  "1 Ин": {
+    "code": "1Jo",
+    "file": "1Jo.tex",
+    "title": "1-е Иоанна"
+  },
+  "1Ин": {
+    "code": "1Jo",
+    "file": "1Jo.tex",
+    "title": "1-е Иоанна"
+  },
+  "3 Цар": {
+    "code": "1Ki",
+    "file": "1Ki.tex",
+    "title": "3-я Царств"
+  },
+  "3Цар": {
+    "code": "1Ki",
+    "file": "1Ki.tex",
+    "title": "3-я Царств"
+  },
+  "1 Мак": {
+    "code": "1Ma",
+    "file": "1Ma.tex",
+    "title": "1-я Маккавейская"
+  },
+  "1Мак": {
+    "code": "1Ma",
+    "file": "1Ma.tex",
+    "title": "1-я Маккавейская"
+  },
+  "1 Пет": {
+    "code": "1Pe",
+    "file": "1Pe.tex",
+    "title": "1-е Петра"
+  },
+  "1Пет": {
+    "code": "1Pe",
+    "file": "1Pe.tex",
+    "title": "1-е Петра"
+  },
+  "1 Цар": {
+    "code": "1Sa",
+    "file": "1Sa.tex",
+    "title": "1-я Царств"
+  },
+  "1Цар": {
+    "code": "1Sa",
+    "file": "1Sa.tex",
+    "title": "1-я Царств"
+  },
+  "1 Сив": {
+    "code": "1Sb",
+    "file": "1Sb.tex",
+    "title": "1-я Сивилл"
+  },
+  "1Сив": {
+    "code": "1Sb",
+    "file": "1Sb.tex",
+    "title": "1-я Сивилл"
+  },
+  "1 Фес": {
+    "code": "1Th",
+    "file": "1Th.tex",
+    "title": "1-е Фессалоникийцам"
+  },
+  "1Фес": {
+    "code": "1Th",
+    "file": "1Th.tex",
+    "title": "1-е Фессалоникийцам"
+  },
+  "1 Тим": {
+    "code": "1Ti",
+    "file": "1Ti.tex",
+    "title": "1-е Тимофею"
+  },
+  "1Тим": {
+    "code": "1Ti",
+    "file": "1Ti.tex",
+    "title": "1-е Тимофею"
+  },
+  "2 Вар": {
+    "code": "2Ba",
+    "file": "2Ba.tex",
+    "title": "2-я Варуха"
+  },
+  "2Вар": {
+    "code": "2Ba",
+    "file": "2Ba.tex",
+    "title": "2-я Варуха"
+  },
+  "2 Пар": {
+    "code": "2Ch",
+    "file": "2Ch.tex",
+    "title": "2-я Паралипоменон"
+  },
+  "2Пар": {
+    "code": "2Ch",
+    "file": "2Ch.tex",
+    "title": "2-я Паралипоменон"
+  },
+  "2 Кор": {
+    "code": "2Co",
+    "file": "2Co.tex",
+    "title": "2-е Коринфянам"
+  },
+  "2Кор": {
+    "code": "2Co",
+    "file": "2Co.tex",
+    "title": "2-е Коринфянам"
+  },
+  "2 Ено": {
+    "code": "2En",
+    "file": "2En.tex",
+    "title": "2-я Еноха"
+  },
+  "2Ено": {
+    "code": "2En",
+    "file": "2En.tex",
+    "title": "2-я Еноха"
+  },
+  "2 Ермы": {
+    "code": "2Er",
+    "file": "2Er.tex",
+    "title": "2-я Ермы"
+  },
+  "2Ермы": {
+    "code": "2Er",
+    "file": "2Er.tex",
+    "title": "2-я Ермы"
+  },
+  "2 Езд": {
+    "code": "2Ez",
+    "file": "2Ez.tex",
+    "title": "2-я Ездры"
+  },
+  "2Езд": {
+    "code": "2Ez",
+    "file": "2Ez.tex",
+    "title": "2-я Ездры"
+  },
+  "2 Ин": {
+    "code": "2Jo",
+    "file": "2Jo.tex",
+    "title": "2-е Иоанна"
+  },
+  "2Ин": {
+    "code": "2Jo",
+    "file": "2Jo.tex",
+    "title": "2-е Иоанна"
+  },
+  "4 Цар": {
+    "code": "2Ki",
+    "file": "2Ki.tex",
+    "title": "4-я Царств"
+  },
+  "4Цар": {
+    "code": "2Ki",
+    "file": "2Ki.tex",
+    "title": "4-я Царств"
+  },
+  "2 Мак": {
+    "code": "2Ma",
+    "file": "2Ma.tex",
+    "title": "2-я Маккавейская"
+  },
+  "2Мак": {
+    "code": "2Ma",
+    "file": "2Ma.tex",
+    "title": "2-я Маккавейская"
+  },
+  "2 Пет": {
+    "code": "2Pe",
+    "file": "2Pe.tex",
+    "title": "2-е Петра"
+  },
+  "2Пет": {
+    "code": "2Pe",
+    "file": "2Pe.tex",
+    "title": "2-е Петра"
+  },
+  "2 Цар": {
+    "code": "2Sa",
+    "file": "2Sa.tex",
+    "title": "2-я Царств"
+  },
+  "2Цар": {
+    "code": "2Sa",
+    "file": "2Sa.tex",
+    "title": "2-я Царств"
+  },
+  "2 Сив": {
+    "code": "2Sb",
+    "file": "2Sb.tex",
+    "title": "2-я Сивилл"
+  },
+  "2Сив": {
+    "code": "2Sb",
+    "file": "2Sb.tex",
+    "title": "2-я Сивилл"
+  },
+  "2 Фес": {
+    "code": "2Th",
+    "file": "2Th.tex",
+    "title": "2-е Фессалоникийцам"
+  },
+  "2Фес": {
+    "code": "2Th",
+    "file": "2Th.tex",
+    "title": "2-е Фессалоникийцам"
+  },
+  "2 Тим": {
+    "code": "2Ti",
+    "file": "2Ti.tex",
+    "title": "2-е Тимофею"
+  },
+  "2Тим": {
+    "code": "2Ti",
+    "file": "2Ti.tex",
+    "title": "2-е Тимофею"
+  },
+  "3 Вар": {
+    "code": "3Ba",
+    "file": "3Ba.tex",
+    "title": "3-я Варуха"
+  },
+  "3Вар": {
+    "code": "3Ba",
+    "file": "3Ba.tex",
+    "title": "3-я Варуха"
+  },
+  "3 Кор": {
+    "code": "3Co",
+    "file": "3Co.tex",
+    "title": "3-е Коринфянам"
+  },
+  "3Кор": {
+    "code": "3Co",
+    "file": "3Co.tex",
+    "title": "3-е Коринфянам"
+  },
+  "3 Ермы": {
+    "code": "3Er",
+    "file": "3Er.tex",
+    "title": "3-я Ермы"
+  },
+  "3Ермы": {
+    "code": "3Er",
+    "file": "3Er.tex",
+    "title": "3-я Ермы"
+  },
+  "3 Езд": {
+    "code": "3Ez",
+    "file": "3Ez.tex",
+    "title": "3-я Ездры"
+  },
+  "3Езд": {
+    "code": "3Ez",
+    "file": "3Ez.tex",
+    "title": "3-я Ездры"
+  },
+  "3 Ин": {
+    "code": "3Jo",
+    "file": "3Jo.tex",
+    "title": "3-е Иоанна"
+  },
+  "3Ин": {
+    "code": "3Jo",
+    "file": "3Jo.tex",
+    "title": "3-е Иоанна"
+  },
+  "3 Мак": {
+    "code": "3Ma",
+    "file": "3Ma.tex",
+    "title": "3-я Маккавейская"
+  },
+  "3Мак": {
+    "code": "3Ma",
+    "file": "3Ma.tex",
+    "title": "3-я Маккавейская"
+  },
+  "3 Сив": {
+    "code": "3Sb",
+    "file": "3Sb.tex",
+    "title": "3-я Сивилл"
+  },
+  "3Сив": {
+    "code": "3Sb",
+    "file": "3Sb.tex",
+    "title": "3-я Сивилл"
+  },
+  "4 Сив": {
+    "code": "4Sb",
+    "file": "4Sb.tex",
+    "title": "4-я Сивилл"
+  },
+  "4Сив": {
+    "code": "4Sb",
+    "file": "4Sb.tex",
+    "title": "4-я Сивилл"
+  },
+  "5 Сив": {
+    "code": "5Sb",
+    "file": "5Sb.tex",
+    "title": "5-я Сивилл"
+  },
+  "5Сив": {
+    "code": "5Sb",
+    "file": "5Sb.tex",
+    "title": "5-я Сивилл"
+  },
+  "6 Сив": {
+    "code": "6Sb",
+    "file": "6Sb.tex",
+    "title": "6-я Сивилл"
+  },
+  "6Сив": {
+    "code": "6Sb",
+    "file": "6Sb.tex",
+    "title": "6-я Сивилл"
+  },
+  "7 Сив": {
+    "code": "7Sb",
+    "file": "7Sb.tex",
+    "title": "7-я Сивилл"
+  },
+  "7Сив": {
+    "code": "7Sb",
+    "file": "7Sb.tex",
+    "title": "7-я Сивилл"
+  },
+  "8 Сив": {
+    "code": "8Sb",
+    "file": "8Sb.tex",
+    "title": "8-я Сивилл"
+  },
+  "8Сив": {
+    "code": "8Sb",
+    "file": "8Sb.tex",
+    "title": "8-я Сивилл"
+  },
+  "9 Сив": {
+    "code": "9Sb",
+    "file": "9Sb.tex",
+    "title": "9-я Сивилл"
+  },
+  "9Сив": {
+    "code": "9Sb",
+    "file": "9Sb.tex",
+    "title": "9-я Сивилл"
+  },
+  "Деян": {
+    "code": "Act",
+    "file": "Act.tex",
+    "title": "Деяния"
+  },
+  "Ахх": {
+    "code": "Ahh",
+    "file": "Ahh.tex",
+    "title": "Книга Ахиахара премудрого"
+  },
+  "Ам": {
+    "code": "Amo",
+    "file": "Amo.tex",
+    "title": "Амос"
+  },
+  "Арист": {
+    "code": "Ars",
+    "file": "Ars.tex",
+    "title": "Письмо Аристея"
+  },
+  "Асн": {
+    "code": "Asn",
+    "file": "Asn.tex",
+    "title": "Иосиф и Асенефь"
+  },
+  "Ап Соф": {
+    "code": "Azp",
+    "file": "Azp.tex",
+    "title": "Апокалипсис Софонии"
+  },
+  "АпСоф": {
+    "code": "Azp",
+    "file": "Azp.tex",
+    "title": "Апокалипсис Софонии"
+  },
+  "Вар": {
+    "code": "Bar",
+    "file": "Bar.tex",
+    "title": "Варух"
+  },
+  "Кол": {
+    "code": "Col",
+    "file": "Col.tex",
+    "title": "к Колоссянам"
+  },
+  "Дан": {
+    "code": "Dan",
+    "file": "Dan.tex",
+    "title": "Даниил"
+  },
+  "Втор": {
+    "code": "Deu",
+    "file": "Deu.tex",
+    "title": "Второзаконие"
+  },
+  "Дид": {
+    "code": "Did",
+    "file": "Did.tex",
+    "title": "Учение 12-и апостолов"
+  },
+  "Еккл": {
+    "code": "Ecc",
+    "file": "Ecc.tex",
+    "title": "Екклесиаст"
+  },
+  "Еф": {
+    "code": "Eph",
+    "file": "Eph.tex",
+    "title": "к Ефесянам"
+  },
+  "Посл Иер": {
+    "code": "Epj",
+    "file": "Epj.tex",
+    "title": "Послание Иеремии"
+  },
+  "ПослИер": {
+    "code": "Epj",
+    "file": "Epj.tex",
+    "title": "Послание Иеремии"
+  },
+  "Есф": {
+    "code": "Est",
+    "file": "Est.tex",
+    "title": "Есфирь"
+  },
+  "Исх": {
+    "code": "Exo",
+    "file": "Exo.tex",
+    "title": "Исход"
+  },
+  "Иез": {
+    "code": "Eze",
+    "file": "Eze.tex",
+    "title": "Иезекииль"
+  },
+  "1 Езд": {
+    "code": "Ezr",
+    "file": "Ezr.tex",
+    "title": "1-я Ездры"
+  },
+  "1Езд": {
+    "code": "Ezr",
+    "file": "Ezr.tex",
+    "title": "1-я Ездры"
+  },
+  "Гал": {
+    "code": "Gal",
+    "file": "Gal.tex",
+    "title": "к Галатам"
+  },
+  "Быт": {
+    "code": "Gen",
+    "file": "Gen.tex",
+    "title": "Бытие"
+  },
+  "Авв": {
+    "code": "Hab",
+    "file": "Hab.tex",
+    "title": "Аввакум"
+  },
+  "Агг": {
+    "code": "Hag",
+    "file": "Hag.tex",
+    "title": "Аггей"
+  },
+  "Евр": {
+    "code": "Heb",
+    "file": "Heb.tex",
+    "title": "к Евреям"
+  },
+  "Ос": {
+    "code": "Hos",
+    "file": "Hos.tex",
+    "title": "Осия"
+  },
+  "Ис": {
+    "code": "Isa",
+    "file": "Isa.tex",
+    "title": "Исаия"
+  },
+  "Иак": {
+    "code": "Jam",
+    "file": "Jam.tex",
+    "title": "Иакова"
+  },
+  "Суд": {
+    "code": "Jdg",
+    "file": "Jdg.tex",
+    "title": "Книга Судей"
+  },
+  "Иудифь": {
+    "code": "Jdt",
+    "file": "Jdt.tex",
+    "title": "Иудифь"
+  },
+  "Иер": {
+    "code": "Jer",
+    "file": "Jer.tex",
+    "title": "Иеремия"
+  },
+  "Иов": {
+    "code": "Job",
+    "file": "Job.tex",
+    "title": "Иов"
+  },
+  "Иоил": {
+    "code": "Joe",
+    "file": "Joe.tex",
+    "title": "Иоиль"
+  },
+  "Ин": {
+    "code": "Joh",
+    "file": "Joh.tex",
+    "title": "От Иоанна"
+  },
+  "Иона": {
+    "code": "Jon",
+    "file": "Jon.tex",
+    "title": "Иона"
+  },
+  "Нав": {
+    "code": "Jos",
+    "file": "Jos.tex",
+    "title": "Иисус Навин"
+  },
+  "Юбл": {
+    "code": "Jub",
+    "file": "Jub.tex",
+    "title": "Книга Юбилеев"
+  },
+  "Иуд": {
+    "code": "Jud",
+    "file": "Jud.tex",
+    "title": "Иуды"
+  },
+  "Плач": {
+    "code": "Lam",
+    "file": "Lam.tex",
+    "title": "Плач Иеремии"
+  },
+  "Лао": {
+    "code": "Lao",
+    "file": "Lao.tex",
+    "title": "к Лаодикийцам"
+  },
+  "Лев": {
+    "code": "Lev",
+    "file": "Lev.tex",
+    "title": "Левит"
+  },
+  "Лк": {
+    "code": "Luk",
+    "file": "Luk.tex",
+    "title": "От Луки"
+  },
+  "Мал": {
+    "code": "Mal",
+    "file": "Mal.tex",
+    "title": "Малахия"
+  },
+  "Мк": {
+    "code": "Mar",
+    "file": "Mar.tex",
+    "title": "От Марка"
+  },
+  "Мф": {
+    "code": "Mat",
+    "file": "Mat.tex",
+    "title": "От Матфея"
+  },
+  "Мих": {
+    "code": "Mic",
+    "file": "Mic.tex",
+    "title": "Михей"
+  },
+  "Наум": {
+    "code": "Nah",
+    "file": "Nah.tex",
+    "title": "Наум"
+  },
+  "Неем": {
+    "code": "Neh",
+    "file": "Neh.tex",
+    "title": "Неемия"
+  },
+  "Чис": {
+    "code": "Num",
+    "file": "Num.tex",
+    "title": "Числа"
+  },
+  "Авд": {
+    "code": "Oba",
+    "file": "Oba.tex",
+    "title": "Авдий"
+  },
+  "Оды": {
+    "code": "Ode",
+    "file": "Ode.tex",
+    "title": "Оды Соломона"
+  },
+  "Флп": {
+    "code": "Phi",
+    "file": "Phi.tex",
+    "title": "к Филиппийцам"
+  },
+  "Флм": {
+    "code": "Phm",
+    "file": "Phm.tex",
+    "title": "к Филимону"
+  },
+  "Притч": {
+    "code": "Pro",
+    "file": "Pro.tex",
+    "title": "Притчи"
+  },
+  "Пс": {
+    "code": "Psa",
+    "file": "Psa.tex",
+    "title": "Псалтирь"
+  },
+  "Псс": {
+    "code": "Pss",
+    "file": "Pss.tex",
+    "title": "Псалмы Соломона"
+  },
+  "Откр": {
+    "code": "Rev",
+    "file": "Rev.tex",
+    "title": "Откровение"
+  },
+  "Рим": {
+    "code": "Rom",
+    "file": "Rom.tex",
+    "title": "к Римлянам"
+  },
+  "Руфь": {
+    "code": "Rut",
+    "file": "Rut.tex",
+    "title": "Руфь"
+  },
+  "Сир": {
+    "code": "Sir",
+    "file": "Sir.tex",
+    "title": "Сирах"
+  },
+  "Песн": {
+    "code": "Sol",
+    "file": "Sol.tex",
+    "title": "Песнь Песней"
+  },
+  "Адам": {
+    "code": "Tad",
+    "file": "Tad.tex",
+    "title": "Завещание Адама"
+  },
+  "Аср": {
+    "code": "Tas",
+    "file": "Tas.tex",
+    "title": "Завещание Асира"
+  },
+  "Внм": {
+    "code": "Tbn",
+    "file": "Tbn.tex",
+    "title": "Завещание Вениамина"
+  },
+  "Дна": {
+    "code": "Tdn",
+    "file": "Tdn.tex",
+    "title": "Завещание Дана"
+  },
+  "Гад": {
+    "code": "Tgd",
+    "file": "Tgd.tex",
+    "title": "Завещание Гада"
+  },
+  "Фм": {
+    "code": "Tho",
+    "file": "Tho.tex",
+    "title": "От Фомы"
+  },
+  "Исс": {
+    "code": "Tis",
+    "file": "Tis.tex",
+    "title": "Завещание Иссахара"
+  },
+  "Тит": {
+    "code": "Tit",
+    "file": "Tit.tex",
+    "title": "к Титу"
+  },
+  "Зав Иов": {
+    "code": "Tjb",
+    "file": "Tjb.tex",
+    "title": "Завещание Иова"
+  },
+  "ЗавИов": {
+    "code": "Tjb",
+    "file": "Tjb.tex",
+    "title": "Завещание Иова"
+  },
+  "Исф": {
+    "code": "Tjs",
+    "file": "Tjs.tex",
+    "title": "Завещание Иосифа"
+  },
+  "Ида": {
+    "code": "Tju",
+    "file": "Tju.tex",
+    "title": "Завещание Иуды"
+  },
+  "Лви": {
+    "code": "Tlv",
+    "file": "Tlv.tex",
+    "title": "Завещание Левия"
+  },
+  "Зав Мо": {
+    "code": "Tmo",
+    "file": "Tmo.tex",
+    "title": "Завещание Моисея"
+  },
+  "ЗавМо": {
+    "code": "Tmo",
+    "file": "Tmo.tex",
+    "title": "Завещание Моисея"
+  },
+  "Неф": {
+    "code": "Tnf",
+    "file": "Tnf.tex",
+    "title": "Завещание Неффалима"
+  },
+  "Тов": {
+    "code": "Tob",
+    "file": "Tob.tex",
+    "title": "Товит"
+  },
+  "Рув": {
+    "code": "Trb",
+    "file": "Trb.tex",
+    "title": "Завещание Рувима"
+  },
+  "Зав Сол": {
+    "code": "Tsl",
+    "file": "Tsl.tex",
+    "title": "Завещание Соломона"
+  },
+  "ЗавСол": {
+    "code": "Tsl",
+    "file": "Tsl.tex",
+    "title": "Завещание Соломона"
+  },
+  "Сим": {
+    "code": "Tsm",
+    "file": "Tsm.tex",
+    "title": "Завещание Симеона"
+  },
+  "Зав": {
+    "code": "Tzb",
+    "file": "Tzb.tex",
+    "title": "Завещание Завулона"
+  },
+  "Прем": {
+    "code": "Wis",
+    "file": "Wis.tex",
+    "title": "Премудрость Соломона"
+  },
+  "Зах": {
+    "code": "Zec",
+    "file": "Zec.tex",
+    "title": "Захария"
+  },
+  "Соф": {
+    "code": "Zep",
+    "file": "Zep.tex",
+    "title": "Софония"
+  }
+}
