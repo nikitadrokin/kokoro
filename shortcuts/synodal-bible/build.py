@@ -150,8 +150,10 @@ def build() -> None:
     extract_url_uuid = 'A1000000-0000-4000-8000-000000000024'
     body_uuid = 'A1000000-0000-4000-8000-000000000025'
     result_uuid = 'A1000000-0000-4000-8000-000000000026'
+    bible_root_text_uuid = 'A1000000-0000-4000-8000-000000000030'
+    clipboard_uuid = 'A1000000-0000-4000-8000-000000000031'
     input_if_group = 'B1000000-0000-4000-8000-0000000000IN'
-
+    clipboard_if_group = 'B1000000-0000-4000-8000-0000000000CB'
     if_group = 'B1000000-0000-4000-8000-0000000000IF'
 
     actions: list[dict[str, Any]] = []
@@ -161,15 +163,37 @@ def build() -> None:
             'is.workflow.actions.comment',
             {
                 'WFCommentActionText': (
-                    'Синодальный перевод. Ожидает папку '
-                    'Downloads/russian-synodal-bible (клон tigran123/russian-synodal-bible). '
-                    'Пример ссылки: Ин 3:16 или 1 Ин 4:8-9.'
+                    'Edit the BibleRoot Text action below if your clone is not at '
+                    'Downloads/russian-synodal-bible. Input priority: Shortcut Input '
+                    '(selected/shared text), then Clipboard, then Ask. Success and '
+                    'errors both copy to the clipboard (no alert).'
                 ),
             },
         )
     )
 
-    # Use Shortcut Input when present (Share Sheet); otherwise ask.
+    # --- Configurable path (edit this Text to point at your clone) ---
+    actions.append(
+        action(
+            'is.workflow.actions.gettext',
+            {
+                'UUID': bible_root_text_uuid,
+                'CustomOutputName': 'BibleRootText',
+                'WFTextActionText': 'Downloads/russian-synodal-bible',
+            },
+        )
+    )
+    actions.append(
+        action(
+            'is.workflow.actions.setvariable',
+            {
+                'WFVariableName': 'BibleRoot',
+                'WFInput': token_attachment(bible_root_text_uuid, 'BibleRootText'),
+            },
+        )
+    )
+
+    # --- Input: Shortcut Input → Clipboard → Ask ---
     actions.append(
         action(
             'is.workflow.actions.conditional',
@@ -226,6 +250,46 @@ def build() -> None:
             },
         )
     )
+
+    # No Shortcut Input: try Clipboard magic variable / Get Clipboard
+    actions.append(
+        action(
+            'is.workflow.actions.getclipboard',
+            {
+                'UUID': clipboard_uuid,
+                'CustomOutputName': 'ClipboardText',
+            },
+        )
+    )
+    actions.append(
+        action(
+            'is.workflow.actions.conditional',
+            {
+                'GroupingIdentifier': clipboard_if_group,
+                'WFControlFlowMode': 0,
+                'WFCondition': 'Has Any Value',
+                'WFInput': token_attachment(clipboard_uuid, 'ClipboardText'),
+            },
+        )
+    )
+    actions.append(
+        action(
+            'is.workflow.actions.setvariable',
+            {
+                'WFVariableName': 'Reference',
+                'WFInput': token_attachment(clipboard_uuid, 'ClipboardText'),
+            },
+        )
+    )
+    actions.append(
+        action(
+            'is.workflow.actions.conditional',
+            {
+                'GroupingIdentifier': clipboard_if_group,
+                'WFControlFlowMode': 1,
+            },
+        )
+    )
     actions.append(
         action(
             'is.workflow.actions.ask',
@@ -243,6 +307,16 @@ def build() -> None:
             {
                 'WFVariableName': 'Reference',
                 'WFInput': token_attachment(ask_uuid, 'ReferenceAsked'),
+            },
+        )
+    )
+    actions.append(
+        action(
+            'is.workflow.actions.conditional',
+            {
+                'UUID': uid(),
+                'GroupingIdentifier': clipboard_if_group,
+                'WFControlFlowMode': 2,
             },
         )
     )
@@ -369,18 +443,10 @@ def build() -> None:
     )
     actions.append(
         action(
-            'is.workflow.actions.showresult',
+            'is.workflow.actions.setclipboard',
             {
-                'Text': token_string(
-                    ORC,
-                    {
-                        '{0, 1}': {
-                            'OutputUUID': error_msg_uuid,
-                            'OutputName': 'ErrorMessage',
-                            'Type': 'ActionOutput',
-                        }
-                    },
-                ),
+                'WFInput': token_attachment(error_msg_uuid, 'ErrorMessage'),
+                'WFLocalOnly': False,
             },
         )
     )
@@ -435,8 +501,8 @@ def build() -> None:
     actions.append(nth(6, 'VerseEnd', v2_uuid))
     actions.append(nth(7, 'DisplayRef', display_uuid))
 
-    # Get File from Downloads/russian-synodal-bible/tex/{file}
-    path_text = 'Downloads/russian-synodal-bible/tex/' + ORC
+    # Get File from {BibleRoot}/tex/{file}
+    path_text = ORC + '/tex/' + ORC
     actions.append(
         action(
             'is.workflow.actions.documentpicker.open',
@@ -449,11 +515,15 @@ def build() -> None:
                 'WFGetFilePath': token_string(
                     path_text,
                     {
-                        f'{{{len("Downloads/russian-synodal-bible/tex/")}, 1}}': {
+                        '{0, 1}': {
+                            'Type': 'Variable',
+                            'VariableName': 'BibleRoot',
+                        },
+                        '{6, 1}': {
                             'OutputUUID': file_uuid,
                             'OutputName': 'BookFile',
                             'Type': 'ActionOutput',
-                        }
+                        },
                     },
                 ),
             },
@@ -634,24 +704,6 @@ def build() -> None:
         )
     )
 
-    actions.append(
-        action(
-            'is.workflow.actions.showresult',
-            {
-                'Text': token_string(
-                    ORC,
-                    {
-                        '{0, 1}': {
-                            'OutputUUID': result_uuid,
-                            'OutputName': 'Passage',
-                            'Type': 'ActionOutput',
-                        }
-                    },
-                ),
-            },
-        )
-    )
-
     workflow: dict[str, Any] = {
         'WFWorkflowActions': actions,
         'WFWorkflowClientVersion': '3036.0.4.2',
@@ -669,16 +721,6 @@ def build() -> None:
         'WFWorkflowMinimumClientVersion': 900,
         'WFWorkflowMinimumClientVersionString': '900',
         'WFWorkflowName': 'Synodal Bible',
-        'WFWorkflowNoInputBehavior': {
-            'Name': 'WFWorkflowNoInputBehaviorAskForInput',
-            'Parameters': {
-                'ItemClass': 'WFStringContentItem',
-                'SerializedParameters': {
-                    'WFAskActionPrompt': 'Библейская ссылка (напр. Ин 3:16)',
-                    'WFInputType': 'Text',
-                },
-            },
-        },
         'WFWorkflowOutputContentItemClasses': [
             'WFStringContentItem',
         ],

@@ -10,7 +10,43 @@
 			<key>WFWorkflowActionParameters</key>
 			<dict>
 				<key>WFCommentActionText</key>
-				<string>Синодальный перевод. Ожидает папку Downloads/russian-synodal-bible (клон tigran123/russian-synodal-bible). Пример ссылки: Ин 3:16 или 1 Ин 4:8-9.</string>
+				<string>Edit the BibleRoot Text action below if your clone is not at Downloads/russian-synodal-bible. Input priority: Shortcut Input (selected/shared text), then Clipboard, then Ask. Success and errors both copy to the clipboard (no alert).</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.gettext</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>CustomOutputName</key>
+				<string>BibleRootText</string>
+				<key>UUID</key>
+				<string>A1000000-0000-4000-8000-000000000030</string>
+				<key>WFTextActionText</key>
+				<string>Downloads/russian-synodal-bible</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.setvariable</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>OutputName</key>
+						<string>BibleRootText</string>
+						<key>OutputUUID</key>
+						<string>A1000000-0000-4000-8000-000000000030</string>
+						<key>Type</key>
+						<string>ActionOutput</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>WFVariableName</key>
+				<string>BibleRoot</string>
 			</dict>
 		</dict>
 		<dict>
@@ -105,6 +141,78 @@
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.getclipboard</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>CustomOutputName</key>
+				<string>ClipboardText</string>
+				<key>UUID</key>
+				<string>A1000000-0000-4000-8000-000000000031</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>B1000000-0000-4000-8000-0000000000CB</string>
+				<key>WFCondition</key>
+				<string>Has Any Value</string>
+				<key>WFControlFlowMode</key>
+				<integer>0</integer>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>OutputName</key>
+						<string>ClipboardText</string>
+						<key>OutputUUID</key>
+						<string>A1000000-0000-4000-8000-000000000031</string>
+						<key>Type</key>
+						<string>ActionOutput</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.setvariable</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>WFInput</key>
+				<dict>
+					<key>Value</key>
+					<dict>
+						<key>OutputName</key>
+						<string>ClipboardText</string>
+						<key>OutputUUID</key>
+						<string>A1000000-0000-4000-8000-000000000031</string>
+						<key>Type</key>
+						<string>ActionOutput</string>
+					</dict>
+					<key>WFSerializationType</key>
+					<string>WFTextTokenAttachment</string>
+				</dict>
+				<key>WFVariableName</key>
+				<string>Reference</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
+				<string>B1000000-0000-4000-8000-0000000000CB</string>
+				<key>WFControlFlowMode</key>
+				<integer>1</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
 			<string>is.workflow.actions.ask</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
@@ -147,9 +255,22 @@
 			<key>WFWorkflowActionParameters</key>
 			<dict>
 				<key>GroupingIdentifier</key>
+				<string>B1000000-0000-4000-8000-0000000000CB</string>
+				<key>UUID</key>
+				<string>19B5F3EA-83FD-43FF-9E4C-CD6233C95227</string>
+				<key>WFControlFlowMode</key>
+				<integer>2</integer>
+			</dict>
+		</dict>
+		<dict>
+			<key>WFWorkflowActionIdentifier</key>
+			<string>is.workflow.actions.conditional</string>
+			<key>WFWorkflowActionParameters</key>
+			<dict>
+				<key>GroupingIdentifier</key>
 				<string>B1000000-0000-4000-8000-0000000000IN</string>
 				<key>UUID</key>
-				<string>A63E432A-EC0F-4257-8DF8-F8886E9805A9</string>
+				<string>49541662-E2E2-4664-9E79-68E079B6971D</string>
 				<key>WFControlFlowMode</key>
 				<integer>2</integer>
 			</dict>
@@ -384,31 +505,25 @@
 		</dict>
 		<dict>
 			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.showresult</string>
+			<string>is.workflow.actions.setclipboard</string>
 			<key>WFWorkflowActionParameters</key>
 			<dict>
-				<key>Text</key>
+				<key>WFInput</key>
 				<dict>
 					<key>Value</key>
 					<dict>
-						<key>attachmentsByRange</key>
-						<dict>
-							<key>{0, 1}</key>
-							<dict>
-								<key>OutputName</key>
-								<string>ErrorMessage</string>
-								<key>OutputUUID</key>
-								<string>A1000000-0000-4000-8000-000000000006</string>
-								<key>Type</key>
-								<string>ActionOutput</string>
-							</dict>
-						</dict>
-						<key>string</key>
-						<string>￼</string>
+						<key>OutputName</key>
+						<string>ErrorMessage</string>
+						<key>OutputUUID</key>
+						<string>A1000000-0000-4000-8000-000000000006</string>
+						<key>Type</key>
+						<string>ActionOutput</string>
 					</dict>
 					<key>WFSerializationType</key>
-					<string>WFTextTokenString</string>
+					<string>WFTextTokenAttachment</string>
 				</dict>
+				<key>WFLocalOnly</key>
+				<false/>
 			</dict>
 		</dict>
 		<dict>
@@ -425,7 +540,7 @@
 				<key>GroupingIdentifier</key>
 				<string>B1000000-0000-4000-8000-0000000000IF</string>
 				<key>UUID</key>
-				<string>30E9038F-9B3C-4ED2-A75B-44E09CB67356</string>
+				<string>A44CED63-D643-4355-A9CD-DA950CDD317D</string>
 				<key>WFControlFlowMode</key>
 				<integer>2</integer>
 			</dict>
@@ -681,7 +796,14 @@
 					<dict>
 						<key>attachmentsByRange</key>
 						<dict>
-							<key>{36, 1}</key>
+							<key>{0, 1}</key>
+							<dict>
+								<key>Type</key>
+								<string>Variable</string>
+								<key>VariableName</key>
+								<string>BibleRoot</string>
+							</dict>
+							<key>{6, 1}</key>
 							<dict>
 								<key>OutputName</key>
 								<string>BookFile</string>
@@ -692,7 +814,7 @@
 							</dict>
 						</dict>
 						<key>string</key>
-						<string>Downloads/russian-synodal-bible/tex/￼</string>
+						<string>￼/tex/￼</string>
 					</dict>
 					<key>WFSerializationType</key>
 					<string>WFTextTokenString</string>
@@ -1023,35 +1145,6 @@
 				<false/>
 			</dict>
 		</dict>
-		<dict>
-			<key>WFWorkflowActionIdentifier</key>
-			<string>is.workflow.actions.showresult</string>
-			<key>WFWorkflowActionParameters</key>
-			<dict>
-				<key>Text</key>
-				<dict>
-					<key>Value</key>
-					<dict>
-						<key>attachmentsByRange</key>
-						<dict>
-							<key>{0, 1}</key>
-							<dict>
-								<key>OutputName</key>
-								<string>Passage</string>
-								<key>OutputUUID</key>
-								<string>A1000000-0000-4000-8000-000000000026</string>
-								<key>Type</key>
-								<string>ActionOutput</string>
-							</dict>
-						</dict>
-						<key>string</key>
-						<string>￼</string>
-					</dict>
-					<key>WFSerializationType</key>
-					<string>WFTextTokenString</string>
-				</dict>
-			</dict>
-		</dict>
 	</array>
 	<key>WFWorkflowClientVersion</key>
 	<string>3036.0.4.2</string>
@@ -1079,23 +1172,6 @@
 	<string>900</string>
 	<key>WFWorkflowName</key>
 	<string>Synodal Bible</string>
-	<key>WFWorkflowNoInputBehavior</key>
-	<dict>
-		<key>Name</key>
-		<string>WFWorkflowNoInputBehaviorAskForInput</string>
-		<key>Parameters</key>
-		<dict>
-			<key>ItemClass</key>
-			<string>WFStringContentItem</string>
-			<key>SerializedParameters</key>
-			<dict>
-				<key>WFAskActionPrompt</key>
-				<string>Библейская ссылка (напр. Ин 3:16)</string>
-				<key>WFInputType</key>
-				<string>Text</string>
-			</dict>
-		</dict>
-	</dict>
 	<key>WFWorkflowOutputContentItemClasses</key>
 	<array>
 		<string>WFStringContentItem</string>
