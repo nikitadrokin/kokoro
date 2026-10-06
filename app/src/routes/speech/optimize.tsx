@@ -120,7 +120,7 @@ function SpeechTextOptimizerPage() {
               <Textarea
                 id='speech-markdown'
                 aria-label='Markdown source text'
-                className='flex-1 resize-none border-0 bg-transparent p-0 font-mono text-sm leading-6 shadow-none focus-visible:ring-0'
+                className='flex-1 resize-none border-0 bg-transparent p-4 font-mono text-sm leading-6 shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors rounded-lg'
                 value={sourceText}
                 onChange={handleSourceChange}
                 onPaste={handleSourcePaste}
@@ -157,7 +157,7 @@ function SpeechTextOptimizerPage() {
               <Textarea
                 id='speech-output'
                 aria-label='Optimized text for speech synthesis'
-                className='flex-1 resize-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus-visible:ring-0'
+                className='flex-1 resize-none border-0 bg-transparent p-4 text-sm leading-6 shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors rounded-lg'
                 value={optimizedText}
                 onChange={(event) => {
                   setOptimizedText(event.target.value);
