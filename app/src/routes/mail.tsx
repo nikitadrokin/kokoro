@@ -767,7 +767,7 @@ function MailListenPage() {
                   }
                 }}
               >
-                <SelectTrigger className='w-full'>
+                <SelectTrigger className='w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'>
                   <SelectValue>
                     {(value) =>
                       MAILBOX_OPTIONS.find((option) => option.value === value)
@@ -934,7 +934,7 @@ function MailListenPage() {
                           speechText: event.target.value,
                         })
                       }
-                      className='min-h-[40vh] resize-y border bg-muted/30 p-4 font-mono text-sm shadow-inner'
+                      className='min-h-[40vh] resize-y border-0 bg-transparent p-4 font-mono text-sm shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors'
                     />
                   </div>
 
@@ -948,7 +948,7 @@ function MailListenPage() {
                             setStyle(value ?? 'af_heart')
                           }
                         >
-                          <SelectTrigger className='w-[200px] border-none bg-muted/50 shadow-none'>
+                          <SelectTrigger className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

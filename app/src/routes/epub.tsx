@@ -1535,7 +1535,7 @@ function EpubReaderPage() {
                       >
                         <SelectTrigger
                           id='epub-narration-scope'
-                          className='w-full border-none bg-muted/50 shadow-none'
+                          className='w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                           aria-label='Narration scope'
                         >
                           <SelectValue>
@@ -1576,7 +1576,7 @@ function EpubReaderPage() {
                       >
                         <SelectTrigger
                           id='epub-voice-select'
-                          className='w-full border-none bg-muted/50 shadow-none'
+                          className='w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                           aria-label='Narration voice'
                         >
                           <SelectValue>
@@ -1644,7 +1644,7 @@ function EpubReaderPage() {
                       >
                         <SelectTrigger
                           id='epub-playback-mode'
-                          className='w-full border-none bg-muted/50 shadow-none'
+                          className='w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                           aria-label='Playback mode'
                         >
                           <SelectValue>

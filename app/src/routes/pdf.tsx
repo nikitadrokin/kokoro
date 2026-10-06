@@ -721,7 +721,7 @@ function PdfReaderPage() {
                     >
                       <SelectTrigger
                         id="pdf-narration-scope"
-                        className="w-full border-none bg-muted/50 shadow-none"
+                        className="w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring"
                       >
                         <SelectValue>
                           {(value: string | null) =>
@@ -748,7 +748,7 @@ function PdfReaderPage() {
                       value={narrationStyle}
                       onValueChange={(value) => setNarrationStyle(value ?? '')}
                     >
-                      <SelectTrigger id="pdf-voice-select" className="w-full border-none bg-muted/50 shadow-none">
+                      <SelectTrigger id="pdf-voice-select" className="w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring">
                         <SelectValue>
                           {(value: string | null) =>
                             VOICE_OPTIONS.find((voice) => voice.value === value)
@@ -812,7 +812,7 @@ function PdfReaderPage() {
                     >
                       <SelectTrigger
                         id="pdf-playback-mode"
-                        className="w-full border-none bg-muted/50 shadow-none"
+                        className="w-full border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring"
                         aria-label="Playback mode"
                       >
                         <SelectValue>

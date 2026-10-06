@@ -237,7 +237,7 @@ function PlaygroundPage() {
           <Textarea
             id='playground-text'
             aria-label='Text to synthesize'
-            className='flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none focus-visible:ring-0'
+            className='flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors'
             value={text}
             onChange={(event) => setText(event.target.value)}
             onKeyDown={(event) => {
@@ -258,7 +258,7 @@ function PlaygroundPage() {
                 >
                   <SelectTrigger
                     id='voice-select'
-                    className='w-[200px] border-none bg-muted/50 shadow-none'
+                    className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                     aria-label='Voice style'
                   >
                     <SelectValue>
@@ -301,7 +301,7 @@ function PlaygroundPage() {
                 >
                   <SelectTrigger
                     id='playback-mode'
-                    className='w-[160px] border-none bg-muted/50 shadow-none'
+                    className='w-[160px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                     aria-label='Playback mode'
                   >
                     <SelectValue>
