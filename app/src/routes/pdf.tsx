@@ -527,8 +527,8 @@ function PdfReaderPage() {
   ]);
 
   return (
-    <main className="min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
+    <main className="flex h-[calc(100vh-3.5rem)] flex-col p-4 @3xl/content:p-6">
+      <div className="mx-auto flex h-full w-full max-w-6xl flex-col gap-4">
         <div className="space-y-1 pb-2">
           <h1 className="font-semibold text-2xl tracking-tight">PDF reader</h1>
           <p className="max-w-2xl text-muted-foreground text-sm">
@@ -537,7 +537,7 @@ function PdfReaderPage() {
           </p>
         </div>
 
-        <div className="grid min-w-0 @5xl/content:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)] grid-cols-1 gap-4">
+        <div className="grid min-w-0 flex-1 grid-cols-1 gap-4 @5xl/content:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)]">
           <Tabs
             defaultValue="document"
             className="flex min-w-0 flex-col gap-3 @5xl/content:self-start"
@@ -563,14 +563,14 @@ function PdfReaderPage() {
             </TabsList>
 
             <TabsContent value="document" className="min-w-0">
-              <Card className="min-w-0 shadow-sm backdrop-blur">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
+              <div className="flex flex-col rounded-2xl border bg-card shadow-sm">
+                <div className="border-b p-4">
+                  <h2 className="flex items-center gap-2 font-semibold text-sm">
                     <FileText className="size-4 text-muted-foreground" />
                     Document
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4 pt-4">
+                  </h2>
+                </div>
+                <div className="flex flex-col gap-4 p-4">
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -583,7 +583,7 @@ function PdfReaderPage() {
                     }}
                   />
                   <div className="space-y-2">
-                    <Label htmlFor="pdf-file-trigger">PDF file</Label>
+                    <Label htmlFor="pdf-file-trigger" className="sr-only">PDF file</Label>
                     <Button
                       id="pdf-file-trigger"
                       type="button"
@@ -602,13 +602,13 @@ function PdfReaderPage() {
                   </div>
 
                   {autoOpenStatus && !title ? (
-                    <div className="rounded-md border px-3 py-2 text-muted-foreground text-sm">
+                    <div className="rounded-md border bg-muted/30 px-3 py-2 text-muted-foreground text-sm">
                       {autoOpenStatus}
                     </div>
                   ) : null}
 
                   {title ? (
-                    <div className="grid gap-1 rounded-lg border p-3">
+                    <div className="grid gap-1 rounded-lg border bg-muted/10 p-3">
                       <div className="flex items-start justify-between gap-3">
                         <p className="min-w-0 truncate font-medium text-sm">
                           {title}
@@ -663,6 +663,7 @@ function PdfReaderPage() {
                       type="button"
                       variant="outline"
                       size="icon-sm"
+                      className="rounded-full"
                       disabled={pageNumber <= 1}
                       onClick={() => selectPage(pageNumber - 1)}
                       aria-label="Previous PDF page"
@@ -678,6 +679,7 @@ function PdfReaderPage() {
                       type="button"
                       variant="outline"
                       size="icon-sm"
+                      className="rounded-full"
                       disabled={!pageCount || pageNumber >= pageCount}
                       onClick={() => selectPage(pageNumber + 1)}
                       aria-label="Next PDF page"
@@ -687,7 +689,7 @@ function PdfReaderPage() {
                   </div>
 
                   {optimizedCurrentPageText ? (
-                    <details className="group rounded-lg border">
+                    <details className="group rounded-lg border bg-muted/10">
                       <summary className="cursor-pointer px-3 py-2 font-medium text-sm">
                         Optimized page text
                       </summary>
@@ -696,19 +698,19 @@ function PdfReaderPage() {
                       </p>
                     </details>
                   ) : null}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="narration" className="min-w-0">
-              <Card className="min-w-0 shadow-sm backdrop-blur">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
+              <div className="flex flex-col rounded-2xl border bg-card shadow-sm">
+                <div className="border-b p-4">
+                  <h2 className="flex items-center gap-2 font-semibold text-sm">
                     <AudioLinesIcon className="size-4 text-muted-foreground" />
                     Narration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="grid gap-4 pt-4">
+                  </h2>
+                </div>
+                <div className="flex flex-col gap-4 p-4">
                   <div className="space-y-2">
                     <Label htmlFor="pdf-narration-scope">Scope</Label>
                     <Select
@@ -719,7 +721,7 @@ function PdfReaderPage() {
                     >
                       <SelectTrigger
                         id="pdf-narration-scope"
-                        className="w-full"
+                        className="w-full border-none bg-muted/50 shadow-none"
                       >
                         <SelectValue>
                           {(value: string | null) =>
@@ -746,7 +748,7 @@ function PdfReaderPage() {
                       value={narrationStyle}
                       onValueChange={(value) => setNarrationStyle(value ?? '')}
                     >
-                      <SelectTrigger id="pdf-voice-select" className="w-full">
+                      <SelectTrigger id="pdf-voice-select" className="w-full border-none bg-muted/50 shadow-none">
                         <SelectValue>
                           {(value: string | null) =>
                             VOICE_OPTIONS.find((voice) => voice.value === value)
@@ -801,54 +803,54 @@ function PdfReaderPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Playback mode</Label>
-                    <RadioGroup
+                    <Label htmlFor="pdf-playback-mode">Playback mode</Label>
+                    <Select
                       value={narrationMode}
                       onValueChange={(value) =>
                         setNarrationMode(value as NarrationMode)
                       }
-                      className="gap-2"
                     >
-                      {(
-                        [
-                          [
-                            'stream',
-                            'Stream only',
-                            'Play immediately, no file saved',
-                          ],
-                          [
-                            'save-stream',
-                            'Save & stream',
-                            'Save WAV and play while generating',
-                          ],
-                          [
-                            'save-silent',
-                            'Save silently',
-                            'Save WAV without auto-playing',
-                          ],
-                        ] as const
-                      ).map(([value, label, description]) => (
-                        <label
-                          key={value}
-                          htmlFor={`pdf-mode-${value}`}
-                          className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5"
-                        >
-                          <RadioGroupItem
-                            id={`pdf-mode-${value}`}
-                            value={value}
-                            className="mt-0.5 shrink-0"
-                          />
-                          <span className="grid gap-0.5">
-                            <span className="font-medium text-sm leading-none">
-                              {label}
-                            </span>
-                            <span className="text-muted-foreground text-xs">
-                              {description}
-                            </span>
-                          </span>
-                        </label>
-                      ))}
-                    </RadioGroup>
+                      <SelectTrigger
+                        id="pdf-playback-mode"
+                        className="w-full border-none bg-muted/50 shadow-none"
+                        aria-label="Playback mode"
+                      >
+                        <SelectValue>
+                          {(value: string | null) => {
+                            switch (value) {
+                              case 'stream':
+                                return 'Stream only';
+                              case 'save-stream':
+                                return 'Save & stream';
+                              case 'save-silent':
+                                return 'Save silently';
+                              default:
+                                return value;
+                            }
+                          }}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="stream" label="Stream only">
+                          <div className="grid gap-0.5">
+                            <span className="font-medium text-sm leading-none">Stream only</span>
+                            <span className="text-muted-foreground text-xs">Play immediately</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="save-stream" label="Save & stream">
+                          <div className="grid gap-0.5">
+                            <span className="font-medium text-sm leading-none">Save & stream</span>
+                            <span className="text-muted-foreground text-xs">Save WAV and stream</span>
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="save-silent" label="Save silently">
+                          <div className="grid gap-0.5">
+                            <span className="font-medium text-sm leading-none">Save silently</span>
+                            <span className="text-muted-foreground text-xs">Save WAV without playing</span>
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {narrationError ? (
@@ -859,13 +861,14 @@ function PdfReaderPage() {
 
                   {isNarrating ? (
                     <div className="flex w-full gap-2">
-                      <Button type="button" className="flex-1" disabled>
+                      <Button type="button" className="flex-1 rounded-full" disabled>
                         <LoaderCircle className="size-4 animate-spin" />
                         Generating…
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
+                        className="rounded-full"
                         onClick={() => void stopGeneration()}
                       >
                         <Square className="size-4" />
@@ -875,7 +878,7 @@ function PdfReaderPage() {
                   ) : (
                     <Button
                       type="button"
-                      className="w-full"
+                      className="w-full rounded-full"
                       onClick={() => void handleReadAloud()}
                       disabled={!hasTextLayer || !extractionComplete}
                     >
@@ -926,7 +929,7 @@ function PdfReaderPage() {
                     <Button
                       type="button"
                       variant="outline"
-                      className="w-full"
+                      className="w-full rounded-full"
                       onClick={playNarration}
                       disabled={!audioUrl || isNarrating}
                     >
@@ -934,14 +937,14 @@ function PdfReaderPage() {
                       Play again
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
 
-          <Card className="flex min-w-0 flex-col border-border/70 shadow-sm backdrop-blur">
-            <CardHeader className="flex flex-row items-center justify-between gap-3">
-              <CardTitle className="text-base">Reading pane</CardTitle>
+          <div className="flex min-w-0 flex-col rounded-2xl border bg-card shadow-sm">
+            <div className="flex items-center justify-between border-b p-4">
+              <h2 className="font-semibold text-sm">Reading pane</h2>
               <div className="flex items-center gap-1">
                 <Button
                   type="button"
@@ -971,8 +974,8 @@ function PdfReaderPage() {
                   <Plus className="size-4" />
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="flex min-w-0 grow flex-col">
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col p-4">
               <div className="relative flex min-h-[65vh] grow items-start justify-center overflow-auto rounded-lg bg-muted/40 p-4">
                 {!pageCount ? (
                   <div className="m-auto max-w-sm text-center text-muted-foreground text-sm">
@@ -1003,8 +1006,8 @@ function PdfReaderPage() {
                   />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </main>
