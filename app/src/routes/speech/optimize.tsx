@@ -76,8 +76,8 @@ function SpeechTextOptimizerPage() {
   };
 
   return (
-    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
-      <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
+    <main className='flex h-[calc(100vh-3.5rem)] flex-col p-4 @3xl/content:p-6'>
+      <div className='mx-auto flex h-full w-full max-w-6xl flex-col gap-4'>
         <div className='flex flex-col gap-3 pb-2 @xl/content:flex-row @xl/content:items-end @xl/content:justify-between'>
           <div className='space-y-1'>
             <h1 className='font-semibold text-2xl tracking-tight'>
@@ -110,69 +110,66 @@ function SpeechTextOptimizerPage() {
           </div>
         </div>
 
-        <div className='grid min-w-0 grid-cols-1 gap-4 @5xl/content:grid-cols-2'>
-          <Card className='min-w-0 shadow-sm backdrop-blur'>
-            <CardHeader>
-              <CardTitle>Markdown</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              <div className='space-y-2'>
-                <Label htmlFor='speech-markdown'>Source text</Label>
-                <Textarea
-                  id='speech-markdown'
-                  aria-label='Markdown source text'
-                  className='min-h-[min(56dvh,34rem)] resize-y font-mono text-sm leading-6'
-                  value={sourceText}
-                  onChange={handleSourceChange}
-                  onPaste={handleSourcePaste}
-                  placeholder='Paste markdown here.'
-                />
-              </div>
-              <p className='text-muted-foreground text-xs'>
+        <div className='grid min-w-0 flex-1 grid-cols-1 gap-4 @5xl/content:grid-cols-2'>
+          <div className='flex flex-col rounded-2xl border bg-card shadow-sm'>
+            <div className='border-b p-4'>
+              <h2 className='font-semibold text-sm'>Markdown</h2>
+            </div>
+            <div className='flex flex-1 flex-col p-4'>
+              <Label htmlFor='speech-markdown' className='sr-only'>Source text</Label>
+              <Textarea
+                id='speech-markdown'
+                aria-label='Markdown source text'
+                className='flex-1 resize-none border-0 bg-transparent p-0 font-mono text-sm leading-6 shadow-none focus-visible:ring-0'
+                value={sourceText}
+                onChange={handleSourceChange}
+                onPaste={handleSourcePaste}
+                placeholder='Paste markdown here.'
+              />
+              <p className='mt-2 text-muted-foreground text-xs'>
                 {stats.inputCharacters} characters
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className='min-w-0 shadow-sm backdrop-blur'>
-            <CardHeader className='flex flex-row items-center justify-between gap-3'>
-              <CardTitle>Speech-ready script</CardTitle>
+          <div className='flex flex-col rounded-2xl border bg-card shadow-sm'>
+            <div className='flex items-center justify-between border-b p-4'>
+              <h2 className='font-semibold text-sm'>Speech-ready script</h2>
               <Button
                 type='button'
-                variant='outline'
+                variant='ghost'
                 size='sm'
+                className='h-8'
                 onClick={handleCopy}
                 disabled={!optimizedText}
                 aria-label='Copy optimized text'
               >
                 {copied ? (
-                  <Check className='size-4' />
+                  <Check className='size-4 text-green-500' />
                 ) : (
                   <Clipboard className='size-4' />
                 )}
                 {copied ? 'Copied' : 'Copy'}
               </Button>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              <div className='space-y-2'>
-                <Label htmlFor='speech-output'>Optimized text</Label>
-                <Textarea
-                  id='speech-output'
-                  aria-label='Optimized text for speech synthesis'
-                  className='min-h-[min(56dvh,34rem)] resize-y text-sm leading-6'
-                  value={optimizedText}
-                  onChange={(event) => {
-                    setOptimizedText(event.target.value);
-                    setCopied(false);
-                  }}
-                  placeholder='Optimized text appears here.'
-                />
-              </div>
-              <p className='text-muted-foreground text-xs'>
+            </div>
+            <div className='flex flex-1 flex-col p-4'>
+              <Label htmlFor='speech-output' className='sr-only'>Optimized text</Label>
+              <Textarea
+                id='speech-output'
+                aria-label='Optimized text for speech synthesis'
+                className='flex-1 resize-none border-0 bg-transparent p-0 text-sm leading-6 shadow-none focus-visible:ring-0'
+                value={optimizedText}
+                onChange={(event) => {
+                  setOptimizedText(event.target.value);
+                  setCopied(false);
+                }}
+                placeholder='Optimized text appears here.'
+              />
+              <p className='mt-2 text-muted-foreground text-xs'>
                 {stats.outputCharacters} characters
               </p>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </main>
