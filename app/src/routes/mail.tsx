@@ -792,7 +792,7 @@ function MailListenPage() {
             <div
               ref={threadListRef}
               onScroll={handleThreadListScroll}
-              className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain @5xl/content:pb-2'
+              className='min-h-0 flex-1 overflow-y-auto overscroll-y-contain @5xl/content:pb-2 w-[calc(100%+1rem)] -ml-2 mr-4 pl-2 pr-2 pt-2'
             >
               <div className='grid gap-1'>
                 {isLoadingThreads ? (
@@ -812,11 +812,12 @@ function MailListenPage() {
                       key={thread.id}
                       type='button'
                       onClick={() => void handleSelectThread(thread.id)}
-                      className={`rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] ${
+                      className={cn(
+                        'rounded-2xl px-3 py-3.5 text-left transition-[background-color,box-shadow,color] isolate',
                         isActive
                           ? 'bg-card shadow-md ring-1 ring-foreground/5'
-                          : 'hover:bg-muted/50'
-                      }`}
+                          : 'hover:bg-muted/50',
+                      )}
                     >
                       <div className='flex items-start justify-between gap-2'>
                         <p className='font-medium text-sm leading-5'>
