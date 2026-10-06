@@ -231,57 +231,34 @@ function PlaygroundPage() {
   };
 
   return (
-    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
-      <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
-        <div className='pb-4'>
-          <div className='space-y-1'>
-            <h1 className='font-semibold text-2xl tracking-tight'>
-              Generate and audition speech
-            </h1>
-            <p className='max-w-2xl text-muted-foreground text-sm'>
-              Write your script, pick a voice, then generate. Choose a playback
-              mode — stream immediately, save and stream, or save silently for
-              full spatial audio quality.
-            </p>
-          </div>
-        </div>
-
-        <div className='grid gap-4 @5xl/content:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)] mb-6'>
-          <Card className='shadow-sm backdrop-blur'>
-            <CardHeader>
-              <CardTitle>Script</CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='space-y-2'>
-                <Label htmlFor='playground-text'>Text</Label>
-                <Textarea
-                  id='playground-text'
-                  aria-label='Text to synthesize'
-                  className='min-h-72 resize-y'
-                  value={text}
-                  onChange={(event) => setText(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (
-                      event.key === 'Enter' &&
-                      event.metaKey &&
-                      !isGenerating
-                    ) {
-                      void handleGenerate();
-                    }
-                  }}
-                  placeholder='Enter text for Kokoro to synthesize.'
-                />
-              </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='voice-select'>Voice</Label>
+    <main className='flex h-[calc(100vh-3.5rem)] flex-col @3xl/content:flex-row'>
+      <div className='flex flex-1 flex-col p-4 @3xl/content:p-6'>
+        <div className='flex flex-1 flex-col rounded-2xl border bg-card shadow-sm'>
+          <Textarea
+            id='playground-text'
+            aria-label='Text to synthesize'
+            className='flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none focus-visible:ring-0'
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && event.metaKey && !isGenerating) {
+                void handleGenerate();
+              }
+            }}
+            placeholder='Enter text for Kokoro to synthesize.'
+          />
+          
+          <div className='flex flex-wrap items-center justify-between gap-4 border-t p-4'>
+            <div className='flex items-center gap-4'>
+              <div className='flex items-center gap-2'>
+                <Label htmlFor='voice-select' className='sr-only'>Voice</Label>
                 <Select
                   value={style}
                   onValueChange={(value) => setStyle(value ?? '')}
                 >
                   <SelectTrigger
                     id='voice-select'
-                    className='w-full'
+                    className='w-[200px] border-none bg-muted/50 shadow-none'
                     aria-label='Voice style'
                   >
                     <SelectValue>
@@ -312,96 +289,87 @@ function PlaygroundPage() {
                 </Select>
               </div>
 
-              <div className='space-y-2'>
-                <Label>Playback mode</Label>
-                <RadioGroup
+              <div className='flex items-center gap-2'>
+                <Label htmlFor='playback-mode' className='sr-only'>Playback mode</Label>
+                <Select
                   value={playbackMode}
                   onValueChange={(value) => {
                     if (isPlaybackMode(value)) {
                       setPlaybackMode(value);
                     }
                   }}
-                  className='gap-2'
                 >
-                  <label
-                    htmlFor='mode-stream'
-                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
+                  <SelectTrigger
+                    id='playback-mode'
+                    className='w-[160px] border-none bg-muted/50 shadow-none'
+                    aria-label='Playback mode'
                   >
-                    <RadioGroupItem
-                      id='mode-stream'
-                      value='stream'
-                      className='mt-0.5 shrink-0'
-                    />
-                    <div className='grid gap-0.5'>
-                      <span className='font-medium text-sm leading-none'>
-                        Stream only
-                      </span>
-                      <span className='text-muted-foreground text-xs'>
-                        Play immediately, no file saved
-                      </span>
-                    </div>
-                  </label>
-
-                  <label
-                    htmlFor='mode-save-stream'
-                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
-                  >
-                    <RadioGroupItem
-                      id='mode-save-stream'
-                      value='save-stream'
-                      className='mt-0.5 shrink-0'
-                    />
-                    <div className='grid gap-0.5'>
-                      <span className='font-medium text-sm leading-none'>
-                        Save &amp; stream
-                      </span>
-                      <span className='text-muted-foreground text-xs'>
-                        Save WAV and stream audio while synthesizing
-                      </span>
-                    </div>
-                  </label>
-
-                  <label
-                    htmlFor='mode-save-silent'
-                    className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
-                  >
-                    <RadioGroupItem
-                      id='mode-save-silent'
-                      value='save-silent'
-                      className='mt-0.5 shrink-0'
-                    />
-                    <div className='grid gap-0.5'>
-                      <span className='font-medium text-sm leading-none'>
-                        Save silently
-                      </span>
-                      <span className='text-muted-foreground text-xs'>
-                        Save WAV without auto-playing — use Play for full
-                        spatial audio
-                      </span>
-                    </div>
-                  </label>
-                </RadioGroup>
+                    <SelectValue>
+                      {(value: string | null) => {
+                        switch (value) {
+                          case 'stream':
+                            return 'Stream only';
+                          case 'save-stream':
+                            return 'Save & stream';
+                          case 'save-silent':
+                            return 'Save silently';
+                          default:
+                            return value;
+                        }
+                      }}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='stream' label='Stream only'>
+                      <div className='grid gap-0.5'>
+                        <span className='font-medium text-sm leading-none'>Stream only</span>
+                        <span className='text-muted-foreground text-xs'>Play immediately</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value='save-stream' label='Save & stream'>
+                      <div className='grid gap-0.5'>
+                        <span className='font-medium text-sm leading-none'>Save & stream</span>
+                        <span className='text-muted-foreground text-xs'>Save WAV and stream</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value='save-silent' label='Save silently'>
+                      <div className='grid gap-0.5'>
+                        <span className='font-medium text-sm leading-none'>Save silently</span>
+                        <span className='text-muted-foreground text-xs'>Save WAV without playing</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
+            <div className='flex items-center gap-3'>
               {error ? (
-                <div className='rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm'>
+                <div className='text-destructive text-sm'>
                   {error}
                 </div>
               ) : null}
 
               {isGenerating ? (
-                <div className='flex @xl/content:w-auto w-full gap-2'>
-                  <Button
-                    className='@xl/content:min-w-48 flex-1'
-                    disabled
-                  >
-                    <LoaderCircle className='size-4 animate-spin' />
-                    Generating…
-                  </Button>
+                <div className='flex items-center gap-2'>
+                  {estimatedDurationSec > 0 && (
+                    <div className='w-24'>
+                      <Progress
+                        value={Math.round(
+                          Math.min(
+                            generatedDurationSec / estimatedDurationSec,
+                            0.95,
+                          ) * 100,
+                        )}
+                        className='h-2'
+                      />
+                    </div>
+                  )}
                   <Button
                     type='button'
                     variant='outline'
                     onClick={() => void stopGeneration()}
+                    className='rounded-full'
                   >
                     <Square className='size-4' />
                     Stop
@@ -409,212 +377,189 @@ function PlaygroundPage() {
                 </div>
               ) : (
                 <Button
-                  className='w-full @xl/content:min-w-48 @xl/content:w-auto'
+                  className='rounded-full px-8'
                   onClick={() => void handleGenerate()}
                 >
                   <AudioLinesIcon className='size-4' />
-                  Generate audio
+                  Generate
                 </Button>
               )}
+            </div>
+          </div>
+        </div>
+      </div>
 
-              {isGenerating && estimatedDurationSec > 0 ? (
-                <div className='grid gap-1'>
-                  <Progress
-                    value={Math.round(
-                      Math.min(
-                        generatedDurationSec / estimatedDurationSec,
-                        0.95,
-                      ) * 100,
-                    )}
-                  />
-                  <p className='text-muted-foreground text-xs tabular-nums'>
-                    {formatDuration(generatedDurationSec)} generated · ~
-                    {formatDuration(
-                      Math.max(estimatedDurationSec - generatedDurationSec, 0),
-                    )}{' '}
-                    remaining
-                  </p>
-                </div>
-              ) : null}
-            </CardContent>
-          </Card>
+      <div className='flex w-full flex-col border-l bg-muted/10 @3xl/content:w-[320px] @5xl/content:w-[380px]'>
+        <div className='flex flex-col gap-4 p-4 @3xl/content:p-6'>
+          <div className='space-y-3'>
+            <h2 className='font-semibold text-sm flex items-center gap-2'>
+              <FileAudio className='size-4 text-muted-foreground' />
+              Current Audio
+            </h2>
+            <div className='rounded-xl border bg-card p-3 shadow-sm'>
+              {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
+              <audio
+                ref={audioRef}
+                controls
+                preload='auto'
+                src={audioUrl || undefined}
+                aria-label='Generated audio preview'
+                className='h-10 w-full'
+              />
+              <Button
+                variant='secondary'
+                className='mt-3 w-full'
+                onClick={handlePlay}
+                disabled={!audioUrl || isGenerating}
+              >
+                <Play className='size-4' />
+                Play again
+              </Button>
+            </div>
+          </div>
 
-          <div className='grid gap-4 @5xl/content:self-start'>
-            <Card className='shadow-sm backdrop-blur'>
-              <CardHeader>
-                <CardTitle className='flex items-center gap-2'>
-                  <FileAudio className='size-4 text-muted-foreground' />
-                  Audio
-                </CardTitle>
-              </CardHeader>
-              <CardContent className='grid gap-3'>
-                <div className='rounded-lg'>
-                  {/* biome-ignore lint/a11y/useMediaCaption: Generated speech previews do not have a caption track yet. */}
-                  <audio
-                    ref={audioRef}
-                    controls
-                    preload='auto'
-                    src={audioUrl || undefined}
-                    aria-label='Generated audio preview'
-                    className='h-10 w-full'
-                  />
-                </div>
+          <div className='space-y-3'>
+            <div className='flex items-center justify-between'>
+              <h2 className='font-semibold text-sm flex items-center gap-2'>
+                <Music2 className='size-4 text-muted-foreground' />
+                History
+              </h2>
+              <Button
+                variant='ghost'
+                size='icon-xs'
+                onClick={() => void loadSavedAudio()}
+                disabled={isLoadingSavedAudio}
+                aria-label='Refresh saved audio'
+                title='Refresh saved audio'
+              >
+                <RefreshCw
+                  className={
+                    isLoadingSavedAudio ? 'size-3 animate-spin' : 'size-3'
+                  }
+                />
+              </Button>
+            </div>
 
-                <Button
-                  variant='secondary'
-                  className='w-full'
-                  onClick={handlePlay}
-                  disabled={!audioUrl || isGenerating}
-                >
-                  <Play className='size-4' />
-                  Play again
-                </Button>
-              </CardContent>
-            </Card>
+            {savedAudioError ? (
+              <div className='rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm'>
+                {savedAudioError}
+              </div>
+            ) : null}
 
-            <Card className='shadow-sm backdrop-blur'>
-              <CardHeader className='grid-cols-[1fr_auto] items-center'>
-                <CardTitle className='flex items-center gap-2'>
-                  <Music2 className='size-4 text-muted-foreground' />
-                  Saved audio
-                </CardTitle>
-                <Button
-                  variant='outline'
-                  size='icon-sm'
-                  onClick={() => void loadSavedAudio()}
-                  disabled={isLoadingSavedAudio}
-                  aria-label='Refresh saved audio'
-                  title='Refresh saved audio'
-                >
-                  <RefreshCw
-                    className={
-                      isLoadingSavedAudio ? 'size-4 animate-spin' : 'size-4'
-                    }
-                  />
-                </Button>
-              </CardHeader>
-              <CardContent className='grid gap-3'>
-                {savedAudioError ? (
-                  <div className='rounded-lg bg-destructive/10 px-3 py-2 text-destructive text-sm'>
-                    {savedAudioError}
-                  </div>
-                ) : null}
+            {savedAudioFiles.length > 0 ? (
+              <div className='grid gap-2'>
+                {savedAudioFiles.map((file) => {
+                  const isActive = savedOutputPath === file.path;
+                  const isDeleting = deletingAudioPath === file.path;
+                  const isRevealing = revealingAudioPath === file.path;
+                  const isConfirmingDelete =
+                    pendingDeletePath === file.path;
 
-                {savedAudioFiles.length > 0 ? (
-                  <div className='grid max-h-80 gap-2 overflow-y-auto pr-1'>
-                    {savedAudioFiles.map((file) => {
-                      const isActive = savedOutputPath === file.path;
-                      const isDeleting = deletingAudioPath === file.path;
-                      const isRevealing = revealingAudioPath === file.path;
-                      const isConfirmingDelete =
-                        pendingDeletePath === file.path;
-
-                      return (
-                        <FileRowContextMenu
-                          key={file.path}
-                          className='grid grid-cols-[1fr_auto] items-center gap-3 rounded-2xl border px-3 py-2'
-                          actions={[
-                            {
-                              key: 'play',
-                              label: 'Play',
-                              icon: <Play />,
-                              onSelect: () => handlePlaySavedAudio(file),
-                              disabled: isDeleting,
-                            },
-                            {
-                              key: 'reveal',
-                              label: 'Reveal in Finder',
-                              icon: <FolderOpen />,
-                              onSelect: () => void handleRevealSavedAudio(file),
-                              disabled:
-                                isDeleting || Boolean(revealingAudioPath),
-                            },
-                            {
-                              key: 'delete',
-                              label: isConfirmingDelete
-                                ? 'Confirm delete'
-                                : 'Delete',
-                              icon: <Trash2 />,
-                              onSelect: () => void handleDeleteSavedAudio(file),
-                              disabled: Boolean(deletingAudioPath),
-                              destructive: true,
-                            },
-                          ]}
+                  return (
+                    <FileRowContextMenu
+                      key={file.path}
+                      className='grid grid-cols-[1fr_auto] items-center gap-3 rounded-xl border bg-card px-3 py-2 shadow-sm transition-colors hover:bg-accent/50'
+                      actions={[
+                        {
+                          key: 'play',
+                          label: 'Play',
+                          icon: <Play />,
+                          onSelect: () => handlePlaySavedAudio(file),
+                          disabled: isDeleting,
+                        },
+                        {
+                          key: 'reveal',
+                          label: 'Reveal in Finder',
+                          icon: <FolderOpen />,
+                          onSelect: () => void handleRevealSavedAudio(file),
+                          disabled:
+                            isDeleting || Boolean(revealingAudioPath),
+                        },
+                        {
+                          key: 'delete',
+                          label: isConfirmingDelete
+                            ? 'Confirm delete'
+                            : 'Delete',
+                          icon: <Trash2 />,
+                          onSelect: () => void handleDeleteSavedAudio(file),
+                          disabled: Boolean(deletingAudioPath),
+                          destructive: true,
+                        },
+                      ]}
+                    >
+                      <div className='min-w-0'>
+                        <p className='truncate font-medium text-sm'>
+                          {file.name}
+                        </p>
+                        <p className='truncate text-muted-foreground text-xs'>
+                          {formatModifiedTime(file.modifiedSec)} ·{' '}
+                          {formatFileSize(file.sizeBytes)}
+                        </p>
+                      </div>
+                      <div className='flex items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/context-menu:opacity-100'>
+                        <Button
+                          variant={isActive ? 'secondary' : 'ghost'}
+                          size='icon-sm'
+                          onClick={() => handlePlaySavedAudio(file)}
+                          disabled={isDeleting}
+                          aria-label={`Play ${file.name}`}
+                          title={`Play ${file.name}`}
                         >
-                          <div className='min-w-0'>
-                            <p className='truncate font-medium text-sm'>
-                              {file.name}
-                            </p>
-                            <p className='truncate text-muted-foreground text-xs'>
-                              {formatModifiedTime(file.modifiedSec)} ·{' '}
-                              {formatFileSize(file.sizeBytes)}
-                            </p>
-                          </div>
-                          <div className='flex items-center gap-2'>
-                            <Button
-                              variant={isActive ? 'default' : 'secondary'}
-                              size='icon-sm'
-                              onClick={() => handlePlaySavedAudio(file)}
-                              disabled={isDeleting}
-                              aria-label={`Play ${file.name}`}
-                              title={`Play ${file.name}`}
-                            >
-                              <Play className='size-4' />
-                            </Button>
-                            <Button
-                              variant='outline'
-                              size='icon-sm'
-                              onClick={() => void handleRevealSavedAudio(file)}
-                              disabled={
-                                isDeleting || Boolean(revealingAudioPath)
-                              }
-                              aria-label={`Reveal ${file.name} in Finder`}
-                              title={`Reveal ${file.name} in Finder`}
-                            >
-                              {isRevealing ? (
-                                <LoaderCircle className='size-4 animate-spin' />
-                              ) : (
-                                <FolderOpen className='size-4' />
-                              )}
-                            </Button>
-                            <Button
-                              variant='destructive'
-                              size='icon-sm'
-                              onClick={(event) =>
-                                void handleDeleteSavedAudio(file, {
-                                  skipConfirm: event.shiftKey,
-                                })
-                              }
-                              disabled={Boolean(deletingAudioPath)}
-                              aria-label={
-                                isConfirmingDelete
-                                  ? `Confirm delete ${file.name}`
-                                  : `Delete ${file.name}`
-                              }
-                              title={isConfirmingDelete ? 'Confirm?' : 'Delete'}
-                            >
-                              {isDeleting ? (
-                                <LoaderCircle className='size-4 animate-spin' />
-                              ) : isConfirmingDelete ? (
-                                <Check className='size-4' />
-                              ) : (
-                                <Trash2 className='size-4' />
-                              )}
-                            </Button>
-                          </div>
-                        </FileRowContextMenu>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className='text-muted-foreground text-sm'>
-                    {isLoadingSavedAudio
-                      ? 'Loading saved audio…'
-                      : 'Saved WAV files will appear here.'}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+                          <Play className='size-4' />
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='icon-sm'
+                          onClick={() => void handleRevealSavedAudio(file)}
+                          disabled={
+                            isDeleting || Boolean(revealingAudioPath)
+                          }
+                          aria-label={`Reveal ${file.name} in Finder`}
+                          title={`Reveal ${file.name} in Finder`}
+                        >
+                          {isRevealing ? (
+                            <LoaderCircle className='size-4 animate-spin' />
+                          ) : (
+                            <FolderOpen className='size-4' />
+                          )}
+                        </Button>
+                        <Button
+                          variant='ghost'
+                          size='icon-sm'
+                          className='text-destructive hover:bg-destructive/10 hover:text-destructive'
+                          onClick={(event) =>
+                            void handleDeleteSavedAudio(file, {
+                              skipConfirm: event.shiftKey,
+                            })
+                          }
+                          disabled={Boolean(deletingAudioPath)}
+                          aria-label={
+                            isConfirmingDelete
+                              ? `Confirm delete ${file.name}`
+                              : `Delete ${file.name}`
+                          }
+                          title={isConfirmingDelete ? 'Confirm?' : 'Delete'}
+                        >
+                          {isDeleting ? (
+                            <LoaderCircle className='size-4 animate-spin' />
+                          ) : isConfirmingDelete ? (
+                            <Check className='size-4' />
+                          ) : (
+                            <Trash2 className='size-4' />
+                          )}
+                        </Button>
+                      </div>
+                    </FileRowContextMenu>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className='text-muted-foreground text-sm'>
+                {isLoadingSavedAudio
+                  ? 'Loading saved audio…'
+                  : 'Saved WAV files will appear here.'}
+              </p>
+            )}
           </div>
         </div>
       </div>
