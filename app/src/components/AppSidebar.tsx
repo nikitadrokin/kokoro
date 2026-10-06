@@ -151,7 +151,7 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible='offcanvas' variant='floating'>
+    <Sidebar collapsible='offcanvas' variant='sidebar'>
       {/* Clearance for the macOS traffic lights (overlay titlebar). */}
       <div data-tauri-drag-region className='h-11 shrink-0' />
 
