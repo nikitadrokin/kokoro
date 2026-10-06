@@ -1151,8 +1151,8 @@ function EpubReaderPage() {
       : null;
 
   return (
-    <main className='min-h-[calc(100vh-4.5rem)] @3xl/content:p-6 p-4'>
-      <div className='mx-auto flex w-full max-w-6xl flex-col gap-4'>
+    <main className='flex h-[calc(100vh-3.5rem)] flex-col p-4 @3xl/content:p-6'>
+      <div className='mx-auto flex h-full w-full max-w-6xl flex-col gap-4'>
         <div className='pb-2'>
           <div className='space-y-1'>
             <h1 className='font-semibold text-2xl tracking-tight'>
@@ -1165,7 +1165,7 @@ function EpubReaderPage() {
           </div>
         </div>
 
-        <div className='grid min-w-0 grid-cols-1 gap-4 @5xl/content:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)]'>
+        <div className='grid min-w-0 flex-1 grid-cols-1 gap-4 @5xl/content:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)]'>
           <Tabs
             defaultValue='library'
             className='flex min-w-0 flex-col gap-3 @5xl/content:self-start'
@@ -1191,14 +1191,14 @@ function EpubReaderPage() {
             </TabsList>
 
             <TabsContent value='library' className='min-w-0'>
-              <Card className='min-w-0 shadow-sm backdrop-blur'>
-                <CardHeader className='space-y-1'>
-                  <CardTitle className='flex items-center gap-2 text-base'>
+              <div className='flex flex-col rounded-2xl border bg-card shadow-sm'>
+                <div className='border-b p-4'>
+                  <h2 className='flex items-center gap-2 font-semibold text-sm'>
                     <BookOpen className='size-4 text-muted-foreground' />
                     Library
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='grid gap-4 pt-4'>
+                  </h2>
+                </div>
+                <div className='flex flex-col gap-4 p-4'>
                   <input
                     ref={fileInputRef}
                     type='file'
@@ -1212,7 +1212,7 @@ function EpubReaderPage() {
                     }}
                   />
                   <div className='space-y-2'>
-                    <Label htmlFor='epub-file-trigger'>EPUB file</Label>
+                    <Label htmlFor='epub-file-trigger' className='sr-only'>EPUB file</Label>
                     <Button
                       id='epub-file-trigger'
                       type='button'
@@ -1233,13 +1233,13 @@ function EpubReaderPage() {
                   </div>
 
                   {autoOpenStatus && !bookTitle ? (
-                    <div className='rounded-md border px-3 py-2 text-muted-foreground text-sm'>
+                    <div className='rounded-md border bg-muted/30 px-3 py-2 text-muted-foreground text-sm'>
                       {autoOpenStatus}
                     </div>
                   ) : null}
 
                   {lastOpenedBook && !bookTitle ? (
-                    <div className='rounded-md border px-3 py-2 text-sm'>
+                    <div className='rounded-md border bg-muted/30 px-3 py-2 text-sm'>
                       <p className='font-medium leading-snug'>
                         Last opened: {lastOpenedBook.title}
                       </p>
@@ -1511,19 +1511,19 @@ function EpubReaderPage() {
                       </ul>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value='narration' className='min-w-0'>
-              <Card className='min-w-0 shadow-sm backdrop-blur'>
-                <CardHeader className='space-y-1'>
-                  <CardTitle className='flex items-center gap-2 text-base'>
+              <div className='flex flex-col rounded-2xl border bg-card shadow-sm'>
+                <div className='border-b p-4'>
+                  <h2 className='flex items-center gap-2 font-semibold text-sm'>
                     <AudioLinesIcon className='size-4 text-muted-foreground' />
                     Narration
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className='grid gap-4 pt-4'>
+                  </h2>
+                </div>
+                <div className='flex flex-col gap-4 p-4'>
                   <div className='grid gap-3'>
                     <div className='space-y-2'>
                       <Label htmlFor='epub-narration-scope'>Scope</Label>
@@ -1535,7 +1535,7 @@ function EpubReaderPage() {
                       >
                         <SelectTrigger
                           id='epub-narration-scope'
-                          className='w-full'
+                          className='w-full border-none bg-muted/50 shadow-none'
                           aria-label='Narration scope'
                         >
                           <SelectValue>
@@ -1576,7 +1576,7 @@ function EpubReaderPage() {
                       >
                         <SelectTrigger
                           id='epub-voice-select'
-                          className='w-full'
+                          className='w-full border-none bg-muted/50 shadow-none'
                           aria-label='Narration voice'
                         >
                           <SelectValue>
@@ -1633,74 +1633,56 @@ function EpubReaderPage() {
                     </div>
 
                     <div className='space-y-2'>
-                      <Label>Playback mode</Label>
-                      <RadioGroup
+                      <Label htmlFor='epub-playback-mode'>Playback mode</Label>
+                      <Select
                         value={narrationMode}
                         onValueChange={(value) =>
                           setNarrationMode(
                             value as 'stream' | 'save-stream' | 'save-silent',
                           )
                         }
-                        className='gap-2'
                       >
-                        <label
-                          htmlFor='epub-mode-stream'
-                          className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
+                        <SelectTrigger
+                          id='epub-playback-mode'
+                          className='w-full border-none bg-muted/50 shadow-none'
+                          aria-label='Playback mode'
                         >
-                          <RadioGroupItem
-                            id='epub-mode-stream'
-                            value='stream'
-                            className='mt-0.5 shrink-0'
-                          />
-                          <div className='grid gap-0.5'>
-                            <span className='font-medium text-sm leading-none'>
-                              Stream only
-                            </span>
-                            <span className='text-muted-foreground text-xs'>
-                              Play immediately, no file saved
-                            </span>
-                          </div>
-                        </label>
-
-                        <label
-                          htmlFor='epub-mode-save-stream'
-                          className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
-                        >
-                          <RadioGroupItem
-                            id='epub-mode-save-stream'
-                            value='save-stream'
-                            className='mt-0.5 shrink-0'
-                          />
-                          <div className='grid gap-0.5'>
-                            <span className='font-medium text-sm leading-none'>
-                              Save &amp; stream
-                            </span>
-                            <span className='text-muted-foreground text-xs'>
-                              Save WAV and stream audio while synthesizing
-                            </span>
-                          </div>
-                        </label>
-
-                        <label
-                          htmlFor='epub-mode-save-silent'
-                          className='flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/50 has-[[data-checked]]:border-primary/50 has-[[data-checked]]:bg-primary/5'
-                        >
-                          <RadioGroupItem
-                            id='epub-mode-save-silent'
-                            value='save-silent'
-                            className='mt-0.5 shrink-0'
-                          />
-                          <div className='grid gap-0.5'>
-                            <span className='font-medium text-sm leading-none'>
-                              Save silently
-                            </span>
-                            <span className='text-muted-foreground text-xs'>
-                              Save WAV without auto-playing — use Play for full
-                              spatial audio
-                            </span>
-                          </div>
-                        </label>
-                      </RadioGroup>
+                          <SelectValue>
+                            {(value: string | null) => {
+                              switch (value) {
+                                case 'stream':
+                                  return 'Stream only';
+                                case 'save-stream':
+                                  return 'Save & stream';
+                                case 'save-silent':
+                                  return 'Save silently';
+                                default:
+                                  return value;
+                              }
+                            }}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='stream' label='Stream only'>
+                            <div className='grid gap-0.5'>
+                              <span className='font-medium text-sm leading-none'>Stream only</span>
+                              <span className='text-muted-foreground text-xs'>Play immediately</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value='save-stream' label='Save & stream'>
+                            <div className='grid gap-0.5'>
+                              <span className='font-medium text-sm leading-none'>Save & stream</span>
+                              <span className='text-muted-foreground text-xs'>Save WAV and stream</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value='save-silent' label='Save silently'>
+                            <div className='grid gap-0.5'>
+                              <span className='font-medium text-sm leading-none'>Save silently</span>
+                              <span className='text-muted-foreground text-xs'>Save WAV without playing</span>
+                            </div>
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
@@ -1712,13 +1694,14 @@ function EpubReaderPage() {
 
                   {isNarrationBusy ? (
                     <div className='flex w-full gap-2'>
-                      <Button type='button' className='flex-1' disabled>
+                      <Button type='button' className='flex-1 rounded-full' disabled>
                         <LoaderCircle className='size-4 animate-spin' />
                         Generating…
                       </Button>
                       <Button
                         type='button'
                         variant='outline'
+                        className='rounded-full'
                         onClick={() => void stopGeneration()}
                       >
                         <Square className='size-4' />
@@ -1728,7 +1711,7 @@ function EpubReaderPage() {
                   ) : (
                     <Button
                       type='button'
-                      className='w-full'
+                      className='w-full rounded-full'
                       onClick={() => void handleReadAloud()}
                       disabled={!activeChapter}
                     >
@@ -1780,7 +1763,7 @@ function EpubReaderPage() {
                     <Button
                       type='button'
                       variant='outline'
-                      className='w-full'
+                      className='w-full rounded-full'
                       onClick={playNarration}
                       disabled={!audioUrl || isNarrationBusy}
                     >
@@ -1788,14 +1771,14 @@ function EpubReaderPage() {
                       Play again
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
 
-          <Card className='flex min-w-0 flex-col border-border/70 shadow-sm backdrop-blur'>
-            <CardHeader className='flex flex-row items-center justify-between'>
-              <CardTitle className='text-base'>Reading pane</CardTitle>
+          <div className='flex min-w-0 flex-col rounded-2xl border bg-card shadow-sm'>
+            <div className='flex items-center justify-between border-b p-4'>
+              <h2 className='font-semibold text-sm'>Reading pane</h2>
               <div className='flex items-center gap-1'>
                 <Button
                   type='button'
@@ -1820,9 +1803,9 @@ function EpubReaderPage() {
                   <ChevronRight className='size-4' />
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className='flex min-w-0 grow flex-col'>
-              <div className='grow overflow-hidden rounded-lg bg-background'>
+            </div>
+            <div className='flex min-w-0 flex-1 flex-col p-4'>
+              <div className='flex-1 overflow-hidden rounded-lg bg-background'>
                 <iframe
                   ref={iframeRef}
                   title='EPUB chapter'
@@ -1838,8 +1821,8 @@ function EpubReaderPage() {
                   }}
                 />
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </main>
