@@ -15,7 +15,7 @@ export default function AppTopbar() {
       data-tauri-drag-region
       className={cn(
         'sticky top-0 z-50 flex h-14 shrink-0 items-center gap-2 border-b bg-background/90 pr-4 backdrop-blur transition-[padding] duration-200 supports-backdrop-filter:bg-background/70',
-        clearTrafficLights ? 'pl-[88px]' : 'pl-2',
+        clearTrafficLights ? 'pl-22' : 'pl-2',
       )}
     >
       <SidebarTrigger aria-label='Toggle sidebar' />

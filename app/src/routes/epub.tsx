@@ -145,9 +145,9 @@ type ReaderTheme = {
 
 const DEFAULT_READER_THEME: ReaderTheme = {
   background: 'oklch(1 0 0)',
-  foreground: 'oklch(0.147 0.004 49.3)',
-  mutedForeground: 'oklch(0.547 0.021 43.1)',
-  border: 'oklch(0.922 0.005 34.3)',
+  foreground: 'oklch(0.147 0 0)',
+  mutedForeground: 'oklch(0.55 0 0)',
+  border: 'oklch(0.92 0 0)',
   fontFamily: '"Geist Variable", sans-serif',
   colorScheme: 'light',
 };
