@@ -863,8 +863,13 @@ function MailListenPage() {
           mode={showDetailPane ? 'visible' : 'hidden'}
           name='mail-listen-detail'
         >
-          <div className='flex flex-col rounded-2xl border bg-card shadow-sm mb-6'>
-            <div className='flex items-center gap-2 border-b p-4'>
+          <div
+            className={cn(
+              '@5xl/content:sticky @5xl/content:top-14 @5xl/content:mb-2 mb-6 flex @5xl/content:min-h-0 min-h-[70dvh] flex-col overflow-hidden rounded-2xl border bg-card shadow-sm',
+              selectedMessage && '@5xl/content:h-[calc(100dvh-3.5rem)]',
+            )}
+          >
+            <div className='flex shrink-0 items-center justify-between gap-2 border-b p-4'>
               <Button
                 type='button'
                 variant='ghost'
@@ -876,9 +881,72 @@ function MailListenPage() {
                 Mailbox
               </Button>
               <h2 className='font-semibold text-sm'>Listen</h2>
+
+              {!hasSynthesizedAudio ? (
+                <div className='flex shrink-0 flex-wrap items-center justify-between gap-4'>
+                  <div className='flex items-center gap-2'>
+                    <Label className='sr-only'>Voice</Label>
+                    <Select
+                      value={style}
+                      onValueChange={(value) => setStyle(value ?? 'af_heart')}
+                    >
+                      <SelectTrigger className='w-50 border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {VOICE_OPTIONS.map((voice) => (
+                          <SelectItem key={voice.value} value={voice.value}>
+                            {voice.label}
+                            {voice.badge ? ` (${voice.badge})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className='flex items-center gap-3'>
+                    {isGenerating ? (
+                      <div className='flex items-center gap-2'>
+                        {estimatedDurationSec > 0 && (
+                          <div className='w-24'>
+                            <Progress
+                              value={Math.round(
+                                Math.min(
+                                  generatedDurationSec / estimatedDurationSec,
+                                  0.95,
+                                ) * 100,
+                              )}
+                              className='h-2'
+                            />
+                          </div>
+                        )}
+                        <Button
+                          type='button'
+                          variant='outline'
+                          onClick={() => void stopGeneration()}
+                          className='rounded-full'
+                        >
+                          <Square className='size-4' />
+                          Stop
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        type='button'
+                        className='rounded-full px-8'
+                        onClick={() => void handleGenerate()}
+                        disabled={!selectedMessage?.speechText.trim()}
+                      >
+                        <AudioLinesIcon className='size-4' />
+                        Generate
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ) : null}
             </div>
-            
-            <div className='flex flex-col p-4 gap-4'>
+
+            <div className='flex min-h-0 flex-1 flex-col gap-4 overflow-hidden p-4'>
               {isLoadingMessage ? (
                 <p className='flex items-center gap-2 text-muted-foreground text-sm'>
                   <LoaderCircle className='size-4 animate-spin' />
@@ -894,7 +962,7 @@ function MailListenPage() {
 
               {selectedMessage ? (
                 <>
-                  <div className='flex items-start justify-between gap-3'>
+                  <div className='flex shrink-0 items-start justify-between gap-3'>
                     <div className='grid min-w-0 gap-1'>
                       <p className='font-medium text-sm'>
                         {selectedMessage.subject}
@@ -923,8 +991,20 @@ function MailListenPage() {
                     ) : null}
                   </div>
 
-                  <div className='flex flex-col gap-2'>
-                    <Label htmlFor='mail-speech-text' className='sr-only'>Speech text</Label>
+                  {audioUrl ? (
+                    <div className='shrink-0'>
+                      <MailAudioPlayer
+                        key={audioUrl}
+                        audioRef={audioRef}
+                        audioUrl={audioUrl}
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className='flex min-h-0 flex-1 flex-col gap-2'>
+                    <Label htmlFor='mail-speech-text' className='sr-only'>
+                      Speech text
+                    </Label>
                     <Textarea
                       id='mail-speech-text'
                       value={selectedMessage.speechText}
@@ -934,82 +1014,9 @@ function MailListenPage() {
                           speechText: event.target.value,
                         })
                       }
-                      className='min-h-[40vh] resize-y border-0 bg-transparent p-4 font-mono text-sm shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors'
+                      className='field-sizing-fixed! min-h-48 flex-1 resize-none overflow-y-auto border-0 bg-transparent p-4 font-mono text-sm shadow-none focus-visible:bg-muted/30 focus-visible:ring-0'
                     />
                   </div>
-
-                  {!hasSynthesizedAudio ? (
-                    <div className='flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-muted/10 p-3'>
-                      <div className='flex items-center gap-2'>
-                        <Label className='sr-only'>Voice</Label>
-                        <Select
-                          value={style}
-                          onValueChange={(value) =>
-                            setStyle(value ?? 'af_heart')
-                          }
-                        >
-                          <SelectTrigger className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {VOICE_OPTIONS.map((voice) => (
-                              <SelectItem key={voice.value} value={voice.value}>
-                                {voice.label}
-                                {voice.badge ? ` (${voice.badge})` : ''}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className='flex items-center gap-3'>
-                        {isGenerating ? (
-                          <div className='flex items-center gap-2'>
-                            {estimatedDurationSec > 0 && (
-                              <div className='w-24'>
-                                <Progress
-                                  value={Math.round(
-                                    Math.min(
-                                      generatedDurationSec / estimatedDurationSec,
-                                      0.95,
-                                    ) * 100,
-                                  )}
-                                  className='h-2'
-                                />
-                              </div>
-                            )}
-                            <Button
-                              type='button'
-                              variant='outline'
-                              onClick={() => void stopGeneration()}
-                              className='rounded-full'
-                            >
-                              <Square className='size-4' />
-                              Stop
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            type='button'
-                            className='rounded-full px-8'
-                            onClick={() => void handleGenerate()}
-                            disabled={!selectedMessage.speechText.trim()}
-                          >
-                            <AudioLinesIcon className='size-4' />
-                            Generate
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {audioUrl ? (
-                    <MailAudioPlayer
-                      key={audioUrl}
-                      audioRef={audioRef}
-                      audioUrl={audioUrl}
-                    />
-                  ) : null}
                 </>
               ) : null}
             </div>
