@@ -247,11 +247,13 @@ function PlaygroundPage() {
             }}
             placeholder='Enter text for Kokoro to synthesize.'
           />
-          
+
           <div className='flex flex-wrap items-center justify-between gap-4 border-t p-4'>
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-2'>
-                <Label htmlFor='voice-select' className='sr-only'>Voice</Label>
+                <Label htmlFor='voice-select' className='sr-only'>
+                  Voice
+                </Label>
                 <Select
                   value={style}
                   onValueChange={(value) => setStyle(value ?? '')}
@@ -290,7 +292,9 @@ function PlaygroundPage() {
               </div>
 
               <div className='flex items-center gap-2'>
-                <Label htmlFor='playback-mode' className='sr-only'>Playback mode</Label>
+                <Label htmlFor='playback-mode' className='sr-only'>
+                  Playback mode
+                </Label>
                 <Select
                   value={playbackMode}
                   onValueChange={(value) => {
@@ -322,20 +326,32 @@ function PlaygroundPage() {
                   <SelectContent>
                     <SelectItem value='stream' label='Stream only'>
                       <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>Stream only</span>
-                        <span className='text-muted-foreground text-xs'>Play immediately</span>
+                        <span className='font-medium text-sm leading-none'>
+                          Stream only
+                        </span>
+                        <span className='text-muted-foreground text-xs'>
+                          Play immediately
+                        </span>
                       </div>
                     </SelectItem>
                     <SelectItem value='save-stream' label='Save & stream'>
                       <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>Save & stream</span>
-                        <span className='text-muted-foreground text-xs'>Save WAV and stream</span>
+                        <span className='font-medium text-sm leading-none'>
+                          Save & stream
+                        </span>
+                        <span className='text-muted-foreground text-xs'>
+                          Save WAV and stream
+                        </span>
                       </div>
                     </SelectItem>
                     <SelectItem value='save-silent' label='Save silently'>
                       <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>Save silently</span>
-                        <span className='text-muted-foreground text-xs'>Save WAV without playing</span>
+                        <span className='font-medium text-sm leading-none'>
+                          Save silently
+                        </span>
+                        <span className='text-muted-foreground text-xs'>
+                          Save WAV without playing
+                        </span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -345,9 +361,7 @@ function PlaygroundPage() {
 
             <div className='flex items-center gap-3'>
               {error ? (
-                <div className='text-destructive text-sm'>
-                  {error}
-                </div>
+                <div className='text-destructive text-sm'>{error}</div>
               ) : null}
 
               {isGenerating ? (
@@ -389,7 +403,7 @@ function PlaygroundPage() {
         </div>
       </div>
 
-      <div className='flex w-full flex-col border-l bg-muted/10 @3xl/content:w-[320px] @5xl/content:w-[380px]'>
+      <div className='flex w-full flex-col @3xl/content:w-[320px] @5xl/content:w-95'>
         <div className='flex flex-col gap-4 p-4 @3xl/content:p-6'>
           <div className='space-y-3'>
             <h2 className='font-semibold text-sm flex items-center gap-2'>
@@ -452,8 +466,7 @@ function PlaygroundPage() {
                   const isActive = savedOutputPath === file.path;
                   const isDeleting = deletingAudioPath === file.path;
                   const isRevealing = revealingAudioPath === file.path;
-                  const isConfirmingDelete =
-                    pendingDeletePath === file.path;
+                  const isConfirmingDelete = pendingDeletePath === file.path;
 
                   return (
                     <FileRowContextMenu
@@ -472,8 +485,7 @@ function PlaygroundPage() {
                           label: 'Reveal in Finder',
                           icon: <FolderOpen />,
                           onSelect: () => void handleRevealSavedAudio(file),
-                          disabled:
-                            isDeleting || Boolean(revealingAudioPath),
+                          disabled: isDeleting || Boolean(revealingAudioPath),
                         },
                         {
                           key: 'delete',
@@ -511,9 +523,7 @@ function PlaygroundPage() {
                           variant='ghost'
                           size='icon-sm'
                           onClick={() => void handleRevealSavedAudio(file)}
-                          disabled={
-                            isDeleting || Boolean(revealingAudioPath)
-                          }
+                          disabled={isDeleting || Boolean(revealingAudioPath)}
                           aria-label={`Reveal ${file.name} in Finder`}
                           title={`Reveal ${file.name} in Finder`}
                         >
