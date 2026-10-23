@@ -350,7 +350,7 @@ function PlaygroundPage() {
               >
                 <SelectTrigger
                   id='voice-select'
-                  className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
+                  className='w-50 border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
                   aria-label='Voice style'
                 >
                   <SelectValue>
