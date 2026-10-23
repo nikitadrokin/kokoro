@@ -137,7 +137,7 @@ body,
     @apply border-border outline-ring/50;
   }
   body {
-    @apply overflow-hidden bg-background text-foreground;
+    @apply overflow-hidden bg-background text-foreground antialiased;
   }
   html {
     @apply font-sans;

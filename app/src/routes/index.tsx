@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileRowContextMenu } from '@/components/FileRowContextMenu';
+import { SpeechTranscript } from '@/components/SpeechTranscript';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -27,12 +28,11 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  type TimestampRow,
-  useSpeechStreamGeneration,
-} from '@/hooks/use-speech-stream-generation';
+import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import { estimateAudioDurationSec } from '@/lib/speech-audio';
+import type { TimestampRow } from '@/lib/transcript';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
+import { cn } from '@/lib/utils';
 import { VOICE_OPTIONS } from '@/lib/voice-options';
 import { usePlaygroundStore } from '@/stores/playground-store';
 import { isPlaybackMode, useSettingsStore } from '@/stores/settings-store';
@@ -107,7 +107,10 @@ function PlaygroundPage() {
     timestamps,
   } = useSpeechStreamGeneration({ audioRef });
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
-  const [playbackTimeSec, setPlaybackTimeSec] = useState(0);
+  const [spokenText, setSpokenText] = useState('');
+  const [readerView, setReaderView] = useState<'script' | 'transcript'>(
+    'script',
+  );
 
   useEffect(() => {
     return () => {
@@ -152,6 +155,9 @@ function PlaygroundPage() {
     // textarea showing the user's original text untouched.
     const optimizedText = optimizeMarkdownForSpeech(text) || text;
     setEstimatedDurationSec(estimateAudioDurationSec(optimizedText));
+    setSpokenText(transcriptEnabled ? optimizedText : '');
+    setTimestamps([]);
+    setReaderView(transcriptEnabled ? 'transcript' : 'script');
     const response = await generateStream({
       text: optimizedText,
       style,
@@ -169,16 +175,24 @@ function PlaygroundPage() {
   const handlePlaySavedAudio = async (file: SavedAudioFile) => {
     setError('');
     setPlayerSource(convertFileSrc(file.path), file.path);
-    setPlaybackTimeSec(0);
+    setSpokenText('');
     try {
-      setTimestamps(
-        await invoke<TimestampRow[]>('load_saved_timestamps', {
+      const savedTimestamps = await invoke<TimestampRow[]>(
+        'load_saved_timestamps',
+        {
           path: file.path,
-        }),
+        },
       );
+      setTimestamps(savedTimestamps);
+      setReaderView(savedTimestamps.length > 0 ? 'transcript' : 'script');
     } catch (caughtError) {
       setTimestamps([]);
-      setError(caughtError instanceof Error ? caughtError.message : String(caughtError));
+      setReaderView('script');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : String(caughtError),
+      );
     }
     requestAnimationFrame(() => {
       audioRef.current?.play().catch(() => undefined);
@@ -253,23 +267,76 @@ function PlaygroundPage() {
     }
   };
 
+  const transcriptAvailable =
+    timestamps.length > 0 || (isGenerating && transcriptEnabled);
+  const showingTranscript = transcriptAvailable && readerView === 'transcript';
+  const generateRef = useRef(handleGenerate);
+  generateRef.current = handleGenerate;
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Enter' || !event.metaKey || event.repeat) return;
+      if (isGenerating) return;
+      event.preventDefault();
+      void generateRef.current();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isGenerating]);
+
   return (
     <main className='flex h-[calc(100vh-3.5rem)] flex-col @3xl/content:flex-row'>
-      <div className='flex flex-1 flex-col p-4 @3xl/content:p-6'>
-        <div className='flex flex-1 flex-col rounded-2xl border bg-card shadow-sm'>
-          <Textarea
-            id='playground-text'
-            aria-label='Text to synthesize'
-            className='flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none focus-visible:ring-0 focus-visible:bg-muted/30 transition-colors'
-            value={text}
-            onChange={(event) => setText(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && event.metaKey && !isGenerating) {
-                void handleGenerate();
-              }
-            }}
-            placeholder='Enter text for Kokoro to synthesize.'
-          />
+      <div className='flex min-h-0 flex-1 flex-col p-4 @3xl/content:p-6'>
+        <div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm'>
+          {transcriptAvailable ? (
+            <div className='flex shrink-0 items-center border-b px-4 py-2'>
+              <fieldset className='m-0 inline-flex min-w-0 rounded-full border-0 bg-muted/60 p-0.5'>
+                <legend className='sr-only'>Editor view</legend>
+                {(
+                  [
+                    ['script', 'Script'],
+                    ['transcript', 'Transcript'],
+                  ] as const
+                ).map(([value, label]) => {
+                  const selected = readerView === value;
+                  return (
+                    <button
+                      key={value}
+                      type='button'
+                      aria-pressed={selected}
+                      className={cn(
+                        'h-10 rounded-full px-3 font-medium text-sm transition-[color,background-color,box-shadow,transform] duration-150 ease-out focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 active:scale-[0.96]',
+                        selected
+                          ? 'bg-card text-foreground shadow-sm'
+                          : 'text-muted-foreground [@media(hover:hover)_and_(pointer:fine)]:hover:text-foreground',
+                      )}
+                      onClick={() => setReaderView(value)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </fieldset>
+            </div>
+          ) : null}
+
+          {showingTranscript ? (
+            <SpeechTranscript
+              audioRef={audioRef}
+              rows={timestamps}
+              sourceText={spokenText}
+            />
+          ) : (
+            <Textarea
+              id='playground-text'
+              aria-label='Text to synthesize'
+              className='min-h-0 flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none transition-colors focus-visible:bg-muted/30 focus-visible:ring-0'
+              value={text}
+              onChange={(event) => setText(event.target.value)}
+              placeholder='Enter text for Kokoro to synthesize.'
+            />
+          )}
 
           <div className='flex flex-wrap items-center justify-between gap-4 border-t p-4'>
             <div className='flex items-center gap-4'>
@@ -389,7 +456,7 @@ function PlaygroundPage() {
                   disabled={isGenerating}
                 />
                 <Label htmlFor='transcript-toggle' className='text-sm'>
-                  Transcript
+                  Word timings
                 </Label>
               </div>
             </div>
@@ -454,12 +521,6 @@ function PlaygroundPage() {
                 src={audioUrl || undefined}
                 aria-label='Generated audio preview'
                 className='h-10 w-full'
-                onTimeUpdate={(event) =>
-                  setPlaybackTimeSec(event.currentTarget.currentTime)
-                }
-                onSeeked={(event) =>
-                  setPlaybackTimeSec(event.currentTarget.currentTime)
-                }
               />
               <Button
                 variant='secondary'
@@ -472,38 +533,6 @@ function PlaygroundPage() {
               </Button>
             </div>
           </div>
-
-          {timestamps.length > 0 ? (
-            <div className='space-y-3'>
-              <h2 className='font-semibold text-sm'>Transcript</h2>
-              <div className='max-h-48 overflow-y-auto rounded-xl border bg-card p-3 text-sm leading-7 shadow-sm'>
-                {timestamps.map((row) => {
-                  const isActive =
-                    playbackTimeSec >= row.startSec &&
-                    playbackTimeSec < row.endSec;
-                  return (
-                    <button
-                      type='button'
-                      key={`${row.startSec}-${row.endSec}-${row.word}`}
-                      className={
-                        isActive
-                          ? 'mr-1 rounded bg-primary px-0.5 text-primary-foreground'
-                          : 'mr-1 rounded px-0.5 hover:bg-muted'
-                      }
-                      onClick={() => {
-                        if (!audioRef.current) return;
-                        audioRef.current.currentTime = row.startSec;
-                        setPlaybackTimeSec(row.startSec);
-                        void audioRef.current.play();
-                      }}
-                    >
-                      {row.word}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
 
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>

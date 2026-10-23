@@ -10,6 +10,7 @@ import {
   revokeBlobUrl,
   SPEECH_STREAM_CHUNK_EVENT,
 } from '@/lib/speech-audio';
+import type { TimestampRow } from '@/lib/transcript';
 import { useSynthesisLockStore } from '@/stores/synthesis-lock-store';
 
 /** Computes the playback duration (in seconds) of a raw float32 audio chunk. */
@@ -24,12 +25,6 @@ function chunkDurationSec(
 const WEB_AUDIO_START_DELAY_SEC = 0.08;
 const WEB_AUDIO_MIN_LEAD_SEC = 0.02;
 const SPEECH_STREAM_TIMESTAMP_EVENT = 'speech-stream-timestamp';
-
-export type TimestampRow = {
-  word: string;
-  startSec: number;
-  endSec: number;
-};
 
 type SynthesizeSpeechStreamResponse = {
   sampleRate: number;
