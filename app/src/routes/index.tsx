@@ -610,7 +610,7 @@ function PlaygroundPage() {
                           {formatFileSize(file.sizeBytes)}
                         </p>
                       </div>
-                      <div className='flex items-center gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/context-menu:opacity-100'>
+                      <div className='flex items-center gap-1'>
                         <Button
                           variant={isActive ? 'secondary' : 'ghost'}
                           size='icon-sm'
