@@ -341,127 +341,144 @@ function PlaygroundPage() {
 
           <div className='flex flex-wrap items-center gap-3 border-t p-4'>
             <div className='flex shrink-0 items-center gap-2'>
-                <Label htmlFor='voice-select' className='sr-only'>
-                  Voice
-                </Label>
-                <Select
-                  value={style}
-                  onValueChange={(value) => setStyle(value ?? '')}
+              <Label htmlFor='voice-select' className='sr-only'>
+                Voice
+              </Label>
+              <Select
+                value={style}
+                onValueChange={(value) => setStyle(value ?? '')}
+              >
+                <SelectTrigger
+                  id='voice-select'
+                  className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
+                  aria-label='Voice style'
                 >
-                  <SelectTrigger
-                    id='voice-select'
-                    className='w-[200px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
-                    aria-label='Voice style'
-                  >
-                    <SelectValue>
-                      {(value: string | null) =>
-                        VOICE_OPTIONS.find((v) => v.value === value)?.label ??
-                        value
-                      }
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {VOICE_OPTIONS.map((voice) => (
-                      <SelectItem
-                        key={voice.value}
-                        value={voice.value}
-                        label={voice.label}
-                      >
-                        <span className='flex flex-1 items-center justify-between gap-2'>
-                          {voice.label}
-                          {voice.badge !== undefined && (
-                            <Badge variant='secondary' className='text-[10px]'>
-                              {voice.badge}
-                            </Badge>
-                          )}
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className='flex shrink-0 items-center gap-2'>
-                <Label htmlFor='playback-mode' className='sr-only'>
-                  Playback mode
-                </Label>
-                <Select
-                  value={playbackMode}
-                  onValueChange={(value) => {
-                    if (value && isPlaybackMode(value)) {
-                      setPlaybackMode(value);
+                  <SelectValue>
+                    {(value: string | null) =>
+                      VOICE_OPTIONS.find((v) => v.value === value)?.label ??
+                      value
                     }
-                  }}
-                >
-                  <SelectTrigger
-                    id='playback-mode'
-                    className='w-[160px] border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
-                    aria-label='Playback mode'
-                  >
-                    <SelectValue>
-                      {(value: string | null) => {
-                        switch (value) {
-                          case 'stream':
-                            return 'Stream only';
-                          case 'save-stream':
-                            return 'Save & stream';
-                          case 'save-silent':
-                            return 'Save silently';
-                          default:
-                            return value;
-                        }
-                      }}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='stream' label='Stream only'>
-                      <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>
-                          Stream only
-                        </span>
-                        <span className='text-muted-foreground text-xs'>
-                          Play immediately
-                        </span>
-                      </div>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {VOICE_OPTIONS.map((voice) => (
+                    <SelectItem
+                      key={voice.value}
+                      value={voice.value}
+                      label={voice.label}
+                    >
+                      <span className='flex flex-1 items-center justify-between gap-2'>
+                        {voice.label}
+                        {voice.badge !== undefined && (
+                          <Badge variant='secondary' className='text-[10px]'>
+                            {voice.badge}
+                          </Badge>
+                        )}
+                      </span>
                     </SelectItem>
-                    <SelectItem value='save-stream' label='Save & stream'>
-                      <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>
-                          Save & stream
-                        </span>
-                        <span className='text-muted-foreground text-xs'>
-                          Save WAV and stream
-                        </span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value='save-silent' label='Save silently'>
-                      <div className='grid gap-0.5'>
-                        <span className='font-medium text-sm leading-none'>
-                          Save silently
-                        </span>
-                        <span className='text-muted-foreground text-xs'>
-                          Save WAV without playing
-                        </span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className='flex shrink-0 items-center gap-2'>
-                <Switch
-                  id='transcript-toggle'
-                  checked={transcriptEnabled}
-                  onCheckedChange={setTranscriptEnabled}
-                  disabled={isGenerating}
-                />
-                <Label
-                  htmlFor='transcript-toggle'
-                  className='whitespace-nowrap text-sm'
+            <div className='flex shrink-0 items-center gap-2'>
+              <Label htmlFor='playback-mode' className='sr-only'>
+                Playback mode
+              </Label>
+              <Select
+                value={playbackMode}
+                onValueChange={(value) => {
+                  if (value && isPlaybackMode(value)) {
+                    setPlaybackMode(value);
+                  }
+                }}
+              >
+                <SelectTrigger
+                  id='playback-mode'
+                  className='w-40 border-none bg-muted/50 shadow-none hover:bg-muted/80 focus-visible:ring-1 focus-visible:ring-ring'
+                  aria-label='Playback mode'
                 >
-                  Word timings
-                </Label>
-              </div>
+                  <SelectValue>
+                    {(value: string | null) => {
+                      switch (value) {
+                        case 'stream':
+                          return 'Stream only';
+                        case 'save-stream':
+                          return 'Save & stream';
+                        case 'save-silent':
+                          return 'Save silently';
+                        default:
+                          return value;
+                      }
+                    }}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent
+                  alignItemWithTrigger={false}
+                  alignOffset={44}
+                  sideOffset={8}
+                  className='w-max min-w-64'
+                >
+                  <SelectItem
+                    value='stream'
+                    label='Stream only'
+                    className='pr-12'
+                  >
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
+                        Stream only
+                      </span>
+                      <span className='text-muted-foreground text-xs'>
+                        Play immediately
+                      </span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem
+                    value='save-stream'
+                    label='Save & stream'
+                    className='pr-12'
+                  >
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
+                        Save & stream
+                      </span>
+                      <span className='text-muted-foreground text-xs'>
+                        Save WAV and stream
+                      </span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem
+                    value='save-silent'
+                    label='Save silently'
+                    className='pr-12'
+                  >
+                    <div className='grid gap-0.5'>
+                      <span className='font-medium text-sm leading-none'>
+                        Save silently
+                      </span>
+                      <span className='text-muted-foreground text-xs'>
+                        Save WAV without playing
+                      </span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='flex shrink-0 items-center gap-2'>
+              <Switch
+                id='transcript-toggle'
+                checked={transcriptEnabled}
+                onCheckedChange={setTranscriptEnabled}
+                disabled={isGenerating}
+              />
+              <Label
+                htmlFor='transcript-toggle'
+                className='whitespace-nowrap text-sm'
+              >
+                Word timings
+              </Label>
+            </div>
 
             <div className='ml-auto flex items-center gap-3'>
               {error ? (
