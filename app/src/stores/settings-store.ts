@@ -24,7 +24,7 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       playbackMode: 'save-silent',
       setPlaybackMode: (playbackMode) => set({ playbackMode }),
-      transcriptEnabled: false,
+      transcriptEnabled: true,
       setTranscriptEnabled: (transcriptEnabled) => set({ transcriptEnabled }),
       voice: DEFAULT_VOICE,
       setVoice: (voice) => set({ voice }),
