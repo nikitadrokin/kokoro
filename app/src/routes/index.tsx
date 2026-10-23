@@ -286,9 +286,9 @@ function PlaygroundPage() {
   }, [isGenerating]);
 
   return (
-    <main className='flex h-[calc(100vh-3.5rem)] flex-col @3xl/content:flex-row'>
-      <div className='flex min-h-0 flex-1 flex-col p-4 @3xl/content:p-6'>
-        <div className='flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border bg-card shadow-sm'>
+    <main className='flex flex-col @3xl/content:h-[calc(100vh-3.5rem)] @3xl/content:flex-row'>
+      <div className='flex flex-col p-4 @3xl/content:min-h-0 @3xl/content:flex-1 @3xl/content:p-6'>
+        <div className='flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm @3xl/content:min-h-0 @3xl/content:flex-1'>
           {transcriptAvailable ? (
             <div className='flex shrink-0 items-center border-b px-4 py-2'>
               <fieldset className='m-0 inline-flex min-w-0 rounded-full border-0 bg-muted/60 p-0.5'>
@@ -326,21 +326,21 @@ function PlaygroundPage() {
               audioRef={audioRef}
               rows={timestamps}
               sourceText={spokenText}
+              className='h-48 flex-none @3xl/content:h-auto @3xl/content:min-h-0 @3xl/content:flex-1'
             />
           ) : (
             <Textarea
               id='playground-text'
               aria-label='Text to synthesize'
-              className='min-h-0 flex-1 resize-none border-0 bg-transparent p-6 text-lg shadow-none transition-colors focus-visible:bg-muted/30 focus-visible:ring-0'
+              className='field-sizing-fixed! h-48 shrink-0 resize-none overflow-y-auto border-0 bg-transparent p-6 text-lg shadow-none transition-colors focus-visible:bg-muted/30 focus-visible:ring-0 @3xl/content:h-auto @3xl/content:min-h-0 @3xl/content:shrink @3xl/content:flex-1'
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder='Enter text for Kokoro to synthesize.'
             />
           )}
 
-          <div className='flex flex-wrap items-center justify-between gap-4 border-t p-4'>
-            <div className='flex items-center gap-4'>
-              <div className='flex items-center gap-2'>
+          <div className='flex flex-wrap items-center gap-3 border-t p-4'>
+            <div className='flex shrink-0 items-center gap-2'>
                 <Label htmlFor='voice-select' className='sr-only'>
                   Voice
                 </Label>
@@ -381,7 +381,7 @@ function PlaygroundPage() {
                 </Select>
               </div>
 
-              <div className='flex items-center gap-2'>
+              <div className='flex shrink-0 items-center gap-2'>
                 <Label htmlFor='playback-mode' className='sr-only'>
                   Playback mode
                 </Label>
@@ -448,20 +448,22 @@ function PlaygroundPage() {
                 </Select>
               </div>
 
-              <div className='flex items-center gap-2'>
+              <div className='flex shrink-0 items-center gap-2'>
                 <Switch
                   id='transcript-toggle'
                   checked={transcriptEnabled}
                   onCheckedChange={setTranscriptEnabled}
                   disabled={isGenerating}
                 />
-                <Label htmlFor='transcript-toggle' className='text-sm'>
+                <Label
+                  htmlFor='transcript-toggle'
+                  className='whitespace-nowrap text-sm'
+                >
                   Word timings
                 </Label>
               </div>
-            </div>
 
-            <div className='flex items-center gap-3'>
+            <div className='ml-auto flex items-center gap-3'>
               {error ? (
                 <div className='text-destructive text-sm'>{error}</div>
               ) : null}
