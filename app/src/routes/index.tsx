@@ -360,7 +360,7 @@ function PlaygroundPage() {
                     }
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false}>
                   {VOICE_OPTIONS.map((voice) => (
                     <SelectItem
                       key={voice.value}
