@@ -476,7 +476,7 @@ function PlaygroundPage() {
                 htmlFor='transcript-toggle'
                 className='whitespace-nowrap text-sm'
               >
-                Word timings
+                Save Transcript
               </Label>
             </div>
 
