@@ -1043,6 +1043,11 @@ impl TTSKoko {
     }
 
     // Returns a sorted list of available voice names
+    pub fn supports_timestamps(&self) -> bool {
+        let model = self.model.lock().unwrap();
+        matches!(model.strategy(), Some(ModelStrategy::Timestamped(_)))
+    }
+
     pub fn get_available_voices(&self) -> Vec<String> {
         let mut voices: Vec<String> = self.styles.keys().cloned().collect();
         voices.sort();

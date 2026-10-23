@@ -23,11 +23,20 @@ function chunkDurationSec(
 
 const WEB_AUDIO_START_DELAY_SEC = 0.08;
 const WEB_AUDIO_MIN_LEAD_SEC = 0.02;
+const SPEECH_STREAM_TIMESTAMP_EVENT = 'speech-stream-timestamp';
+
+export type TimestampRow = {
+  word: string;
+  startSec: number;
+  endSec: number;
+};
 
 type SynthesizeSpeechStreamResponse = {
   sampleRate: number;
   channels: number;
   savedOutputPath: string | null;
+  savedTimestampsPath: string | null;
+  timestamps: TimestampRow[];
   cancelled: boolean;
 };
 
@@ -39,6 +48,8 @@ type SpeechStreamChunkEvent = {
   sampleFormat: 'float32le';
 };
 
+type SpeechStreamTimestampEvent = TimestampRow & { streamId: string };
+
 export type SpeechStreamGenerationRequest = {
   text: string;
   style: string;
@@ -48,6 +59,7 @@ export type SpeechStreamGenerationRequest = {
   outputLabel?: string;
   outputSubdir?: string;
   mono?: boolean;
+  timestamps?: boolean;
 };
 
 type UseSpeechStreamGenerationOptions = {
@@ -67,6 +79,7 @@ export function useSpeechStreamGeneration({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const [generatedDurationSec, setGeneratedDurationSec] = useState(0);
+  const [timestamps, setTimestamps] = useState<TimestampRow[]>([]);
 
   const stopScheduledAudio = useCallback(() => {
     for (const source of scheduledSourcesRef.current) {
@@ -173,6 +186,7 @@ export function useSpeechStreamGeneration({
     audioRef.current?.load();
     setSavedOutputPath('');
     setGeneratedDurationSec(0);
+    setTimestamps([]);
     setAudioUrl((currentUrl) => {
       if (currentUrl) {
         revokeBlobUrl(currentUrl);
@@ -194,6 +208,7 @@ export function useSpeechStreamGeneration({
       setIsGenerating(true);
       useSynthesisLockStore.getState().beginSynthesis();
       setGeneratedDurationSec(0);
+      setTimestamps([]);
       activeStreamIdRef.current = streamId;
       audioRef.current?.pause();
       stopScheduledAudio();
@@ -258,7 +273,18 @@ export function useSpeechStreamGeneration({
             }
           },
         );
-        streamCleanupRef.current = unlistenChunk;
+        const unlistenTimestamp = await listen<SpeechStreamTimestampEvent>(
+          SPEECH_STREAM_TIMESTAMP_EVENT,
+          (event) => {
+            if (event.payload.streamId === activeStreamIdRef.current) {
+              setTimestamps((rows) => [...rows, event.payload]);
+            }
+          },
+        );
+        streamCleanupRef.current = () => {
+          unlistenChunk();
+          unlistenTimestamp();
+        };
 
         const response = await invoke<SynthesizeSpeechStreamResponse>(
           'synthesize_speech_stream',
@@ -272,7 +298,7 @@ export function useSpeechStreamGeneration({
               outputLabel: request.outputLabel,
               outputSubdir: request.outputSubdir,
               mono: request.mono ?? true,
-              timestamps: false,
+              timestamps: request.timestamps ?? false,
             },
           },
         );
@@ -290,6 +316,7 @@ export function useSpeechStreamGeneration({
             );
 
         setPlayerSource(nextUrl, response.savedOutputPath ?? '');
+        setTimestamps(response.timestamps);
 
         return response;
       } catch (caughtError) {
@@ -345,8 +372,10 @@ export function useSpeechStreamGeneration({
     isGenerating,
     play,
     savedOutputPath,
+    setTimestamps,
     setError,
     setPlayerSource,
     stopGeneration,
+    timestamps,
   };
 }

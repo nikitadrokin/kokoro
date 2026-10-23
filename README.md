@@ -67,8 +67,8 @@ Download the model and voices into the repository root:
 mkdir -p checkpoints data
 
 curl -L \
-  "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx" \
-  -o checkpoints/kokoro-v1.0.onnx
+  "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX-timestamped/resolve/main/onnx/model.onnx" \
+  -o checkpoints/kokoro-v1.0-timestamped.onnx
 
 curl -L \
   "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin" \
@@ -91,7 +91,7 @@ You can run the same engine directly from the Rust workspace. From the repositor
 
 ```bash
 cargo run --manifest-path cli/Cargo.toml --release -p koko -- \
-  --model checkpoints/kokoro-v1.0.onnx \
+  --model checkpoints/kokoro-v1.0-timestamped.onnx \
   --data data/voices-v1.0.bin \
   text "Hello from Kokoro." \
   --output hello.wav
@@ -101,7 +101,7 @@ Generate timestamp sidecars:
 
 ```bash
 cargo run --manifest-path cli/Cargo.toml --release -p koko -- \
-  --model checkpoints/kokoro-v1.0.onnx \
+  --model checkpoints/kokoro-v1.0-timestamped.onnx \
   --data data/voices-v1.0.bin \
   --timestamps \
   text "Every word gets a timing row." \
@@ -112,7 +112,7 @@ Start the OpenAI-compatible local server:
 
 ```bash
 cargo run --manifest-path cli/Cargo.toml --release -p koko -- \
-  --model checkpoints/kokoro-v1.0.onnx \
+  --model checkpoints/kokoro-v1.0-timestamped.onnx \
   --data data/voices-v1.0.bin \
   openai --port 3000
 ```
@@ -157,7 +157,7 @@ xattr -cr /Applications/Kokoro.app
 
 The Tauri bundle includes:
 
-- `models/kokoro-v1.0.onnx`
+- `models/kokoro-v1.0-timestamped.onnx`
 - `models/voices-v1.0.bin`
 - the platform-specific `koko` sidecar binary
 

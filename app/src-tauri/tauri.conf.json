@@ -43,7 +43,7 @@
     "targets": "all",
     "createUpdaterArtifacts": false,
     "resources": {
-      "../../checkpoints/kokoro-v1.0.onnx": "models/kokoro-v1.0.onnx",
+      "../../checkpoints/kokoro-v1.0-timestamped.onnx": "models/kokoro-v1.0-timestamped.onnx",
       "../../data/voices-v1.0.bin": "models/voices-v1.0.bin"
     },
     "externalBin": [

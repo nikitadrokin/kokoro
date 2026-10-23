@@ -22,11 +22,13 @@ use tauri_plugin_shell::{
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const KOKO_SIDECAR: &str = "koko";
-const MODEL_RESOURCE_PATH: &str = "models/kokoro-v1.0.onnx";
+const MODEL_RESOURCE_PATH: &str = "models/kokoro-v1.0-timestamped.onnx";
 const VOICES_RESOURCE_PATH: &str = "models/voices-v1.0.bin";
-const DEV_MODEL_PATH: &str = "checkpoints/kokoro-v1.0.onnx";
+const DEV_MODEL_PATH: &str = "checkpoints/kokoro-v1.0-timestamped.onnx";
 const DEV_VOICES_PATH: &str = "data/voices-v1.0.bin";
 const SPEECH_STREAM_CHUNK_EVENT: &str = "speech-stream-chunk";
+const SPEECH_STREAM_TIMESTAMP_EVENT: &str = "speech-stream-timestamp";
+const STREAM_TIMESTAMP_PREFIX: &str = "KOKORO_TIMESTAMP\t";
 const SPEAK_SELECTION_EVENT: &str = "speak-selection-pending";
 const STREAM_SAMPLE_RATE: u32 = 24_000;
 const STREAM_CHANNELS: u16 = 1;
@@ -53,10 +55,19 @@ struct SynthesizeSpeechRequest {
     stream_id: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TimestampRow {
     word: String,
+    start_sec: f32,
+    end_sec: f32,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SpeechStreamTimestampEvent<'a> {
+    stream_id: &'a str,
+    word: &'a str,
     start_sec: f32,
     end_sec: f32,
 }
@@ -77,6 +88,8 @@ struct SynthesizeSpeechStreamResponse {
     sample_rate: u32,
     channels: u16,
     saved_output_path: Option<String>,
+    saved_timestamps_path: Option<String>,
+    timestamps: Vec<TimestampRow>,
     cancelled: bool,
 }
 
@@ -426,10 +439,6 @@ async fn synthesize_speech_stream(
         return Err("Enter some text before generating audio.".into());
     }
 
-    if request.timestamps {
-        return Err("Word timestamps are not supported while streaming.".into());
-    }
-
     let language = request
         .language
         .as_deref()
@@ -514,6 +523,10 @@ async fn synthesize_speech_stream(
         args.push(OsString::from(initial_silence.to_string()));
     }
 
+    if request.timestamps {
+        args.push(OsString::from("--timestamps"));
+    }
+
     args.push(OsString::from("stream"));
 
     let mut output_file = if let Some(path) = output_path.as_ref() {
@@ -563,6 +576,8 @@ async fn synthesize_speech_stream(
     });
 
     let mut stderr = Vec::new();
+    let mut pending_stderr = Vec::new();
+    let mut timestamps = Vec::new();
     let mut wav_header = Vec::with_capacity(WAV_HEADER_BYTES);
     let mut pending_sample_bytes = Vec::with_capacity(FLOAT_SAMPLE_BYTES);
     let mut total_stdout_bytes = 0u64;
@@ -586,7 +601,17 @@ async fn synthesize_speech_stream(
                 emit_stream_audio_bytes(&app, &stream_id, audio_bytes, &mut pending_sample_bytes)?;
             }
             CommandEvent::Stderr(bytes) => {
-                append_limited_command_bytes(&mut stderr, &bytes);
+                pending_stderr.extend_from_slice(&bytes);
+                while let Some(newline) = pending_stderr.iter().position(|byte| *byte == b'\n') {
+                    let line = pending_stderr.drain(..=newline).collect::<Vec<_>>();
+                    handle_stream_stderr_line(
+                        &app,
+                        &stream_id,
+                        &line,
+                        &mut timestamps,
+                        &mut stderr,
+                    )?;
+                }
             }
             CommandEvent::Error(error) => {
                 return Err(format!("Failed while reading koko stream: {error}"));
@@ -620,6 +645,8 @@ async fn synthesize_speech_stream(
             sample_rate: STREAM_SAMPLE_RATE,
             channels: STREAM_CHANNELS,
             saved_output_path: None,
+            saved_timestamps_path: None,
+            timestamps,
             cancelled: true,
         });
     }
@@ -645,14 +672,94 @@ async fn synthesize_speech_stream(
         return Err(format_stream_command_failure(exit_code, &stderr));
     }
 
+    if !pending_stderr.is_empty() {
+        handle_stream_stderr_line(
+            &app,
+            &stream_id,
+            &pending_stderr,
+            &mut timestamps,
+            &mut stderr,
+        )?;
+    }
+
+    let saved_timestamps_path = if request.timestamps && should_keep_output {
+        let path = derive_tsv_path_from_wav(
+            output_path
+                .as_ref()
+                .ok_or_else(|| "Missing output path for timestamp sidecar".to_string())?,
+        );
+        write_timestamp_rows(&path, &timestamps)?;
+        Some(path.display().to_string())
+    } else {
+        None
+    };
+
     Ok(SynthesizeSpeechStreamResponse {
         sample_rate: STREAM_SAMPLE_RATE,
         channels: STREAM_CHANNELS,
         saved_output_path: output_path
             .filter(|_| should_keep_output)
             .map(|path| path.display().to_string()),
+        saved_timestamps_path,
+        timestamps,
         cancelled: false,
     })
+}
+
+fn handle_stream_stderr_line(
+    app: &AppHandle,
+    stream_id: &str,
+    bytes: &[u8],
+    timestamps: &mut Vec<TimestampRow>,
+    diagnostics: &mut Vec<u8>,
+) -> Result<(), String> {
+    let line = String::from_utf8_lossy(bytes);
+    let trimmed = line.trim_end_matches(['\r', '\n']);
+    if let Some(payload) = trimmed.strip_prefix(STREAM_TIMESTAMP_PREFIX) {
+        let mut columns = payload.split('\t');
+        let word = columns.next().unwrap_or_default().to_string();
+        let start_sec = columns
+            .next()
+            .ok_or_else(|| "Malformed streamed timestamp start".to_string())?
+            .parse::<f32>()
+            .map_err(|error| format!("Invalid streamed timestamp start: {error}"))?;
+        let end_sec = columns
+            .next()
+            .ok_or_else(|| "Malformed streamed timestamp end".to_string())?
+            .parse::<f32>()
+            .map_err(|error| format!("Invalid streamed timestamp end: {error}"))?;
+        let row = TimestampRow {
+            word,
+            start_sec,
+            end_sec,
+        };
+        app.emit(
+            SPEECH_STREAM_TIMESTAMP_EVENT,
+            SpeechStreamTimestampEvent {
+                stream_id,
+                word: &row.word,
+                start_sec: row.start_sec,
+                end_sec: row.end_sec,
+            },
+        )
+        .map_err(|error| error.to_string())?;
+        timestamps.push(row);
+    } else {
+        append_limited_command_bytes(diagnostics, bytes);
+    }
+    Ok(())
+}
+
+fn write_timestamp_rows(path: &Path, rows: &[TimestampRow]) -> Result<(), String> {
+    let mut file = fs::File::create(path)
+        .map_err(|error| format!("Failed to create timestamp sidecar: {error}"))?;
+    file.write_all(b"word\tstart_sec\tend_sec\n")
+        .map_err(|error| format!("Failed to write timestamp sidecar: {error}"))?;
+    for row in rows {
+        writeln!(file, "{}\t{:.6}\t{:.6}", row.word, row.start_sec, row.end_sec)
+            .map_err(|error| format!("Failed to write timestamp sidecar: {error}"))?;
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -735,6 +842,17 @@ fn delete_saved_audio(path: String, app: AppHandle) -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[tauri::command]
+fn load_saved_timestamps(path: String, app: AppHandle) -> Result<Vec<TimestampRow>, String> {
+    let base_dir = saved_audio_dir(&app)?;
+    let saved_path = resolve_saved_audio_path(&base_dir, &path)?;
+    let timestamps_path = derive_tsv_path_from_wav(&saved_path);
+    if !timestamps_path.exists() {
+        return Ok(Vec::new());
+    }
+    read_timestamps(&timestamps_path)
 }
 
 #[tauri::command]
@@ -1739,6 +1857,7 @@ pub fn run() {
             stop_speech_stream,
             list_saved_audio,
             delete_saved_audio,
+            load_saved_timestamps,
             reveal_saved_audio_in_finder,
             import_epub_file,
             read_imported_epub_file,

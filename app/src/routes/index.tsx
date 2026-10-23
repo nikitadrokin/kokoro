@@ -16,10 +16,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FileRowContextMenu } from '@/components/FileRowContextMenu';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
   Select,
   SelectContent,
@@ -27,9 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
-import { estimateAudioDurationSec, formatDuration } from '@/lib/speech-audio';
+import {
+  type TimestampRow,
+  useSpeechStreamGeneration,
+} from '@/hooks/use-speech-stream-generation';
+import { estimateAudioDurationSec } from '@/lib/speech-audio';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
 import { VOICE_OPTIONS } from '@/lib/voice-options';
 import { usePlaygroundStore } from '@/stores/playground-store';
@@ -77,6 +79,12 @@ function PlaygroundPage() {
   const setStyle = useSettingsStore((state) => state.setVoice);
   const playbackMode = useSettingsStore((state) => state.playbackMode);
   const setPlaybackMode = useSettingsStore((state) => state.setPlaybackMode);
+  const transcriptEnabled = useSettingsStore(
+    (state) => state.transcriptEnabled,
+  );
+  const setTranscriptEnabled = useSettingsStore(
+    (state) => state.setTranscriptEnabled,
+  );
   const [isLoadingSavedAudio, setIsLoadingSavedAudio] = useState(false);
   const [deletingAudioPath, setDeletingAudioPath] = useState('');
   const [revealingAudioPath, setRevealingAudioPath] = useState('');
@@ -94,9 +102,12 @@ function PlaygroundPage() {
     savedOutputPath,
     setError,
     setPlayerSource,
+    setTimestamps,
     stopGeneration,
+    timestamps,
   } = useSpeechStreamGeneration({ audioRef });
   const [estimatedDurationSec, setEstimatedDurationSec] = useState(0);
+  const [playbackTimeSec, setPlaybackTimeSec] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -147,6 +158,7 @@ function PlaygroundPage() {
       saveToDisk: playbackMode !== 'stream',
       streamAudio: playbackMode !== 'save-silent',
       mono: true,
+      timestamps: transcriptEnabled,
     });
 
     if (response?.savedOutputPath) {
@@ -154,9 +166,20 @@ function PlaygroundPage() {
     }
   };
 
-  const handlePlaySavedAudio = (file: SavedAudioFile) => {
+  const handlePlaySavedAudio = async (file: SavedAudioFile) => {
     setError('');
     setPlayerSource(convertFileSrc(file.path), file.path);
+    setPlaybackTimeSec(0);
+    try {
+      setTimestamps(
+        await invoke<TimestampRow[]>('load_saved_timestamps', {
+          path: file.path,
+        }),
+      );
+    } catch (caughtError) {
+      setTimestamps([]);
+      setError(caughtError instanceof Error ? caughtError.message : String(caughtError));
+    }
     requestAnimationFrame(() => {
       audioRef.current?.play().catch(() => undefined);
     });
@@ -298,7 +321,7 @@ function PlaygroundPage() {
                 <Select
                   value={playbackMode}
                   onValueChange={(value) => {
-                    if (isPlaybackMode(value)) {
+                    if (value && isPlaybackMode(value)) {
                       setPlaybackMode(value);
                     }
                   }}
@@ -356,6 +379,18 @@ function PlaygroundPage() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className='flex items-center gap-2'>
+                <Switch
+                  id='transcript-toggle'
+                  checked={transcriptEnabled}
+                  onCheckedChange={setTranscriptEnabled}
+                  disabled={isGenerating}
+                />
+                <Label htmlFor='transcript-toggle' className='text-sm'>
+                  Transcript
+                </Label>
               </div>
             </div>
 
@@ -419,6 +454,12 @@ function PlaygroundPage() {
                 src={audioUrl || undefined}
                 aria-label='Generated audio preview'
                 className='h-10 w-full'
+                onTimeUpdate={(event) =>
+                  setPlaybackTimeSec(event.currentTarget.currentTime)
+                }
+                onSeeked={(event) =>
+                  setPlaybackTimeSec(event.currentTarget.currentTime)
+                }
               />
               <Button
                 variant='secondary'
@@ -431,6 +472,38 @@ function PlaygroundPage() {
               </Button>
             </div>
           </div>
+
+          {timestamps.length > 0 ? (
+            <div className='space-y-3'>
+              <h2 className='font-semibold text-sm'>Transcript</h2>
+              <div className='max-h-48 overflow-y-auto rounded-xl border bg-card p-3 text-sm leading-7 shadow-sm'>
+                {timestamps.map((row) => {
+                  const isActive =
+                    playbackTimeSec >= row.startSec &&
+                    playbackTimeSec < row.endSec;
+                  return (
+                    <button
+                      type='button'
+                      key={`${row.startSec}-${row.endSec}-${row.word}`}
+                      className={
+                        isActive
+                          ? 'mr-1 rounded bg-primary px-0.5 text-primary-foreground'
+                          : 'mr-1 rounded px-0.5 hover:bg-muted'
+                      }
+                      onClick={() => {
+                        if (!audioRef.current) return;
+                        audioRef.current.currentTime = row.startSec;
+                        setPlaybackTimeSec(row.startSec);
+                        void audioRef.current.play();
+                      }}
+                    >
+                      {row.word}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           <div className='space-y-3'>
             <div className='flex items-center justify-between'>

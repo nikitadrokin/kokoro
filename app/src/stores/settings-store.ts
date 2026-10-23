@@ -10,11 +10,13 @@ export const DEFAULT_VOICE = 'af_heart';
 type SettingsState = {
   playbackMode: PlaybackMode;
   setPlaybackMode: (playbackMode: PlaybackMode) => void;
+  transcriptEnabled: boolean;
+  setTranscriptEnabled: (transcriptEnabled: boolean) => void;
   voice: string;
   setVoice: (voice: string) => void;
 };
 
-export const isPlaybackMode = (value: string): value is PlaybackMode =>
+export const isPlaybackMode = (value: string | null): value is PlaybackMode =>
   PLAYBACK_MODES.includes(value as PlaybackMode);
 
 export const useSettingsStore = create<SettingsState>()(
@@ -22,6 +24,8 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       playbackMode: 'save-silent',
       setPlaybackMode: (playbackMode) => set({ playbackMode }),
+      transcriptEnabled: false,
+      setTranscriptEnabled: (transcriptEnabled) => set({ transcriptEnabled }),
       voice: DEFAULT_VOICE,
       setVoice: (voice) => set({ voice }),
     }),

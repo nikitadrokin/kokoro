@@ -377,6 +377,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let tts = TTSKoko::new(&model_path, &data_path).await;
 
+        if timestamps && !tts.supports_timestamps() {
+            return Err(
+                "--timestamps requires a timestamp-capable Kokoro ONNX model (an output named `durations` is missing)"
+                    .into(),
+            );
+        }
+
         match mode {
             Mode::File {
                 input_path,
@@ -543,6 +550,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let header = WavHeader::new(1, 24000, 32);
                 header.write_header(&mut stdout)?;
                 stdout.flush()?;
+                let mut audio_time_offset_sec = 0.0_f32;
 
                 while let Some(line) = lines.next_line().await? {
                     let stripped_line = line.trim();
@@ -550,24 +558,56 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         continue;
                     }
 
-                    // Process the line and get audio data
-                    match tts.tts_raw_audio(
-                        &stripped_line,
-                        &lan,
-                        &style,
-                        speed,
-                        initial_silence,
-                        None,
-                        None,
-                        None,
-                    ) {
-                        Ok(raw_audio) => {
+                    // Timestamp rows travel over stderr because stdout is reserved for WAV bytes.
+                    // The app recognizes the prefix and keeps ordinary diagnostics separate.
+                    if timestamps {
+                        match tts.tts_timestamped_raw_audio(
+                            &stripped_line,
+                            &lan,
+                            &style,
+                            speed,
+                            initial_silence,
+                            None,
+                            None,
+                            None,
+                        ) {
+                            Ok(Some((raw_audio, words))) => {
+                                for word in words {
+                                    eprintln!(
+                                        "KOKORO_TIMESTAMP\t{}\t{:.6}\t{:.6}",
+                                        word.word.replace(['\t', '\n', '\r'], " "),
+                                        word.start_sec + audio_time_offset_sec,
+                                        word.end_sec + audio_time_offset_sec,
+                                    );
+                                }
+                                audio_time_offset_sec += raw_audio.len() as f32 / 24_000.0;
+                                write_audio_chunk(&mut stdout, &raw_audio)?;
+                                stdout.flush()?;
+                                eprintln!("Audio written to stdout. Ready for another line of text.");
+                            }
+                            Ok(None) => {}
+                            Err(e) => eprintln!("Error processing line: {}", e),
+                        }
+                    } else {
+                        match tts.tts_raw_audio(
+                            &stripped_line,
+                            &lan,
+                            &style,
+                            speed,
+                            initial_silence,
+                            None,
+                            None,
+                            None,
+                        ) {
+                            Ok(raw_audio) => {
+                                audio_time_offset_sec += raw_audio.len() as f32 / 24_000.0;
                             // Write the raw audio samples directly
                             write_audio_chunk(&mut stdout, &raw_audio)?;
                             stdout.flush()?;
                             eprintln!("Audio written to stdout. Ready for another line of text.");
+                            }
+                            Err(e) => eprintln!("Error processing line: {}", e),
                         }
-                        Err(e) => eprintln!("Error processing line: {}", e),
                     }
                 }
             }
