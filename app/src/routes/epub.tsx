@@ -63,6 +63,7 @@ import {
 } from '@/components/ui/tabs';
 import { useShiftHeld } from '@/hooks/use-shift-held';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
+import { modelUnavailableMessage } from '@/stores/model-store';
 import {
   extractSelectedSpeechText,
   extractSpeechTextFromChapterHtml,
@@ -606,6 +607,8 @@ function EpubReaderPage() {
     generateStream,
     generatedDurationSec,
     isGenerating: isReadingAloud,
+    isModelDownloading,
+    isModelReady,
     play: playNarration,
     setError: setNarrationError,
     stopGeneration,
@@ -1713,7 +1716,12 @@ function EpubReaderPage() {
                       type='button'
                       className='w-full rounded-full'
                       onClick={() => void handleReadAloud()}
-                      disabled={!activeChapter}
+                      disabled={!activeChapter || !isModelReady}
+                      title={
+                        isModelReady
+                          ? undefined
+                          : modelUnavailableMessage(isModelDownloading)
+                      }
                     >
                       {narrationMode === 'save-silent' ? (
                         <Save className='size-4' />

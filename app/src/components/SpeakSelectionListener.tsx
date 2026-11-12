@@ -4,6 +4,12 @@ import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
+import {
+  modelUnavailableMessage,
+  selectIsModelDownloading,
+  selectIsModelReady,
+  useModelStore,
+} from '@/stores/model-store';
 import { useSettingsStore } from '@/stores/settings-store';
 
 const SPEAK_SELECTION_EVENT = 'speak-selection-pending';
@@ -36,6 +42,14 @@ export default function SpeakSelectionListener() {
 
       if (isGeneratingRef.current) {
         toast.info('Still speaking the previous selection.');
+        return;
+      }
+
+      const modelState = useModelStore.getState();
+      if (!selectIsModelReady(modelState)) {
+        toast.error(
+          modelUnavailableMessage(selectIsModelDownloading(modelState)),
+        );
         return;
       }
 

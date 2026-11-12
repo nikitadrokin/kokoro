@@ -29,6 +29,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
+import { modelUnavailableMessage } from '@/stores/model-store';
 import { estimateAudioDurationSec } from '@/lib/speech-audio';
 import type { TimestampRow } from '@/lib/transcript';
 import { optimizeMarkdownForSpeech } from '@/lib/tts-text';
@@ -98,6 +99,8 @@ function PlaygroundPage() {
     generateStream,
     generatedDurationSec,
     isGenerating,
+    isModelDownloading,
+    isModelReady,
     play: handlePlay,
     savedOutputPath,
     setError,
@@ -514,6 +517,12 @@ function PlaygroundPage() {
                 <Button
                   className='rounded-full px-8'
                   onClick={() => void handleGenerate()}
+                  disabled={!isModelReady}
+                  title={
+                    isModelReady
+                      ? undefined
+                      : modelUnavailableMessage(isModelDownloading)
+                  }
                 >
                   <AudioLinesIcon className='size-4' />
                   Generate

@@ -36,6 +36,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { Textarea } from '@/components/ui/textarea';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
+import { modelUnavailableMessage } from '@/stores/model-store';
 import {
   type GmailAuthStatus,
   type GmailMessageForSpeech,
@@ -335,6 +336,8 @@ function MailListenPage() {
     generateStream,
     generatedDurationSec,
     isGenerating,
+    isModelDownloading,
+    isModelReady,
     savedOutputPath,
     setError: setSpeechError,
     setPlayerSource,
@@ -936,7 +939,14 @@ function MailListenPage() {
                         type='button'
                         className='rounded-full px-8'
                         onClick={() => void handleGenerate()}
-                        disabled={!selectedMessage?.speechText.trim()}
+                        disabled={
+                          !selectedMessage?.speechText.trim() || !isModelReady
+                        }
+                        title={
+                          isModelReady
+                            ? undefined
+                            : modelUnavailableMessage(isModelDownloading)
+                        }
                       >
                         <AudioLinesIcon className='size-4' />
                         Generate

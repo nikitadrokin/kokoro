@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TroubleshootRouteImport } from './routes/troubleshoot'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PdfRouteImport } from './routes/pdf'
 import { Route as MailRouteImport } from './routes/mail'
 import { Route as LibraryRouteImport } from './routes/library'
@@ -20,6 +21,11 @@ import { Route as SpeechOptimizeRouteImport } from './routes/speech/optimize'
 const TroubleshootRoute = TroubleshootRouteImport.update({
   id: '/troubleshoot',
   path: '/troubleshoot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PdfRoute = PdfRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/pdf': typeof PdfRoute
+  '/settings': typeof SettingsRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/pdf': typeof PdfRoute
+  '/settings': typeof SettingsRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/library': typeof LibraryRoute
   '/mail': typeof MailRoute
   '/pdf': typeof PdfRoute
+  '/settings': typeof SettingsRoute
   '/troubleshoot': typeof TroubleshootRoute
   '/speech/optimize': typeof SpeechOptimizeRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/pdf'
+    | '/settings'
     | '/troubleshoot'
     | '/speech/optimize'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/pdf'
+    | '/settings'
     | '/troubleshoot'
     | '/speech/optimize'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/library'
     | '/mail'
     | '/pdf'
+    | '/settings'
     | '/troubleshoot'
     | '/speech/optimize'
   fileRoutesById: FileRoutesById
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   LibraryRoute: typeof LibraryRoute
   MailRoute: typeof MailRoute
   PdfRoute: typeof PdfRoute
+  SettingsRoute: typeof SettingsRoute
   TroubleshootRoute: typeof TroubleshootRoute
   SpeechOptimizeRoute: typeof SpeechOptimizeRoute
 }
@@ -128,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/troubleshoot'
       fullPath: '/troubleshoot'
       preLoaderRoute: typeof TroubleshootRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pdf': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   LibraryRoute: LibraryRoute,
   MailRoute: MailRoute,
   PdfRoute: PdfRoute,
+  SettingsRoute: SettingsRoute,
   TroubleshootRoute: TroubleshootRoute,
   SpeechOptimizeRoute: SpeechOptimizeRoute,
 }

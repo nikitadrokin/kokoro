@@ -11,6 +11,12 @@ import {
   SPEECH_STREAM_CHUNK_EVENT,
 } from '@/lib/speech-audio';
 import type { TimestampRow } from '@/lib/transcript';
+import {
+  modelUnavailableMessage,
+  selectIsModelDownloading,
+  selectIsModelReady,
+  useModelStore,
+} from '@/stores/model-store';
 import { useSynthesisLockStore } from '@/stores/synthesis-lock-store';
 
 /** Computes the playback duration (in seconds) of a raw float32 audio chunk. */
@@ -75,6 +81,8 @@ export function useSpeechStreamGeneration({
   const [error, setError] = useState('');
   const [generatedDurationSec, setGeneratedDurationSec] = useState(0);
   const [timestamps, setTimestamps] = useState<TimestampRow[]>([]);
+  const isModelReady = useModelStore(selectIsModelReady);
+  const isModelDownloading = useModelStore(selectIsModelDownloading);
 
   const stopScheduledAudio = useCallback(() => {
     for (const source of scheduledSourcesRef.current) {
@@ -193,6 +201,14 @@ export function useSpeechStreamGeneration({
   const generateStream = useCallback(
     async (request: SpeechStreamGenerationRequest) => {
       if (isGenerating) {
+        return null;
+      }
+
+      const modelState = useModelStore.getState();
+      if (!selectIsModelReady(modelState)) {
+        setError(
+          modelUnavailableMessage(selectIsModelDownloading(modelState)),
+        );
         return null;
       }
 
@@ -365,6 +381,8 @@ export function useSpeechStreamGeneration({
     generateStream,
     generatedDurationSec,
     isGenerating,
+    isModelDownloading,
+    isModelReady,
     play,
     savedOutputPath,
     setTimestamps,

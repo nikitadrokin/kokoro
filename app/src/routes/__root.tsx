@@ -1,7 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import AppSidebar from '@/components/AppSidebar';
 import AppTopbar from '@/components/AppTopbar';
-import ModelSetupGate from '@/components/ModelSetupGate';
+import { ModelSync } from '@/components/ModelStatusIndicator';
 import SpeakSelectionListener from '@/components/SpeakSelectionListener';
 import SynthesisLock from '@/components/SynthesisLock';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -15,20 +15,19 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <TooltipProvider>
-      <ModelSetupGate>
-        <SynthesisLock />
-        <SpeakSelectionListener />
-        <SidebarProvider className="h-dvh min-h-0 overflow-hidden bg-background text-foreground">
-          <AppSidebar />
-          <SidebarInset className="min-w-0 overflow-hidden">
-            <div className="@container/content flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain">
-              <AppTopbar />
-              <Outlet />
-            </div>
-          </SidebarInset>
-          <Toaster />
-        </SidebarProvider>
-      </ModelSetupGate>
+      <ModelSync />
+      <SynthesisLock />
+      <SpeakSelectionListener />
+      <SidebarProvider className="h-dvh min-h-0 overflow-hidden bg-background text-foreground">
+        <AppSidebar />
+        <SidebarInset className="min-w-0 overflow-hidden">
+          <div className="@container/content flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain">
+            <AppTopbar />
+            <Outlet />
+          </div>
+        </SidebarInset>
+        <Toaster />
+      </SidebarProvider>
     </TooltipProvider>
   );
 }

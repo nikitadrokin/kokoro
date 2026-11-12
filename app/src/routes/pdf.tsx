@@ -43,6 +43,7 @@ import {
   TabsTrigger,
 } from '@/components/ui/tabs';
 import { useSpeechStreamGeneration } from '@/hooks/use-speech-stream-generation';
+import { modelUnavailableMessage } from '@/stores/model-store';
 import {
   buildPdfSpeechText,
   extractPdfPageText,
@@ -208,6 +209,8 @@ function PdfReaderPage() {
     generateStream,
     generatedDurationSec,
     isGenerating: isNarrating,
+    isModelDownloading,
+    isModelReady,
     play: playNarration,
     setError: setNarrationError,
     stopGeneration,
@@ -880,7 +883,14 @@ function PdfReaderPage() {
                       type="button"
                       className="w-full rounded-full"
                       onClick={() => void handleReadAloud()}
-                      disabled={!hasTextLayer || !extractionComplete}
+                      disabled={
+                        !hasTextLayer || !extractionComplete || !isModelReady
+                      }
+                      title={
+                        isModelReady
+                          ? undefined
+                          : modelUnavailableMessage(isModelDownloading)
+                      }
                     >
                       {narrationMode === 'save-silent' ? (
                         <Save className="size-4" />

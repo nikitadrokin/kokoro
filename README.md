@@ -156,11 +156,14 @@ xattr -cr /Applications/Kokoro.app
 ```
 
 The Tauri bundle includes the platform-specific `koko` sidecar binary. The
-model weights are not bundled: on first launch the app downloads
-`kokoro-v1.0-timestamped.onnx` and `voices-v1.0.bin` (~354 MB, SHA-256
-verified) into `~/Library/Application Support/me.nkdr.kokoro/models/`, where
-they persist across app updates. Debug builds fall back to the repo's
-`checkpoints/` and `data/` copies.
+model weights (`kokoro-v1.0-timestamped.onnx` and `voices-v1.0.bin`, ~354 MB)
+live in `~/Library/Application Support/me.nkdr.kokoro/models/`, where they
+persist across app updates. The app looks for them there first, then in the
+bundle's `models/` resources (copied into app data on launch, so a later
+update without them doesn't re-download), then in the repo's `checkpoints/`
+and `data/` (debug builds only). If none exist, it downloads them in the
+background (SHA-256 verified). Settings → Voice model shows status and lets
+you re-download, verify, or delete them.
 
 ## Project Layout
 

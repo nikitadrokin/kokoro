@@ -5,6 +5,7 @@ import {
   FileTextIcon,
   HeadphonesIcon,
   MailIcon,
+  SettingsIcon,
   ShieldAlertIcon,
   WandSparkles,
 } from 'lucide-react';
@@ -68,7 +69,20 @@ const listenItems = [
   },
 ] as const;
 
-const troubleshootLabel = 'Fix "not verified" / codesign errors';
+const footerItems = [
+  {
+    to: '/settings',
+    label: 'Settings',
+    description: 'Manage the voice model',
+    icon: SettingsIcon,
+  },
+  {
+    to: '/troubleshoot',
+    label: 'Troubleshoot',
+    description: 'Fix "not verified" / codesign errors',
+    icon: ShieldAlertIcon,
+  },
+] as const;
 const processRunningTooltip = 'Please wait for speech synthesis to finish';
 
 type NavItem = {
@@ -127,7 +141,7 @@ function NavGroup({
                     onNavigate(item.to);
                   }}
                 >
-                  <Icon className='text-muted-foreground' aria-hidden />
+                  <Icon className="text-muted-foreground" aria-hidden />
                   <span>{item.label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -151,13 +165,13 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible='offcanvas' variant='sidebar' className='w-52 lg:w-60'>
+    <Sidebar collapsible="offcanvas" variant="sidebar" className="w-52 lg:w-60">
       {/* Clearance for the macOS traffic lights (overlay titlebar). */}
-      <div data-tauri-drag-region className='h-11 shrink-0' />
+      <div data-tauri-drag-region className="h-11 shrink-0" />
 
       <SidebarHeader>
         <button
-          type='button'
+          type="button"
           className={cn(
             'inline-flex items-center gap-2 rounded-full px-2 py-1.5 font-semibold text-foreground text-sm tracking-tight transition-colors duration-200 hover:text-primary focus-visible:outline-1 focus-visible:ring-3 focus-visible:ring-ring/30',
             isNavigationLocked && 'cursor-not-allowed opacity-50',
@@ -176,8 +190,8 @@ export default function AppSidebar() {
             goTo('/');
           }}
         >
-          <span className='grid size-7 place-items-center rounded-full border bg-card text-primary shadow-sm'>
-            <AudioLinesIcon className='size-4' aria-hidden />
+          <span className="grid size-7 place-items-center rounded-full border bg-card text-primary shadow-sm">
+            <AudioLinesIcon className="size-4" aria-hidden />
           </span>
           <span>Kokoro</span>
         </button>
@@ -185,14 +199,14 @@ export default function AppSidebar() {
 
       <SidebarContent>
         <NavGroup
-          label='Speech'
+          label="Speech"
           items={speechItems}
           pathname={pathname}
           isNavigationLocked={isNavigationLocked}
           onNavigate={goTo}
         />
         <NavGroup
-          label='Listen'
+          label="Listen"
           items={listenItems}
           pathname={pathname}
           isNavigationLocked={isNavigationLocked}
@@ -202,34 +216,41 @@ export default function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              isActive={pathname === '/troubleshoot'}
-              disabled={isNavigationLocked}
-              className={cn(isNavigationLocked && 'cursor-not-allowed')}
-              tooltip={
-                isNavigationLocked
-                  ? {
-                      children: processRunningTooltip,
-                      hidden: false,
+          {footerItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <SidebarMenuItem key={item.to}>
+                <SidebarMenuButton
+                  isActive={pathname === item.to}
+                  disabled={isNavigationLocked}
+                  className={cn(isNavigationLocked && 'cursor-not-allowed')}
+                  tooltip={
+                    isNavigationLocked
+                      ? {
+                          children: processRunningTooltip,
+                          hidden: false,
+                        }
+                      : item.description
+                  }
+                  aria-label={
+                    isNavigationLocked
+                      ? processRunningTooltip
+                      : item.description
+                  }
+                  onClick={(event) => {
+                    if (isNavigationLocked) {
+                      event.preventDefault();
+                      return;
                     }
-                  : troubleshootLabel
-              }
-              aria-label={
-                isNavigationLocked ? processRunningTooltip : troubleshootLabel
-              }
-              onClick={(event) => {
-                if (isNavigationLocked) {
-                  event.preventDefault();
-                  return;
-                }
-                goTo('/troubleshoot');
-              }}
-            >
-              <ShieldAlertIcon className='text-muted-foreground' aria-hidden />
-              <span>Troubleshoot</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+                    goTo(item.to);
+                  }}
+                >
+                  <Icon className="text-muted-foreground" aria-hidden />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

@@ -1164,7 +1164,7 @@ fn read_pdf_file(path: String) -> Result<PdfFilePayload, String> {
 }
 
 #[cfg(target_os = "macos")]
-fn reveal_file_in_finder(path: &Path) -> Result<(), String> {
+pub(crate) fn reveal_file_in_finder(path: &Path) -> Result<(), String> {
     let output = std::process::Command::new("/usr/bin/open")
         .arg("-R")
         .arg(path)
@@ -1188,7 +1188,7 @@ fn reveal_file_in_finder(path: &Path) -> Result<(), String> {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn reveal_file_in_finder(_path: &Path) -> Result<(), String> {
+pub(crate) fn reveal_file_in_finder(_path: &Path) -> Result<(), String> {
     Err("Reveal in Finder is only available on macOS.".to_string())
 }
 
@@ -1825,7 +1825,7 @@ pub fn run() {
         .manage(PreparedAppUpdateState::default())
         .manage(SpeakSelectionState::default())
         .manage(ActiveSpeechStreams::default())
-        .manage(models::ModelDownloadState::default())
+        .manage(models::ModelOperationState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1848,6 +1848,9 @@ pub fn run() {
             take_speak_selection_text,
             models::model_status,
             models::download_model,
+            models::verify_model,
+            models::delete_downloaded_model,
+            models::reveal_models_dir,
             gmail::gmail_save_client_config,
             gmail::gmail_get_client_config,
             gmail::gmail_auth_status,
@@ -1858,6 +1861,8 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "macos")]
             macos_service::register(&app.handle().clone());
+
+            models::spawn_bundled_model_migration(app.handle().clone());
 
             if cfg!(debug_assertions) {
                 app.handle().plugin(

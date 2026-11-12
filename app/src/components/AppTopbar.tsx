@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import ModelStatusIndicator from './ModelStatusIndicator';
 import ThemeToggle from './ThemeToggle';
 import UpdateButton from './UpdateButton';
 import { Badge } from './ui/badge';
@@ -26,6 +27,7 @@ export default function AppTopbar() {
             dev
           </Badge>
         )}
+        <ModelStatusIndicator />
         <UpdateButton />
         <ThemeToggle />
       </div>
