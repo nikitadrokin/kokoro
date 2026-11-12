@@ -155,11 +155,12 @@ If macOS blocks the app from opening, you may need to run this command:
 xattr -cr /Applications/Kokoro.app
 ```
 
-The Tauri bundle includes:
-
-- `models/kokoro-v1.0-timestamped.onnx`
-- `models/voices-v1.0.bin`
-- the platform-specific `koko` sidecar binary
+The Tauri bundle includes the platform-specific `koko` sidecar binary. The
+model weights are not bundled: on first launch the app downloads
+`kokoro-v1.0-timestamped.onnx` and `voices-v1.0.bin` (~354 MB, SHA-256
+verified) into `~/Library/Application Support/me.nkdr.kokoro/models/`, where
+they persist across app updates. Debug builds fall back to the repo's
+`checkpoints/` and `data/` copies.
 
 ## Project Layout
 

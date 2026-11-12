@@ -1,4 +1,5 @@
 mod gmail;
+mod models;
 #[cfg(target_os = "macos")]
 mod macos_service;
 
@@ -22,10 +23,6 @@ use tauri_plugin_shell::{
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 const KOKO_SIDECAR: &str = "koko";
-const MODEL_RESOURCE_PATH: &str = "models/kokoro-v1.0-timestamped.onnx";
-const VOICES_RESOURCE_PATH: &str = "models/voices-v1.0.bin";
-const DEV_MODEL_PATH: &str = "checkpoints/kokoro-v1.0-timestamped.onnx";
-const DEV_VOICES_PATH: &str = "data/voices-v1.0.bin";
 const SPEECH_STREAM_CHUNK_EVENT: &str = "speech-stream-chunk";
 const SPEECH_STREAM_TIMESTAMP_EVENT: &str = "speech-stream-timestamp";
 const STREAM_TIMESTAMP_PREFIX: &str = "KOKORO_TIMESTAMP\t";
@@ -300,17 +297,15 @@ async fn synthesize_speech(
     let mono = request.mono;
     let save_to_disk = request.save_to_disk.unwrap_or(false);
 
-    let model_path = resolve_input_or_resource(
+    let model_path = resolve_model_input(
         &app,
         request.model_path.as_deref(),
-        MODEL_RESOURCE_PATH,
-        DEV_MODEL_PATH,
+        &models::KOKORO_MODEL,
     )?;
-    let data_path = resolve_input_or_resource(
+    let data_path = resolve_model_input(
         &app,
         request.data_path.as_deref(),
-        VOICES_RESOURCE_PATH,
-        DEV_VOICES_PATH,
+        &models::KOKORO_VOICES,
     )?;
 
     let requested_output_path = request
@@ -463,17 +458,15 @@ async fn synthesize_speech_stream(
         .unwrap_or("default")
         .to_string();
 
-    let model_path = resolve_input_or_resource(
+    let model_path = resolve_model_input(
         &app,
         request.model_path.as_deref(),
-        MODEL_RESOURCE_PATH,
-        DEV_MODEL_PATH,
+        &models::KOKORO_MODEL,
     )?;
-    let data_path = resolve_input_or_resource(
+    let data_path = resolve_model_input(
         &app,
         request.data_path.as_deref(),
-        VOICES_RESOURCE_PATH,
-        DEV_VOICES_PATH,
+        &models::KOKORO_VOICES,
     )?;
 
     let requested_output_path = request
@@ -1394,11 +1387,10 @@ fn current_app_bundle_path() -> Result<PathBuf, String> {
     Ok(app_bundle.to_path_buf())
 }
 
-fn resolve_input_or_resource(
+fn resolve_model_input(
     app: &AppHandle,
     input: Option<&str>,
-    resource_path: &str,
-    dev_path: &str,
+    asset: &models::ModelAsset,
 ) -> Result<PathBuf, String> {
     if let Some(value) = input.map(str::trim).filter(|value| !value.is_empty()) {
         let path = Path::new(value);
@@ -1416,22 +1408,7 @@ fn resolve_input_or_resource(
             .map_err(|error| error.to_string());
     }
 
-    if let Ok(resource_dir) = app.path().resource_dir() {
-        let bundled_path = resource_dir.join(resource_path);
-        if bundled_path.exists() {
-            return Ok(bundled_path);
-        }
-    }
-
-    let dev_path = repo_root().join(dev_path);
-    if dev_path.exists() {
-        return Ok(dev_path);
-    }
-
-    app.path()
-        .resource_dir()
-        .map(|dir| dir.join(resource_path))
-        .map_err(|error| error.to_string())
+    models::resolve_asset_path(app, asset)
 }
 
 fn resolve_output_path(app: &AppHandle, input: &str) -> Result<PathBuf, String> {
@@ -1733,7 +1710,7 @@ fn patch_stream_wav_header(file: &mut fs::File, data_bytes: u64) -> Result<(), S
         .map_err(|error| format!("Failed to finalize streamed WAV: {error}"))
 }
 
-fn repo_root() -> PathBuf {
+pub(crate) fn repo_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .ancestors()
         .nth(2)
@@ -1848,6 +1825,7 @@ pub fn run() {
         .manage(PreparedAppUpdateState::default())
         .manage(SpeakSelectionState::default())
         .manage(ActiveSpeechStreams::default())
+        .manage(models::ModelDownloadState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -1868,6 +1846,8 @@ pub fn run() {
             prepare_app_update,
             install_prepared_app_update,
             take_speak_selection_text,
+            models::model_status,
+            models::download_model,
             gmail::gmail_save_client_config,
             gmail::gmail_get_client_config,
             gmail::gmail_auth_status,
